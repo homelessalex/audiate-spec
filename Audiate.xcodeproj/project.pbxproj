@@ -20,6 +20,7 @@
 		593EA753761993AD019B31DA /* SMuFL.swift in Sources */ = {isa = PBXBuildFile; fileRef = F276DE369E7A7841377A1449 /* SMuFL.swift */; };
 		5E6F2BF7A6762217BEB2FECA /* RhythmStaffView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5020732F3F674C801B5DD526 /* RhythmStaffView.swift */; };
 		60CBB7CFF22B25EA09503E75 /* CalibrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 802F0890C6D0D2673D8BE66A /* CalibrationView.swift */; };
+		71473068F3F6685AFC676A1E /* FeedbackSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = D825AE753D3CB2C3767A6230 /* FeedbackSheet.swift */; };
 		7621434118C6237776A5C493 /* TapRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E02CC93B8433E77734A286 /* TapRecorder.swift */; };
 		7DA4AFAD4F5B5FFB5BF5BFA0 /* WindowID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E822DD943D591D74ADE3472 /* WindowID.swift */; };
 		80F81BBE4DB37781AAE87171 /* patterns.json in Resources */ = {isa = PBXBuildFile; fileRef = 09F9525E6BDCC383D21C1CD3 /* patterns.json */; };
@@ -60,6 +61,7 @@
 		B616A46CCB97B3E277389A3B /* SessionRunner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionRunner.swift; sourceTree = "<group>"; };
 		C9DB5C5C731493C759005976 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		D2F09D813ABABCF8CA6DA67A /* cells.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = cells.json; sourceTree = "<group>"; };
+		D825AE753D3CB2C3767A6230 /* FeedbackSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackSheet.swift; sourceTree = "<group>"; };
 		DEC156D964B0B471C377E474 /* ContactSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactSheet.swift; sourceTree = "<group>"; };
 		E91C602768B36BACA793D2BE /* Bravura-OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Bravura-OFL.txt"; sourceTree = "<group>"; };
 		F276DE369E7A7841377A1449 /* SMuFL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SMuFL.swift; sourceTree = "<group>"; };
@@ -133,6 +135,7 @@
 			isa = PBXGroup;
 			children = (
 				DEC156D964B0B471C377E474 /* ContactSheet.swift */,
+				D825AE753D3CB2C3767A6230 /* FeedbackSheet.swift */,
 				5020732F3F674C801B5DD526 /* RhythmStaffView.swift */,
 				F276DE369E7A7841377A1449 /* SMuFL.swift */,
 				B3C83EF5D55A1476EE21CFE1 /* StaffRenderer.swift */,
@@ -246,6 +249,7 @@
 				C0D52326665696959FF54275 /* ContactSheet.swift in Sources */,
 				CFFD156538A83F214CC54A45 /* ContentView.swift in Sources */,
 				FF4D9A683935F035B194B243 /* DebugView.swift in Sources */,
+				71473068F3F6685AFC676A1E /* FeedbackSheet.swift in Sources */,
 				9E7EE7F1E7B2A40158A91CEB /* HomeView.swift in Sources */,
 				58A4A8A5F709A5C493FB7025 /* ProgressRecords.swift in Sources */,
 				2D8DED5CC1000EE71CA5810C /* ProgressStore.swift in Sources */,

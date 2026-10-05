@@ -11,7 +11,8 @@ final class TapRecorder {
     private(set) var isRunning = false
     private(set) var tapCount = 0
     private let monitor = KeyTapMonitor()
-    private var taps: [Double] = []
+    /// Taps so far, in block time with output latency removed (input offset not yet applied).
+    private(set) var taps: [Double] = []
     private var clock: BlockClock?
     private var latency = 0.0
     private var tapSound = true

@@ -96,7 +96,9 @@ private struct EchoPlayingView: View {
                         Text(state.counter).foregroundStyle(.secondary)
                         PulseView(beat: state.beat)
                         if block.showsNotation, let i = state.patternIndex, let p = runner.pattern(block.items[i].patternID) {
-                            RhythmStaffView(pattern: p, playheadTick: block.kind == .readWithModel ? state.tick : nil)
+                            // the beat grid ties the notes to the pulse; the cursor and lit note show what sounds now
+                            RhythmStaffView(pattern: p, beatGrid: true, currentTick: state.showsCursor ? state.tick : nil,
+                                            liveTaps: state.isResponse ? runner.liveTaps(responseIndex: i) : [])
                         }
                         if block.showSyllables, let cues = state.cues {
                             SyllableLine(cues: cues, highlighted: state.highlightedCue)
@@ -120,6 +122,9 @@ private struct PlaybackState {
     var patternIndex: Int?
     /// Measure-relative tick in the prompt or response measure.
     var tick: Double?
+    var isResponse = false
+    /// Cursor while the pattern sounds (model) or is being read (response); not during look-ahead.
+    var showsCursor = false
     var cues: [SyllableCue]?
     var highlightedCue: Int?
 
@@ -164,6 +169,8 @@ private struct PlaybackState {
         counter = "Pattern \(i + 1) of \(n)"
         if case .hold = role { return }
         tick = inMeasure / spt
+        if case .response = role { isResponse = true }
+        showsCursor = isResponse || block.kind == .readWithModel
         // syllable cues are timed for the prompt measure; follow the same positions in the response
         let promptMeasure = timeline.measureRoles.firstIndex(of: .prompt(i)) ?? m
         let local = t - Double(m - promptMeasure) * measure
@@ -214,11 +221,10 @@ private struct EchoFeedbackView: View {
                                 .font(.title2)
                             VStack(alignment: .leading, spacing: 4) {
                                 // ear exercises stay notation-free; reading shows expected vs. taps on the staff
-                                if runner.block?.showsNotation == true {
-                                    RhythmStaffView(pattern: r.pattern, zoom: 1.6, overlay: r.overlay)
-                                } else if r.item.level >= .verbal {
-                                    Text(r.syllables).font(.title3.monospaced())
-                                }
+                                // after the attempt the pattern has been heard, so notation is fine even for ear steps
+                                RhythmStaffView(pattern: r.pattern, zoom: 1.7, beatGrid: true,
+                                                syllables: r.item.level >= .verbal ? r.syllables.split(separator: " ").map(String.init) : nil,
+                                                comparison: r.comparison)
                                 Text(Self.counts(r.feedback)).foregroundStyle(.secondary)
                             }
                             Spacer()
@@ -227,10 +233,8 @@ private struct EchoFeedbackView: View {
                     }
                 }
                 .frame(maxWidth: 640)
-                if runner.block?.showsNotation == true {
-                    Text("Grey marks: where the notes are. Dots: your taps — green on time, orange early/late, red extra.")
-                        .font(.caption).foregroundStyle(.secondary)
-                }
+                Text("“notes”: where each note starts and how long it sounds. “you”: your taps, joined to their note — green on time, orange early/late (ms), red missed or extra.")
+                    .font(.caption).foregroundStyle(.secondary).frame(maxWidth: 640)
             }
             Button("Continue") { runner.next() }
                 .controlSize(.large)

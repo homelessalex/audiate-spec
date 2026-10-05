@@ -43,6 +43,10 @@ final class AppModel {
             ContactSheet.export(library: library, to: path)
             exit(0)
         }
+        if let path = UserDefaults.standard.string(forKey: "AudiateFeedbackSheet"), let library = content?.library {
+            ContactSheet.exportFeedback(library: library, to: path)
+            exit(0)
+        }
     }
 
     var library: PatternLibrary? { content?.library }

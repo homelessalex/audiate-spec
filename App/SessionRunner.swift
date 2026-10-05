@@ -47,7 +47,7 @@ final class SessionRunner {
         let feedback: EchoFeedback
         let tapsFromDownbeat: [Double]
         let syllables: String
-        let overlay: StaffRenderer.Overlay
+        let comparison: StaffRenderer.Comparison
     }
 
     struct Question {
@@ -130,7 +130,7 @@ final class SessionRunner {
                 id: i, item: item, pattern: pattern, grade: grade, feedback: EchoFeedback(grade),
                 tapsFromDownbeat: taps.filter { $0 >= slot.start - 0.15 && $0 < slot.end }.map { $0 - downbeat },
                 syllables: (try? deriver.line(for: pattern)) ?? "",
-                overlay: Self.overlay(grade, pattern: pattern, downbeat: downbeat, tempo: block.tempo)
+                comparison: Self.comparison(grade, pattern: pattern, downbeat: downbeat, tempo: block.tempo)
             )
         }
         for result in results {
@@ -140,14 +140,39 @@ final class SessionRunner {
         phase = .feedback
     }
 
-    /// Expected onsets and taps in measure ticks, taps colored by error.
-    private static func overlay(_ grade: OnsetGrade, pattern: Pattern, downbeat: Double, tempo: Tempo) -> StaffRenderer.Overlay {
+    /// "Pattern vs. you" in measure ticks: note spans, hits joined to their notes, misses, extras.
+    static func comparison(_ grade: OnsetGrade, pattern: Pattern, downbeat: Double, tempo: Tempo) -> StaffRenderer.Comparison {
         let spt = tempo.secondsPerTick(in: pattern.meter)
         func tick(_ t: Double) -> Double { (t - downbeat) / spt }
         let limit = EchoFeedback.earlyLateFraction * grade.tolerance
-        let hits = grade.hits.map { (tick: tick($0.tap), mark: abs($0.error) <= limit ? StaffRenderer.Overlay.Mark.good : .off) }
-        let extras = grade.extras.map { (tick: tick($0), mark: StaffRenderer.Overlay.Mark.bad) }
-        return StaffRenderer.Overlay(expected: pattern.onsets.map { Double($0.startTick) }, taps: hits + extras)
+        var notes: [(start: Double, end: Double)] = []
+        for event in pattern.events {
+            switch event.kind {
+            case .note: notes.append((Double(event.startTick), Double(event.endTick)))
+            case .continuation: if let last = notes.popLast() { notes.append((last.start, Double(event.endTick))) }
+            case .rest: break
+            }
+        }
+        return StaffRenderer.Comparison(
+            notes: notes,
+            hits: grade.hits.map {
+                .init(expected: tick($0.expected).rounded(), tap: tick($0.tap), errorMs: Int(($0.error * 1000).rounded()),
+                      mark: abs($0.error) <= limit ? .good : .off)
+            },
+            misses: grade.misses.map { tick($0).rounded() },
+            extras: grade.extras.map(tick)
+        )
+    }
+
+    /// Live taps for response `index`, in that measure's ticks (display only).
+    func liveTaps(responseIndex index: Int) -> [Double] {
+        guard let timeline, let block, timeline.responses.indices.contains(index),
+              let meter = content.library.meters[block.meterID] else { return [] }
+        let slot = timeline.responses[index]
+        let downbeat = slot.end - timeline.measureDuration
+        let offset = model.inputOffset
+        let spt = block.tempo.secondsPerTick(in: meter)
+        return recorder.taps.map { $0 - offset }.filter { $0 >= slot.start - 0.15 && $0 < slot.end }.map { ($0 - downbeat) / spt }
     }
 
     func replay(_ result: Result) {

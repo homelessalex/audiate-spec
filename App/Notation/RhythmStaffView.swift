@@ -6,26 +6,28 @@ import SwiftUI
 struct RhythmStaffView: View {
     let pattern: AudiateCore.Pattern
     var zoom: CGFloat = 2
+    var beatGrid = false
     var syllables: [String]?
-    var playheadTick: Double?
-    var overlay: StaffRenderer.Overlay?
+    var currentTick: Double?
+    var liveTaps: [Double] = []
+    var comparison: StaffRenderer.Comparison?
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         if let layout = try? NotationLayout(pattern: pattern) {
-            let renderer = StaffRenderer(layout: layout, pattern: pattern, syllables: syllables,
-                                         playheadTick: playheadTick, overlay: overlay)
+            let renderer = StaffRenderer(layout: layout, pattern: pattern, beatGrid: beatGrid, syllables: syllables,
+                                         currentTick: currentTick, liveTaps: liveTaps, comparison: comparison)
+            let colors = StaffRenderer.Colors(
+                ink: colorScheme == .dark ? CGColor(gray: 0.95, alpha: 1) : CGColor(gray: 0.05, alpha: 1),
+                accent: NSColor.controlAccentColor.cgColor,
+                muted: CGColor(gray: 0.55, alpha: 1)
+            )
             Canvas { context, _ in
                 context.scaleBy(x: zoom, y: zoom)
-                context.withCGContext { cg in
-                    renderer.draw(in: cg, ink: ink, accent: NSColor.controlAccentColor.cgColor,
-                                  muted: CGColor(gray: 0.55, alpha: 1))
-                }
+                context.withCGContext { renderer.draw(in: $0, colors: colors) }
             }
             .frame(width: renderer.width * zoom, height: renderer.height * zoom)
             .accessibilityLabel("Notation of \(pattern.id)")
         }
     }
-
-    private var ink: CGColor { colorScheme == .dark ? CGColor(gray: 0.95, alpha: 1) : CGColor(gray: 0.05, alpha: 1) }
 }

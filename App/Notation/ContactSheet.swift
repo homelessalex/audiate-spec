@@ -14,7 +14,7 @@ struct ContactSheet: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("\(p.id)  \(p.meter.timeSignature.description)  \(p.content.rawValue)")
                         .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                    RhythmStaffView(pattern: p, zoom: 1.5, syllables: (try? deriver.displays(for: p)))
+                    RhythmStaffView(pattern: p, zoom: 1.5, beatGrid: true, syllables: (try? deriver.displays(for: p)))
                 }
             }
         }
@@ -25,7 +25,19 @@ struct ContactSheet: View {
 
     @MainActor
     static func export(library: PatternLibrary, to path: String) {
-        let renderer = ImageRenderer(content: ContactSheet(library: library))
+        write(ContactSheet(library: library), to: path)
+    }
+
+    /// Feedback rendering with made-up taps (late, early, missed, extra) and a reading frame with cursor.
+    /// Launch with `-AudiateFeedbackSheet /path/feedback.png`.
+    @MainActor
+    static func exportFeedback(library: PatternLibrary, to path: String) {
+        write(FeedbackSheet(library: library), to: path)
+    }
+
+    @MainActor
+    private static func write(_ view: some View, to path: String) {
+        let renderer = ImageRenderer(content: view)
         renderer.scale = 2
         guard let image = renderer.nsImage, let tiff = image.tiffRepresentation,
               let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:]) else {

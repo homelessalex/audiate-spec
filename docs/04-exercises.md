@@ -41,12 +41,18 @@ The pulse never stops inside a block:
   likewise preceded by the pickup position. Count-in is shortened accordingly.
 - Block size: 4–6 patterns, same meter.
 
-### Feedback (respect "sound before sight")
+### Feedback (sound before sight, per pattern)
 
-- Before the unit reaches `SA`: **no visual rhythm** (no grid, no notation). Feedback = pass/fail,
-  counts of early / late / missed / extra, and an audio replay "model vs. you" (model on left channel
-  or alternating).
-- From `SA` on: overlay timeline (expected onsets vs. taps, colored by error) under the notation.
+- During ear exercises: no notation, no visual rhythm — only the pulse indicator and phase labels
+  (Listen / Hold it / Your turn).
+- After an attempt the pattern has been heard, so feedback shows it on the staff with a beat grid
+  (macrobeats tall, microbeats short, aligned under the notes) and a comparison:
+  row "notes" (onset + sounding length of each note) and row "you" (taps), each hit joined to its note,
+  colored green (|error| ≤ ½ tol) or orange with the error in ms; misses and extras in red.
+  Plus counts of on time / early / late / missed / extra, and an audio replay "model vs. you"
+  (model measure, then your taps).
+- While reading (E5): beat grid lit with the pulse, a cursor through the measure being read, the
+  sounding note highlighted, taps appear live under the staff.
 - Syllables are shown after the attempt from `VA` on.
 
 ## 2. Onset grader (E1, E5, E9, E11)
