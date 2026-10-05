@@ -7,18 +7,34 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0C4086979F573ED2B2F23465 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0203DD6E0965C8E5832F1DDD /* AppModel.swift */; };
+		532D736DBE4233217C586A7D /* Samples in Resources */ = {isa = PBXBuildFile; fileRef = 45CD7BC307976DB31E1B093A /* Samples */; };
+		60CBB7CFF22B25EA09503E75 /* CalibrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 802F0890C6D0D2673D8BE66A /* CalibrationView.swift */; };
+		7621434118C6237776A5C493 /* TapRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 96E02CC93B8433E77734A286 /* TapRecorder.swift */; };
+		7DA4AFAD4F5B5FFB5BF5BFA0 /* WindowID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E822DD943D591D74ADE3472 /* WindowID.swift */; };
 		80F81BBE4DB37781AAE87171 /* patterns.json in Resources */ = {isa = PBXBuildFile; fileRef = 09F9525E6BDCC383D21C1CD3 /* patterns.json */; };
+		A20091982DC8785391FB0351 /* CalibrationProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CD3E3C7EE900193F6867A7A /* CalibrationProfile.swift */; };
+		A880C630781D214FD6E99507 /* AudiateAudio in Frameworks */ = {isa = PBXBuildFile; productRef = 7F702AAA037C5C92807B3AF2 /* AudiateAudio */; };
 		AFED90FEB869DB11076C602C /* cells.json in Resources */ = {isa = PBXBuildFile; fileRef = D2F09D813ABABCF8CA6DA67A /* cells.json */; };
 		C8269945AE719123FADDA70A /* AudiateApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF61B91A0330217BD89CB123 /* AudiateApp.swift */; };
 		CB95E96340D6760F45AD5FEC /* AudiateCore in Frameworks */ = {isa = PBXBuildFile; productRef = 3570690D4D083C8BEAEE348A /* AudiateCore */; };
 		CFFD156538A83F214CC54A45 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85EFB2E5BE5CF7C868E09F68 /* ContentView.swift */; };
+		FF4D9A683935F035B194B243 /* DebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A2D4AAFD4C11EC9D4ECD285 /* DebugView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0203DD6E0965C8E5832F1DDD /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		09F9525E6BDCC383D21C1CD3 /* patterns.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = patterns.json; sourceTree = "<group>"; };
+		2CD3E3C7EE900193F6867A7A /* CalibrationProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationProfile.swift; sourceTree = "<group>"; };
+		45CD7BC307976DB31E1B093A /* Samples */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Samples; path = Resources/Samples; sourceTree = SOURCE_ROOT; };
+		4A2D4AAFD4C11EC9D4ECD285 /* DebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugView.swift; sourceTree = "<group>"; };
+		79D858C0CC658750F323B07D /* AudiateAudio */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AudiateAudio; path = Packages/AudiateAudio; sourceTree = SOURCE_ROOT; };
+		7E822DD943D591D74ADE3472 /* WindowID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowID.swift; sourceTree = "<group>"; };
+		802F0890C6D0D2673D8BE66A /* CalibrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationView.swift; sourceTree = "<group>"; };
 		85EFB2E5BE5CF7C868E09F68 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		894E5E8D92BD03B5F00CE61A /* Audiate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Audiate.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8B72F5E78828354ADB8DEA84 /* AudiateCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AudiateCore; path = Packages/AudiateCore; sourceTree = SOURCE_ROOT; };
+		96E02CC93B8433E77734A286 /* TapRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapRecorder.swift; sourceTree = "<group>"; };
 		AF61B91A0330217BD89CB123 /* AudiateApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiateApp.swift; sourceTree = "<group>"; };
 		D2F09D813ABABCF8CA6DA67A /* cells.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = cells.json; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -29,6 +45,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CB95E96340D6760F45AD5FEC /* AudiateCore in Frameworks */,
+				A880C630781D214FD6E99507 /* AudiateAudio in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -47,8 +64,14 @@
 		4A8F292A87CCD64B268BAF46 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				0203DD6E0965C8E5832F1DDD /* AppModel.swift */,
 				AF61B91A0330217BD89CB123 /* AudiateApp.swift */,
+				2CD3E3C7EE900193F6867A7A /* CalibrationProfile.swift */,
+				802F0890C6D0D2673D8BE66A /* CalibrationView.swift */,
 				85EFB2E5BE5CF7C868E09F68 /* ContentView.swift */,
+				4A2D4AAFD4C11EC9D4ECD285 /* DebugView.swift */,
+				96E02CC93B8433E77734A286 /* TapRecorder.swift */,
+				7E822DD943D591D74ADE3472 /* WindowID.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -56,6 +79,7 @@
 		7DA0FEFE9554FDE5C720BBA2 /* Packages */ = {
 			isa = PBXGroup;
 			children = (
+				79D858C0CC658750F323B07D /* AudiateAudio */,
 				8B72F5E78828354ADB8DEA84 /* AudiateCore */,
 			);
 			path = Packages;
@@ -64,6 +88,7 @@
 		E53660857C7B20D33B25AB40 = {
 			isa = PBXGroup;
 			children = (
+				45CD7BC307976DB31E1B093A /* Samples */,
 				4A8F292A87CCD64B268BAF46 /* App */,
 				46FB865BFF76E64F9D03B9B9 /* data */,
 				7DA0FEFE9554FDE5C720BBA2 /* Packages */,
@@ -97,6 +122,7 @@
 			name = Audiate;
 			packageProductDependencies = (
 				3570690D4D083C8BEAEE348A /* AudiateCore */,
+				7F702AAA037C5C92807B3AF2 /* AudiateAudio */,
 			);
 			productName = Audiate;
 			productReference = 894E5E8D92BD03B5F00CE61A /* Audiate.app */;
@@ -123,6 +149,7 @@
 			mainGroup = E53660857C7B20D33B25AB40;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				2D6356E96C4B76A63FE501A0 /* XCLocalSwiftPackageReference "Packages/AudiateAudio" */,
 				10DCD1096129C357D180A55A /* XCLocalSwiftPackageReference "Packages/AudiateCore" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -140,6 +167,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				532D736DBE4233217C586A7D /* Samples in Resources */,
 				AFED90FEB869DB11076C602C /* cells.json in Resources */,
 				80F81BBE4DB37781AAE87171 /* patterns.json in Resources */,
 			);
@@ -152,8 +180,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0C4086979F573ED2B2F23465 /* AppModel.swift in Sources */,
 				C8269945AE719123FADDA70A /* AudiateApp.swift in Sources */,
+				A20091982DC8785391FB0351 /* CalibrationProfile.swift in Sources */,
+				60CBB7CFF22B25EA09503E75 /* CalibrationView.swift in Sources */,
 				CFFD156538A83F214CC54A45 /* ContentView.swift in Sources */,
+				FF4D9A683935F035B194B243 /* DebugView.swift in Sources */,
+				7621434118C6237776A5C493 /* TapRecorder.swift in Sources */,
+				7DA4AFAD4F5B5FFB5BF5BFA0 /* WindowID.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -345,12 +379,20 @@
 			isa = XCLocalSwiftPackageReference;
 			relativePath = Packages/AudiateCore;
 		};
+		2D6356E96C4B76A63FE501A0 /* XCLocalSwiftPackageReference "Packages/AudiateAudio" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/AudiateAudio;
+		};
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		3570690D4D083C8BEAEE348A /* AudiateCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = AudiateCore;
+		};
+		7F702AAA037C5C92807B3AF2 /* AudiateAudio */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AudiateAudio;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
