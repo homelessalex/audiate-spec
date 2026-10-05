@@ -2,7 +2,7 @@ import AudiateCore
 import SwiftUI
 
 /// Full-window session. Keyboard-first: Space (or the pad) taps, Return continues, Esc pauses.
-/// No notation and no visual rhythm here: M2 covers AO and VA only (sound before sight).
+/// Ear steps never show notation; read steps show it only for patterns already echoed by ear.
 struct SessionView: View {
     @Environment(AppModel.self) private var model
     let runner: SessionRunner
@@ -42,23 +42,42 @@ private struct EchoReadyView: View {
 
     var body: some View {
         VStack(spacing: 18) {
-            if let spec = runner.echoSpec {
-                Text(spec.mode == .teaching ? "New pattern" : "Echo").font(.title.bold())
-                Text(Self.instructions(spec)).multilineTextAlignment(.center).foregroundStyle(.secondary).frame(maxWidth: 460)
-                Text("\(spec.items.count) patterns · \(spec.mode == .teaching ? "teaching" : "evaluation") · \(spec.items[0].level.code)")
+            if let block = runner.block {
+                Text(Self.title(block)).font(.title.bold())
+                Text(Self.instructions(block)).multilineTextAlignment(.center).foregroundStyle(.secondary).frame(maxWidth: 480)
+                Text("\(block.items.count) patterns · \(block.mode == .teaching ? "teaching" : "evaluation") · \(block.items[0].level.code)")
                     .font(.callout.monospaced()).foregroundStyle(.secondary)
+                if block.showsNotation, let p = runner.pattern(block.items[0].patternID) {
+                    RhythmStaffView(pattern: p)
+                }
             }
-            Button("Start") { runner.startEcho() }
+            Button("Start") { runner.startBlock() }
                 .controlSize(.large)
                 .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)
         }
     }
 
-    static func instructions(_ spec: EchoBlockSpec) -> String {
-        var s = "After the count-in you hear a pattern; tap it back right away in the next measure (Space or click the pad). The pulse keeps going."
-        if spec.showSyllables { s += " Chant the syllables aloud as you tap." }
-        if spec.mode == .evaluation { s += " This round counts toward mastery." }
+    static func title(_ block: SessionRunner.TapBlock) -> String {
+        switch block.kind {
+        case .echo: block.mode == .teaching ? "New pattern — by ear" : "Echo"
+        case .readWithModel: "Now see how it looks"
+        case .read: "Read"
+        }
+    }
+
+    static func instructions(_ block: SessionRunner.TapBlock) -> String {
+        var s: String
+        switch block.kind {
+        case .echo:
+            s = "After the count-in you hear a pattern. Hold it in your head for one measure, then tap it back (Space or the pad). The pulse keeps going."
+            if block.showSyllables { s += " Chant the syllables aloud as you tap." }
+        case .readWithModel:
+            s = "The pattern you just echoed, in notation. Watch it while it plays, then read it back in the next measure."
+        case .read:
+            s = "Each pattern appears one measure early. Read it when its measure comes — tap and chant."
+        }
+        if block.mode == .evaluation { s += " This round counts toward mastery." }
         return s
     }
 }
@@ -69,13 +88,17 @@ private struct EchoPlayingView: View {
     var body: some View {
         VStack(spacing: 24) {
             TimelineView(.animation) { _ in
-                if let timeline = runner.timeline, let spec = runner.echoSpec {
-                    let state = PlaybackState(timeline: timeline, meter: runner.echoMeter, time: runner.recorder.heardTime())
+                if let timeline = runner.timeline, let block = runner.block {
+                    let state = PlaybackState(timeline: timeline, block: block, meter: runner.blockMeter,
+                                              time: runner.recorder.heardTime())
                     VStack(spacing: 22) {
                         Text(state.label).font(.system(size: 40, weight: .bold))
                         Text(state.counter).foregroundStyle(.secondary)
                         PulseView(beat: state.beat)
-                        if spec.showSyllables, let cues = state.cues {
+                        if block.showsNotation, let i = state.patternIndex, let p = runner.pattern(block.items[i].patternID) {
+                            RhythmStaffView(pattern: p, playheadTick: block.kind == .readWithModel ? state.tick : nil)
+                        }
+                        if block.showSyllables, let cues = state.cues {
                             SyllableLine(cues: cues, highlighted: state.highlightedCue)
                         }
                     }
@@ -88,19 +111,22 @@ private struct EchoPlayingView: View {
     }
 }
 
-/// What to show at the current heard time: phase, pulse, syllables.
+/// What to show at the current heard time: phase, pulse, pattern, playhead, syllables.
 private struct PlaybackState {
-    let label: String
-    let counter: String
-    /// nil, or whether the current flash is a strong (macro) beat.
-    let beat: Bool?
-    let cues: [SyllableCue]?
-    let highlightedCue: Int?
+    var label = "Get ready"
+    var counter = ""
+    /// Whether a macrobeat flash is on.
+    var beat: Bool?
+    var patternIndex: Int?
+    /// Measure-relative tick in the prompt or response measure.
+    var tick: Double?
+    var cues: [SyllableCue]?
+    var highlightedCue: Int?
 
-    init(timeline: Timeline, meter: Meter?, time: Double?) {
+    init(timeline: Timeline, block: SessionRunner.TapBlock, meter: Meter?, time: Double?) {
         let n = timeline.prompts.count
         guard let t = time, t >= 0 else {
-            label = "Get ready"; counter = ""; beat = nil; cues = nil; highlightedCue = nil
+            patternIndex = 0
             return
         }
         let measure = timeline.measureDuration
@@ -110,23 +136,39 @@ private struct PlaybackState {
         let macroStarts = meter?.macrobeatSpans.map { Double($0.startTick) * spt } ?? [0]
         beat = macroStarts.contains { inMeasure >= $0 && inMeasure - $0 < 0.12 } ? true : nil
 
-        let k = m == 0 ? nil : (m - 1) / 2
-        switch m {
-        case 0: label = "Count-in"
-        case _ where t >= timeline.duration: label = "…"
-        case _ where m % 2 == 1: label = "Listen"
-        default: label = "Your turn"
+        guard let role = timeline.role(at: t) else {
+            label = "…"
+            return
         }
-        counter = k.map { "Pattern \(min($0 + 1, n)) of \(n)" } ?? ""
-        if let k, k < n {
-            let prompt = timeline.prompts[k]
-            cues = prompt.cues
-            let local = m % 2 == 1 ? t : t - measure // in the response, follow the same positions one measure later
-            highlightedCue = prompt.cues.firstIndex { local >= $0.time && local < $0.time + $0.duration }
-        } else {
-            cues = nil
-            highlightedCue = nil
+        let i: Int
+        switch role {
+        case .countIn:
+            label = "Count-in"
+            patternIndex = 0
+            return
+        case .prompt(let k):
+            i = k
+            label = switch block.kind {
+            case .echo: "Listen"
+            case .readWithModel: "Listen & look"
+            case .read: "Look ahead"
+            }
+        case .hold(let k):
+            i = k
+            label = "Hold it"
+        case .response(let k):
+            i = k
+            label = block.kind == .echo ? "Your turn" : "Read"
         }
+        patternIndex = i
+        counter = "Pattern \(i + 1) of \(n)"
+        if case .hold = role { return }
+        tick = inMeasure / spt
+        // syllable cues are timed for the prompt measure; follow the same positions in the response
+        let promptMeasure = timeline.measureRoles.firstIndex(of: .prompt(i)) ?? m
+        let local = t - Double(m - promptMeasure) * measure
+        cues = timeline.prompts[i].cues
+        highlightedCue = cues?.firstIndex { local >= $0.time && local < $0.time + $0.duration }
     }
 }
 
@@ -164,14 +206,19 @@ private struct EchoFeedbackView: View {
             let passed = runner.results.filter(\.grade.passed).count
             Text("\(passed) of \(runner.results.count) correct").font(.title.bold())
             ScrollView {
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: 14) {
                     ForEach(runner.results) { r in
-                        HStack(spacing: 14) {
+                        HStack(alignment: .top, spacing: 14) {
                             Image(systemName: r.grade.passed ? "checkmark.circle.fill" : "xmark.circle.fill")
                                 .foregroundStyle(r.grade.passed ? .green : .red)
                                 .font(.title2)
-                            VStack(alignment: .leading, spacing: 2) {
-                                if r.item.level >= .verbal { Text(r.syllables).font(.title3.monospaced()) }
+                            VStack(alignment: .leading, spacing: 4) {
+                                // ear exercises stay notation-free; reading shows expected vs. taps on the staff
+                                if runner.block?.showsNotation == true {
+                                    RhythmStaffView(pattern: r.pattern, zoom: 1.6, overlay: r.overlay)
+                                } else if r.item.level >= .verbal {
+                                    Text(r.syllables).font(.title3.monospaced())
+                                }
                                 Text(Self.counts(r.feedback)).foregroundStyle(.secondary)
                             }
                             Spacer()
@@ -179,7 +226,11 @@ private struct EchoFeedbackView: View {
                         }
                     }
                 }
-                .frame(maxWidth: 560)
+                .frame(maxWidth: 640)
+                if runner.block?.showsNotation == true {
+                    Text("Grey marks: where the notes are. Dots: your taps — green on time, orange early/late, red extra.")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
             }
             Button("Continue") { runner.next() }
                 .controlSize(.large)

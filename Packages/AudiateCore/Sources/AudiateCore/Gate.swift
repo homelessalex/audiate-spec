@@ -18,7 +18,9 @@ public enum Gate {
                 .flatMap(\.meters)
             return has(.verbal) && Set(meters).count >= 2
         case .symbolic:
-            return has(.partialSynthesis)
+            // Reading runs alongside the ear levels; per pattern it waits for the AO teaching echoes
+            // (LearnerProgress.hasHeard). Deviation from Gordon, docs/01-methodology.md §7.
+            return isUnlocked(LevelKey(unitID: key.unitID, level: .aural), curriculum: curriculum, passed: passed)
         case .compositeSynthesis:
             return has(.symbolic)
         case .generalizationAural, .generalizationVerbal:
@@ -37,11 +39,6 @@ public enum Gate {
         if passed.contains(key) { return .passed }
         guard isUnlocked(key, curriculum: curriculum, passed: passed) else { return .locked }
         return started.contains(key) ? .inProgress : .available
-    }
-
-    /// Sound before sight: a unit's notation may appear only once its SA level is unlocked.
-    public static func canShowNotation(unitID: String, curriculum: Curriculum, passed: Set<LevelKey>) -> Bool {
-        isUnlocked(LevelKey(unitID: unitID, level: .symbolic), curriculum: curriculum, passed: passed)
     }
 
     /// The theory track opens when U4 reaches CS.

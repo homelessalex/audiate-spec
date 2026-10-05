@@ -15,12 +15,13 @@ extension NotationLayout {
             let slot = max(metrics.minSlotWidth, Double(event.ticks) * metrics.pointsPerTick)
             let beamCount = isNote ? notation.value.beamCount : 0
             items.append(Item(
-                eventIndex: i, x: x, slotWidth: slot, glyph: isNote ? .note : .rest, notation: notation,
+                eventIndex: i, startTick: event.startTick, ticks: event.ticks, x: x, slotWidth: slot, glyph: isNote ? .note : .rest, notation: notation,
                 macrobeatIndex: meter.macrobeat(containing: event.startTick).index,
                 isPickup: pattern.isPickup(event), beamCount: beamCount, flagCount: beamCount
             ))
             x += slot
         }
+        x += metrics.finalBarlineGap
         barlines.append(Barline(x: x, isFinal: true))
 
         let beams = Self.beamGroups(items: items, pattern: pattern)
@@ -38,6 +39,17 @@ extension NotationLayout {
             barlines: barlines,
             width: x + metrics.trailingWidth
         )
+    }
+
+    /// x of a measure-relative tick (pickup ticks are negative), interpolated inside the event's slot;
+    /// used to draw a playhead and tap markers on the staff.
+    public func x(forTick tick: Double) -> Double {
+        guard let first = items.first, let last = items.last else { return 0 }
+        if tick <= Double(first.startTick) { return first.x }
+        for item in items where tick < Double(item.startTick + item.ticks) {
+            return item.x + (tick - Double(item.startTick)) / Double(item.ticks) * item.slotWidth
+        }
+        return last.x + last.slotWidth
     }
 
     /// Consecutive notes of value ≤ eighth lying inside the same macrobeat; rests and the barline break beams.

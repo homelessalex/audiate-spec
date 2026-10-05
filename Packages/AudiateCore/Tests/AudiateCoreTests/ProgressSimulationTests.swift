@@ -26,13 +26,18 @@ struct ProgressSimulationTests {
             }
             for step in plan.steps {
                 switch step {
-                case .echo(let block): block.items.forEach { record($0, .echo, block.mode) }
-                case .nameSyllables(let q): record(q.item, .nameSyllables, q.mode)
-                }
-                // nothing beyond the implemented levels is ever scheduled
-                switch step {
-                case .echo(let b): #expect(b.items.allSatisfy { SessionPlanner.implementedLevels.contains($0.level) })
-                case .nameSyllables(let q): #expect(q.item.level == .verbal)
+                case .echo(let block):
+                    #expect(block.items.allSatisfy { $0.level == .aural || $0.level == .verbal })
+                    block.items.forEach { record($0, .echo, block.mode) }
+                case .nameSyllables(let q):
+                    #expect(q.item.level == .verbal)
+                    record(q.item, .nameSyllables, q.mode)
+                case .read(let block):
+                    // sound before sight, per pattern: notation only after the pattern's ear teaching
+                    for item in block.items {
+                        #expect(progress.hasHeard(patternID: item.patternID), "day \(day): \(item.patternID) read before heard")
+                    }
+                    block.items.forEach { record($0, .read, block.mode) }
                 }
             }
         }
@@ -44,6 +49,6 @@ struct ProgressSimulationTests {
         #expect(vaDay > aoDay)
         #expect(vaDay <= 7)
         #expect(Gate.isUnlocked(LevelKey(unitID: "U2", level: .aural), curriculum: curriculum, passed: progress.passed))
-        #expect(!Gate.canShowNotation(unitID: "U1", curriculum: curriculum, passed: progress.passed))
+        #expect(passedOn[LevelKey(unitID: "U1", level: .symbolic)] != nil, "reading U1 is learned alongside the ear")
     }
 }

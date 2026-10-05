@@ -11,7 +11,7 @@ Tap exercises share the onset grader (§2).
 | E2 | Name the syllables | VA, GV | Pattern played on hi-hat | Choose syllable string (4 options) | Exact choice |
 | E3 | Which meter? | PS, GA | Series of 4 patterns, one meter | Choose meter | Exact choice |
 | E4 | Same or different | GA | Two patterns, same meter | Same / Different | Exact choice |
-| E5 | Read | SA (one familiar), CS (series of 4), GS (unfamiliar) | Notation | Tap (and chant aloud) after count-in | Onset grader |
+| E5 | Read | SA (one familiar), CS (series of 4), GS (unfamiliar) | Notation. SA teaching: notation shown while the pattern plays, then read back. SA evaluation: notation only, a silent look-ahead measure before each pattern | Tap (and chant aloud) after count-in | Onset grader |
 | E6 | Write (dictation) | SA, CS, GS | Pattern played twice on hi-hat | Build notation from cell palette | Structural match |
 | E7 | Meter from notation | CS | Series of patterns, time signature hidden | Choose meter / time signature | Exact choice |
 | E8 | Answer differently | IA | Pattern on hi-hat | Tap a *different* pattern in the same meter | Improvisation grader |
@@ -25,8 +25,11 @@ Tap exercises share the onset grader (§2).
 The pulse never stops inside a block:
 
 ```
-| count-in | prompt 1 | response 1 | prompt 2 | response 2 | ... | (end)
+| count-in | prompt 1 | hold | response 1 | prompt 2 | hold | response 2 | ... | (end)
 ```
+
+- Hold: `EchoPolicy.gapMeasures` silent measures (default 1) between prompt and response; the click goes
+  on per the click stage. The learner audiates the pattern, then echoes it.
 
 - Count-in: one measure in the pattern's meter: strong click on macrobeats, weak click on microbeats
   (so duple/triple and the unusual grouping are heard before the first pattern). No voice.

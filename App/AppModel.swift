@@ -38,6 +38,11 @@ final class AppModel {
             loadError = "\(error)"
         }
         progress = store.load()
+
+        if let path = UserDefaults.standard.string(forKey: "AudiateContactSheet"), let library = content?.library {
+            ContactSheet.export(library: library, to: path)
+            exit(0)
+        }
     }
 
     var library: PatternLibrary? { content?.library }

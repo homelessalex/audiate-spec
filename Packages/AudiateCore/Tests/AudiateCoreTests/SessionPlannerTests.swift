@@ -16,6 +16,22 @@ struct SessionPlannerTests {
         plan.steps.compactMap { if case .echo(let e) = $0 { e } else { nil } }
     }
 
+    func reads(_ plan: SessionPlan) -> [ReadBlockSpec] {
+        plan.steps.compactMap { if case .read(let r) = $0 { r } else { nil } }
+    }
+
+    @Test func newPatternIsEchoedByEarThenRead() {
+        let p = plan(LearnerProgress(), day: 0)
+        // step 0: ear teaching of pattern A, step 1: see-and-hear reading of A, then the same for B
+        guard case .echo(let ear) = p.steps[0], case .read(let look) = p.steps[1] else {
+            Issue.record("expected echo then read, got \(p.steps.prefix(2))"); return
+        }
+        #expect(ear.mode == .teaching && look.mode == .teaching && look.playsModel)
+        #expect(Set(look.items.map(\.patternID)) == [ear.items[0].patternID])
+        #expect(look.items.count == MasteryPolicy.teachingReads)
+        #expect(reads(p).contains { $0.mode == .evaluation && $0.clickStage == .b })
+    }
+
     @Test func newLearnerStartsWithU1AuralTeaching() {
         let p = plan(LearnerProgress(), day: 0)
         #expect(p.frontier == LevelKey(unitID: "U1", level: .aural))
@@ -30,7 +46,7 @@ struct SessionPlannerTests {
         // only the two taught patterns are evaluated
         let taught = Set(teaching.map(\.items[0].patternID))
         #expect(Set(evaluation.flatMap(\.items).map(\.patternID)) == taught)
-        #expect(p.steps.allSatisfy { if case .echo = $0 { true } else { false } }) // no E2 at AO
+        #expect(!p.steps.contains { if case .nameSyllables = $0 { true } else { false } }) // no E2 at AO
     }
 
     @Test func blocksAreSameMeterAndAtLeastThree() {

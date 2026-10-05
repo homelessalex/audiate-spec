@@ -1,19 +1,30 @@
 extension Timeline {
-    /// `| count-in | prompt 1 | response 1 | prompt 2 | response 2 | … |` without stopping the pulse.
+    /// `| count-in | prompt 1 | hold | response 1 | prompt 2 | hold | response 2 | … |` without stopping the pulse.
     /// A pickup sits at the end of the preceding measure; the count-in stops where it begins.
     public static func echoBlock(patterns: [Pattern], tempo: Tempo, clickStage: ClickStage,
+                                 gapMeasures: Int = EchoPolicy.gapMeasures,
                                  deriver: SyllableDeriver = SyllableDeriver()) throws -> Timeline {
-        try block(patterns: patterns, tempo: tempo, clickStage: clickStage, responses: true, deriver: deriver)
+        try block(patterns: patterns, tempo: tempo, clickStage: clickStage, promptSounds: true, gapMeasures: gapMeasures,
+                  responses: true, deriver: deriver)
     }
 
     /// `| count-in | prompt 1 | prompt 2 | … |`: patterns to listen to, no response measures (E2, E3, E4).
     public static func listenBlock(patterns: [Pattern], tempo: Tempo, clickStage: ClickStage,
                                    deriver: SyllableDeriver = SyllableDeriver()) throws -> Timeline {
-        try block(patterns: patterns, tempo: tempo, clickStage: clickStage, responses: false, deriver: deriver)
+        try block(patterns: patterns, tempo: tempo, clickStage: clickStage, promptSounds: true, gapMeasures: 0,
+                  responses: false, deriver: deriver)
     }
 
-    static func block(patterns: [Pattern], tempo: Tempo, clickStage: ClickStage, responses withResponses: Bool,
-                      deriver: SyllableDeriver) throws -> Timeline {
+    /// `| count-in | look 1 | read 1 | look 2 | read 2 | … |`: reading from notation (E5). Nothing but the click
+    /// sounds; each pattern is shown during its silent look-ahead measure and read in the next one.
+    public static func readBlock(patterns: [Pattern], tempo: Tempo, clickStage: ClickStage,
+                                 deriver: SyllableDeriver = SyllableDeriver()) throws -> Timeline {
+        try block(patterns: patterns, tempo: tempo, clickStage: clickStage, promptSounds: false, gapMeasures: 0,
+                  responses: true, deriver: deriver)
+    }
+
+    static func block(patterns: [Pattern], tempo: Tempo, clickStage: ClickStage, promptSounds: Bool, gapMeasures: Int,
+                      responses withResponses: Bool, deriver: SyllableDeriver) throws -> Timeline {
         guard let first = patterns.first else { throw TimelineError.emptyBlock }
         let meter = first.meter
         guard patterns.allSatisfy({ $0.meter == meter }) else { throw TimelineError.mixedMeters }
@@ -23,8 +34,16 @@ extension Timeline {
         func time(measure m: Int, tick: Int) -> Double { Double(m) * measure + Double(tick) * spt }
 
         var sounds: [ScheduledSound] = []
-        let measuresPerPattern = withResponses ? 2 : 1
+        let measuresPerPattern = withResponses ? 2 + gapMeasures : 1
         let measureCount = 1 + measuresPerPattern * patterns.count
+        var roles: [MeasureRole] = [.countIn]
+        for i in patterns.indices {
+            roles.append(.prompt(i))
+            if withResponses {
+                roles += Array(repeating: .hold(i), count: gapMeasures)
+                roles.append(.response(i))
+            }
+        }
         let countInEnd = meter.measureTicks - first.pickupTicks
 
         // Count-in: macro + micro beats (establishes meter type); afterwards per click stage.
@@ -44,7 +63,7 @@ extension Timeline {
         var responses: [ResponseSlot] = []
         for (i, pattern) in patterns.enumerated() {
             let promptMeasure = 1 + measuresPerPattern * i
-            for (index, event) in pattern.events.enumerated() where event.isOnset {
+            for (index, event) in pattern.events.enumerated() where event.isOnset && promptSounds {
                 sounds.append(ScheduledSound(time: time(measure: promptMeasure, tick: event.startTick), sound: .hiHat,
                                              duration: Double(Self.soundingTicks(pattern.events, from: index)) * spt))
             }
@@ -58,7 +77,7 @@ extension Timeline {
                 }
             ))
             guard withResponses else { continue }
-            let responseMeasure = promptMeasure + 1
+            let responseMeasure = promptMeasure + 1 + gapMeasures
             responses.append(ResponseSlot(
                 patternID: pattern.id,
                 start: time(measure: responseMeasure, tick: -pattern.pickupTicks),
@@ -70,7 +89,7 @@ extension Timeline {
 
         // Stable sort keeps clicks before prompt notes at equal times.
         let sorted = sounds.enumerated().sorted { ($0.element.time, $0.offset) < ($1.element.time, $1.offset) }.map(\.element)
-        return Timeline(sounds: sorted, prompts: prompts, responses: responses, measureDuration: measure,
+        return Timeline(sounds: sorted, measureRoles: roles, prompts: prompts, responses: responses, measureDuration: measure,
                         duration: Double(measureCount) * measure)
     }
 

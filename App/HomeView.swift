@@ -48,6 +48,7 @@ struct HomeView: View {
         switch level {
         case .aural: "AO · echo by ear"
         case .verbal: "VA · syllables"
+        case .symbolic: "SA · reading"
         default: level.code
         }
     }

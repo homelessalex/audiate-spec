@@ -20,6 +20,8 @@ public enum MasteryPolicy {
     public static let sessionSeconds = 12.0 * 60
     public static let reviewShare = 0.40
     public static let teachingEchoes = 3
+    /// See-and-hear readings of a new pattern right after its ear echoes.
+    public static let teachingReads = 2
     public static let maxNewPatternsPerSessionPerUnit = 2
     public static let evaluationBlockSize = 4...6
     public static let minBlockSize = 3

@@ -31,6 +31,9 @@ Codes from `01-methodology.md` §4. Each unit runs through:
 
 `AO → VA → PS → SA → CS → GA → GV → GS → IA → IS`
 
+Reading (`SA`) runs in parallel with `AO`/`VA`: each new pattern is first echoed by ear, then read
+from notation in the same lesson.
+
 `TU` (theory) is a separate global track unlocked after U4 reaches `CS`.
 
 ## 3. Gates (what unlocks what)
@@ -40,7 +43,7 @@ Codes from `01-methodology.md` §4. Each unit runs through:
 | U(n+1) `AO` | U(n) `VA` passed |
 | U(n) `VA` | U(n) `AO` passed |
 | U(n) `PS` | U(n) `VA` passed **and** at least two different meters have `VA` passed (PS needs a contrast). For U1 this means PS waits until U2 `VA`. |
-| U(n) `SA` | U(n) `PS` passed — **sound before sight: no notation of a unit's patterns before this** |
+| U(n) `SA` | U(n) `AO` unlocked. **Per pattern:** a pattern is read (and its notation shown) only after its `AO` teaching echoes — sound before sight per pattern (deviation, see `01-methodology.md` §7) |
 | U(n) `CS` | U(n) `SA` passed |
 | U(n) `GA`, `GV` | U(n) `VA` passed and U(n) `SA` passed |
 | U(n) `GS` | U(n) `CS` and `GV` passed |

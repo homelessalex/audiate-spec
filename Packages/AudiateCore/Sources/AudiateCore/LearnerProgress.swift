@@ -24,6 +24,11 @@ public struct LearnerProgress: Codable, Hashable, Sendable {
         attempts.filter { $0.patternID == patternID && $0.level == level && $0.mode == .teaching }.count
     }
 
+    /// Sound before sight, per pattern: notation may be shown once the pattern was echoed by ear in teaching.
+    public func hasHeard(patternID: String) -> Bool {
+        teachingCount(patternID: patternID, level: .aural) >= MasteryPolicy.teachingEchoes
+    }
+
     public func dueItems(on date: Date) -> [ItemState] {
         LeitnerScheduler.due(Array(items.values), on: date)
     }

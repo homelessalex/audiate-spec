@@ -6,11 +6,13 @@ public struct NotationLayout: Hashable, Sendable {
         /// Where the first event starts (room for the time signature).
         public var leadingWidth = 32.0
         /// Rhythmic spacing: slot width proportional to duration…
-        public var pointsPerTick = 2.0
-        /// …but never narrower than a glyph.
-        public var minSlotWidth = 16.0
+        public var pointsPerTick = 2.5
+        /// …but never narrower than a glyph plus its syllable.
+        public var minSlotWidth = 22.0
         /// Gap after the barline that ends a pickup.
         public var barlineSpacing = 10.0
+        /// Gap between the last slot and the final barline.
+        public var finalBarlineGap = 6.0
         public var trailingWidth = 6.0
 
         public init() {}
@@ -25,6 +27,8 @@ public struct NotationLayout: Hashable, Sendable {
 
     public struct Item: Hashable, Sendable {
         public let eventIndex: Int
+        public let startTick: Int
+        public let ticks: Int
         /// Left edge of the event's slot; the glyph is drawn at x.
         public let x: Double
         public let slotWidth: Double

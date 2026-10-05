@@ -3,10 +3,34 @@ import Testing
 
 @Suite("Timeline")
 struct TimelineTests {
-    func block(_ ids: [String], stage: ClickStage = .b, bpm: Double? = nil) throws -> Timeline {
+    /// Without the hold measure unless asked, so the times below stay simple.
+    func block(_ ids: [String], stage: ClickStage = .b, bpm: Double? = nil, gap: Int = 0) throws -> Timeline {
         let patterns = ids.map(Fixtures.pattern)
         let tempo = bpm.map(Tempo.init(bpm:)) ?? Tempo.standard(for: patterns[0].meter)
-        return try Timeline.echoBlock(patterns: patterns, tempo: tempo, clickStage: stage)
+        return try Timeline.echoBlock(patterns: patterns, tempo: tempo, clickStage: stage, gapMeasures: gap)
+    }
+
+    @Test func holdMeasureBetweenPromptAndResponse() throws {
+        let t = try block(["D-MM-01", "D-MM-02"], bpm: 80, gap: 1)
+        #expect(t.measureRoles == [.countIn, .prompt(0), .hold(0), .response(0), .prompt(1), .hold(1), .response(1)])
+        #expect(t.responses.map(\.start) == [4.5, 9.0])
+        #expect(t.prompts.map(\.start) == [1.5, 6.0])
+        #expect(t.duration == 10.5)
+        #expect(t.role(at: 3.2) == .hold(0))
+        #expect(t.role(at: -0.1) == nil)
+        #expect(t.role(at: 10.6) == nil)
+        // the pulse goes on through the hold measure (stage B: macrobeats)
+        #expect(t.sounds.filter { $0.sound == .click(accented: true) && $0.time >= 3.0 && $0.time < 4.5 }.count == 2)
+        #expect(EchoPolicy.gapMeasures == 1)
+    }
+
+    @Test func readBlockHasNoPromptSoundAndALookAheadMeasure() throws {
+        let p = Fixtures.pattern("D-MM-02")
+        let t = try Timeline.readBlock(patterns: [p, p], tempo: Tempo(bpm: 80), clickStage: .b)
+        #expect(!t.sounds.contains { $0.sound == .hiHat })
+        #expect(t.measureRoles == [.countIn, .prompt(0), .response(0), .prompt(1), .response(1)])
+        #expect(t.responses.map(\.start) == [3.0, 6.0])
+        #expect(t.prompts[0].cues.map(\.text) == ["Du", "de", "Du"])
     }
 
     func hiHats(_ t: Timeline) -> [ScheduledSound] { t.sounds.filter { $0.sound == .hiHat } }

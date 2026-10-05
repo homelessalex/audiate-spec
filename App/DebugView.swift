@@ -58,6 +58,10 @@ struct DebugView: View {
                 if recorder.isRunning { Text("Tap (Space or click the pad) in each response measure…") }
             }
 
+            if let pattern {
+                RhythmStaffView(pattern: pattern, syllables: try? SyllableDeriver().displays(for: pattern))
+            }
+
             TapPad(recorder: recorder)
 
             Text(latencySummary(player)).font(.caption).foregroundStyle(.secondary)

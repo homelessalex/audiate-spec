@@ -3,7 +3,7 @@ import AudiateCore
 import Foundation
 import Observation
 
-/// Drives one session: `ready → playing → feedback → next` for echo blocks,
+/// Drives one session: `ready → playing → feedback → next` for tap blocks (echo, read),
 /// `question → answered → next` for E2, then `summary`. Audio callbacks reach it on the main actor.
 @MainActor
 @Observable
@@ -16,7 +16,30 @@ final class SessionRunner {
         case summary
     }
 
-    struct EchoResult: Identifiable {
+    /// An echo or read step: patterns played/shown in one uninterrupted block, answered by tapping.
+    struct TapBlock {
+        enum Kind {
+            /// By ear, no notation.
+            case echo
+            /// Notation shown while the pattern plays, then read back (reading, teaching).
+            case readWithModel
+            /// Notation only (reading, evaluation).
+            case read
+        }
+
+        let kind: Kind
+        let items: [PlannedItem]
+        let meterID: String
+        let tempo: Tempo
+        let clickStage: ClickStage
+        let mode: PracticeMode
+        let showSyllables: Bool
+
+        var showsNotation: Bool { kind != .echo }
+        var exercise: ExerciseKind { kind == .echo ? .echo : .read }
+    }
+
+    struct Result: Identifiable {
         let id: Int
         let item: PlannedItem
         let pattern: Pattern
@@ -24,6 +47,7 @@ final class SessionRunner {
         let feedback: EchoFeedback
         let tapsFromDownbeat: [Double]
         let syllables: String
+        let overlay: StaffRenderer.Overlay
     }
 
     struct Question {
@@ -37,7 +61,7 @@ final class SessionRunner {
     private(set) var stepIndex = 0
     private(set) var phase: Phase = .ready
     private(set) var timeline: Timeline?
-    private(set) var results: [EchoResult] = []
+    private(set) var results: [Result] = []
     private(set) var question: Question?
     private(set) var newlyPassed: [LevelKey] = []
     private(set) var error: String?
@@ -54,24 +78,38 @@ final class SessionRunner {
 
     var step: SessionStep? { plan.steps.indices.contains(stepIndex) ? plan.steps[stepIndex] : nil }
 
-    var echoSpec: EchoBlockSpec? {
-        if case .echo(let spec) = step { spec } else { nil }
+    var block: TapBlock? {
+        switch step {
+        case .echo(let s):
+            TapBlock(kind: .echo, items: s.items, meterID: s.meterID, tempo: s.tempo, clickStage: s.clickStage,
+                     mode: s.mode, showSyllables: s.showSyllables)
+        case .read(let s):
+            TapBlock(kind: s.playsModel ? .readWithModel : .read, items: s.items, meterID: s.meterID, tempo: s.tempo,
+                     clickStage: s.clickStage, mode: s.mode, showSyllables: false)
+        default: nil
+        }
     }
 
-    var echoMeter: Meter? { echoSpec.flatMap { content.library.meters[$0.meterID] } }
+    var blockMeter: Meter? { block.flatMap { content.library.meters[$0.meterID] } }
 
-    // MARK: - Echo
+    func pattern(_ id: String) -> Pattern? { content.library.pattern(id: id) }
 
-    func startEcho() {
-        guard let spec = echoSpec else { return }
-        let patterns = spec.items.compactMap { content.library.pattern(id: $0.patternID) }
+    // MARK: - Tap blocks
+
+    func startBlock() {
+        guard let block else { return }
+        let patterns = block.items.compactMap { content.library.pattern(id: $0.patternID) }
         do {
-            let timeline = try Timeline.echoBlock(patterns: patterns, tempo: spec.tempo, clickStage: spec.clickStage)
+            let timeline = switch block.kind {
+            case .echo: try Timeline.echoBlock(patterns: patterns, tempo: block.tempo, clickStage: block.clickStage)
+            case .readWithModel: try Timeline.echoBlock(patterns: patterns, tempo: block.tempo, clickStage: block.clickStage, gapMeasures: 0)
+            case .read: try Timeline.readBlock(patterns: patterns, tempo: block.tempo, clickStage: block.clickStage)
+            }
             self.timeline = timeline
             results = []
             phase = .playing
             try recorder.run(timeline, player: content.player, tapSound: true) { [weak self] taps in
-                self?.finishEcho(spec: spec, patterns: patterns, timeline: timeline, rawTaps: taps)
+                self?.finishBlock(block, patterns: patterns, timeline: timeline, rawTaps: taps)
             }
         } catch {
             self.error = "\(error)"
@@ -79,31 +117,42 @@ final class SessionRunner {
         }
     }
 
-    private func finishEcho(spec: EchoBlockSpec, patterns: [Pattern], timeline: Timeline, rawTaps: [Double]) {
+    private func finishBlock(_ block: TapBlock, patterns: [Pattern], timeline: Timeline, rawTaps: [Double]) {
         let compensation = LatencyCompensation(outputLatency: 0, inputOffset: model.inputOffset)
         let taps = rawTaps.map(compensation.blockTime(forRawBlockTime:))
         let deriver = SyllableDeriver()
-        results = zip(spec.items, zip(patterns, timeline.responses)).enumerated().map { i, entry in
+        results = zip(block.items, zip(patterns, timeline.responses)).enumerated().map { i, entry in
             let (item, (pattern, slot)) = entry
             let grade = OnsetGrader.grade(expected: slot.expectedOnsets, taps: taps, responseStart: slot.start,
-                                          responseEnd: slot.end, mode: spec.clickStage.timingMode)
+                                          responseEnd: slot.end, mode: block.clickStage.timingMode)
             let downbeat = slot.end - timeline.measureDuration
-            return EchoResult(
+            return Result(
                 id: i, item: item, pattern: pattern, grade: grade, feedback: EchoFeedback(grade),
                 tapsFromDownbeat: taps.filter { $0 >= slot.start - 0.15 && $0 < slot.end }.map { $0 - downbeat },
-                syllables: (try? deriver.line(for: pattern)) ?? ""
+                syllables: (try? deriver.line(for: pattern)) ?? "",
+                overlay: Self.overlay(grade, pattern: pattern, downbeat: downbeat, tempo: block.tempo)
             )
         }
         for result in results {
             record(Attempt(date: model.now(), unitID: result.item.unitID, level: result.item.level, patternID: result.pattern.id,
-                           exercise: .echo, mode: spec.mode, passed: result.grade.passed, accuracy: result.grade.accuracy))
+                           exercise: block.exercise, mode: block.mode, passed: result.grade.passed, accuracy: result.grade.accuracy))
         }
         phase = .feedback
     }
 
-    func replay(_ result: EchoResult) {
-        guard let spec = echoSpec,
-              let t = try? Timeline.replay(pattern: result.pattern, tempo: spec.tempo, tapsFromDownbeat: result.tapsFromDownbeat)
+    /// Expected onsets and taps in measure ticks, taps colored by error.
+    private static func overlay(_ grade: OnsetGrade, pattern: Pattern, downbeat: Double, tempo: Tempo) -> StaffRenderer.Overlay {
+        let spt = tempo.secondsPerTick(in: pattern.meter)
+        func tick(_ t: Double) -> Double { (t - downbeat) / spt }
+        let limit = EchoFeedback.earlyLateFraction * grade.tolerance
+        let hits = grade.hits.map { (tick: tick($0.tap), mark: abs($0.error) <= limit ? StaffRenderer.Overlay.Mark.good : .off) }
+        let extras = grade.extras.map { (tick: tick($0), mark: StaffRenderer.Overlay.Mark.bad) }
+        return StaffRenderer.Overlay(expected: pattern.onsets.map { Double($0.startTick) }, taps: hits + extras)
+    }
+
+    func replay(_ result: Result) {
+        guard let block,
+              let t = try? Timeline.replay(pattern: result.pattern, tempo: block.tempo, tapsFromDownbeat: result.tapsFromDownbeat)
         else { return }
         _ = try? content.player.play(t) {}
     }
@@ -154,7 +203,7 @@ final class SessionRunner {
         results = []
         question = nil
         switch step {
-        case .echo:
+        case .echo, .read:
             phase = .ready
         case .nameSyllables(let spec):
             question = Question(spec: spec)
