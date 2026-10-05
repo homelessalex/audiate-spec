@@ -1,0 +1,102 @@
+{
+ "version": 1,
+ "ticksPerMicrobeat": 12,
+ "cells": {
+  "2": [
+   {
+    "tokens": "24",
+    "minContent": "macro_micro"
+   },
+   {
+    "tokens": "12 12",
+    "minContent": "macro_micro"
+   },
+   {
+    "tokens": "6 6 12",
+    "minContent": "division"
+   },
+   {
+    "tokens": "12 6 6",
+    "minContent": "division"
+   },
+   {
+    "tokens": "6 6 6 6",
+    "minContent": "division"
+   },
+   {
+    "tokens": "18 6",
+    "minContent": "elongation"
+   },
+   {
+    "tokens": "6 12 6",
+    "minContent": "elongation"
+   },
+   {
+    "tokens": "r12 12",
+    "minContent": "rest"
+   },
+   {
+    "tokens": "12 r12",
+    "minContent": "rest"
+   },
+   {
+    "tokens": "r24",
+    "minContent": "rest"
+   },
+   {
+    "tokens": "8 8 8",
+    "minContent": "combined"
+   }
+  ],
+  "3": [
+   {
+    "tokens": "36",
+    "minContent": "macro_micro"
+   },
+   {
+    "tokens": "12 12 12",
+    "minContent": "macro_micro"
+   },
+   {
+    "tokens": "24 12",
+    "minContent": "elongation"
+   },
+   {
+    "tokens": "12 24",
+    "minContent": "elongation"
+   },
+   {
+    "tokens": "6 6 12 12",
+    "minContent": "division"
+   },
+   {
+    "tokens": "12 6 6 12",
+    "minContent": "division"
+   },
+   {
+    "tokens": "12 12 6 6",
+    "minContent": "division"
+   },
+   {
+    "tokens": "6 6 6 6 6 6",
+    "minContent": "division"
+   },
+   {
+    "tokens": "18 6 12",
+    "minContent": "elongation"
+   },
+   {
+    "tokens": "r12 12 12",
+    "minContent": "rest"
+   },
+   {
+    "tokens": "24 r12",
+    "minContent": "rest"
+   },
+   {
+    "tokens": "12 r12 12",
+    "minContent": "rest"
+   }
+  ]
+ }
+}

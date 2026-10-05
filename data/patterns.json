@@ -1,0 +1,4823 @@
+{
+ "version": 1,
+ "ticksPerMicrobeat": 12,
+ "meters": {
+  "usual_duple": {
+   "macro": [
+    2,
+    2
+   ],
+   "notation": "2/4",
+   "unit": "quarter",
+   "allowThirds": false
+  },
+  "usual_triple": {
+   "macro": [
+    3,
+    3
+   ],
+   "notation": "6/8",
+   "unit": "eighth",
+   "allowThirds": false
+  },
+  "usual_combined": {
+   "macro": [
+    2,
+    2
+   ],
+   "notation": "2/4",
+   "unit": "quarter",
+   "allowThirds": true
+  },
+  "unusual_paired_2_3": {
+   "macro": [
+    2,
+    3
+   ],
+   "notation": "5/8",
+   "unit": "eighth",
+   "allowThirds": false
+  },
+  "unusual_paired_3_2": {
+   "macro": [
+    3,
+    2
+   ],
+   "notation": "5/8",
+   "unit": "eighth",
+   "allowThirds": false
+  },
+  "unusual_unpaired_2_2_3": {
+   "macro": [
+    2,
+    2,
+    3
+   ],
+   "notation": "7/8",
+   "unit": "eighth",
+   "allowThirds": false
+  },
+  "unusual_unpaired_3_2_2": {
+   "macro": [
+    3,
+    2,
+    2
+   ],
+   "notation": "7/8",
+   "unit": "eighth",
+   "allowThirds": false
+  },
+  "unusual_unpaired_2_3_2": {
+   "macro": [
+    2,
+    3,
+    2
+   ],
+   "notation": "7/8",
+   "unit": "eighth",
+   "allowThirds": false
+  }
+ },
+ "patterns": [
+  {
+   "id": "D-MM-01",
+   "meter": "usual_duple",
+   "content": "macro_micro",
+   "timeSignature": "2/4",
+   "macrobeats": [
+    2,
+    2
+   ],
+   "measureTicks": 48,
+   "pickupTicks": 0,
+   "difficulty": "easy",
+   "difficultyScore": 0.8,
+   "syllables": "Du Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "D-MM-02",
+   "meter": "usual_duple",
+   "content": "macro_micro",
+   "timeSignature": "2/4",
+   "macrobeats": [
+    2,
+    2
+   ],
+   "measureTicks": 48,
+   "pickupTicks": 0,
+   "difficulty": "easy",
+   "difficultyScore": 1.2,
+   "syllables": "Du de Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "de",
+     "syllableDisplay": "de",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "D-MM-03",
+   "meter": "usual_duple",
+   "content": "macro_micro",
+   "timeSignature": "2/4",
+   "macrobeats": [
+    2,
+    2
+   ],
+   "measureTicks": 48,
+   "pickupTicks": 0,
+   "difficulty": "easy",
+   "difficultyScore": 1.2,
+   "syllables": "Du Du de",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "de",
+     "syllableDisplay": "de",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "D-MM-04",
+   "meter": "usual_duple",
+   "content": "macro_micro",
+   "timeSignature": "2/4",
+   "macrobeats": [
+    2,
+    2
+   ],
+   "measureTicks": 48,
+   "pickupTicks": 0,
+   "difficulty": "easy",
+   "difficultyScore": 1.6,
+   "syllables": "Du de Du de",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "de",
+     "syllableDisplay": "de",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "de",
+     "syllableDisplay": "de",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "D-DV-01",
+   "meter": "usual_duple",
+   "content": "division",
+   "timeSignature": "2/4",
+   "macrobeats": [
+    2,
+    2
+   ],
+   "measureTicks": 48,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 3.1,
+   "syllables": "Du ta de Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 6,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ta",
+     "syllableDisplay": "ta",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "de",
+     "syllableDisplay": "de",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "D-DV-02",
+   "meter": "usual_duple",
+   "content": "division",
+   "timeSignature": "2/4",
+   "macrobeats": [
+    2,
+    2
+   ],
+   "measureTicks": 48,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 3.1,
+   "syllables": "Du de ta Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "de",
+     "syllableDisplay": "de",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 18,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ta",
+     "syllableDisplay": "ta",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "D-DV-03",
+   "meter": "usual_duple",
+   "content": "division",
+   "timeSignature": "2/4",
+   "macrobeats": [
+    2,
+    2
+   ],
+   "measureTicks": 48,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 4.0,
+   "syllables": "Du ta de ta Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 6,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ta",
+     "syllableDisplay": "ta",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "de",
+     "syllableDisplay": "de",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 18,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ta",
+     "syllableDisplay": "ta",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "D-DV-04",
+   "meter": "usual_duple",
+   "content": "division",
+   "timeSignature": "2/4",
+   "macrobeats": [
+    2,
+    2
+   ],
+   "measureTicks": 48,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 4.0,
+   "syllables": "Du Du ta de ta",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 30,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ta",
+     "syllableDisplay": "ta",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "de",
+     "syllableDisplay": "de",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 42,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ta",
+     "syllableDisplay": "ta",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "D-DV-05",
+   "meter": "usual_duple",
+   "content": "division",
+   "timeSignature": "2/4",
+   "macrobeats": [
+    2,
+    2
+   ],
+   "measureTicks": 48,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 4.4,
+   "syllables": "Du ta de Du ta de",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 6,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ta",
+     "syllableDisplay": "ta",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "de",
+     "syllableDisplay": "de",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 30,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ta",
+     "syllableDisplay": "ta",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "de",
+     "syllableDisplay": "de",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "D-DV-06",
+   "meter": "usual_duple",
+   "content": "division",
+   "timeSignature": "2/4",
+   "macrobeats": [
+    2,
+    2
+   ],
+   "measureTicks": 48,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 3.5,
+   "syllables": "Du de ta Du de",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "de",
+     "syllableDisplay": "de",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 18,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ta",
+     "syllableDisplay": "ta",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "de",
+     "syllableDisplay": "de",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "D-EL-01",
+   "meter": "usual_duple",
+   "content": "elongation",
+   "timeSignature": "2/4",
+   "macrobeats": [
+    2,
+    2
+   ],
+   "measureTicks": 48,
+   "pickupTicks": 0,
+   "difficulty": "easy",
+   "difficultyScore": 1.9,
+   "syllables": "Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 48,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "half",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "D-EL-02",
+   "meter": "usual_duple",
+   "content": "elongation",
+   "timeSignature": "2/4",
+   "macrobeats": [
+    2,
+    2
+   ],
+   "measureTicks": 48,
+   "pickupTicks": 0,
+   "difficulty": "easy",
+   "difficultyScore": 2.3,
+   "syllables": "Du de",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 36,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "de",
+     "syllableDisplay": "de",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "D-EL-03",
+   "meter": "usual_duple",
+   "content": "elongation",
+   "timeSignature": "2/4",
+   "macrobeats": [
+    2,
+    2
+   ],
+   "measureTicks": 48,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 4.2,
+   "syllables": "Du de de",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "de",
+     "syllableDisplay": "de",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "de",
+     "syllableDisplay": "de",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "D-EL-04",
+   "meter": "usual_duple",
+   "content": "elongation",
+   "timeSignature": "2/4",
+   "macrobeats": [
+    2,
+    2
+   ],
+   "measureTicks": 48,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 3.2,
+   "syllables": "Du ta Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 18,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 18,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ta",
+     "syllableDisplay": "ta",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "D-EL-05",
+   "meter": "usual_duple",
+   "content": "elongation",
+   "timeSignature": "2/4",
+   "macrobeats": [
+    2,
+    2
+   ],
+   "measureTicks": 48,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 4.1,
+   "syllables": "Du ta Du ta",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 18,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 18,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ta",
+     "syllableDisplay": "ta",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 18,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 42,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ta",
+     "syllableDisplay": "ta",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "D-EL-06",
+   "meter": "usual_duple",
+   "content": "elongation",
+   "timeSignature": "2/4",
+   "macrobeats": [
+    2,
+    2
+   ],
+   "measureTicks": 48,
+   "pickupTicks": 0,
+   "difficulty": "difficult",
+   "difficultyScore": 5.6,
+   "syllables": "Du ta ta Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 6,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ta",
+     "syllableDisplay": "ta",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 18,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ta",
+     "syllableDisplay": "ta",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "D-RS-01",
+   "meter": "usual_duple",
+   "content": "rest",
+   "timeSignature": "2/4",
+   "macrobeats": [
+    2,
+    2
+   ],
+   "measureTicks": 48,
+   "pickupTicks": 0,
+   "difficulty": "easy",
+   "difficultyScore": 1.9,
+   "syllables": "Du (Du)",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 24,
+     "kind": "rest",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "(Du)",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "D-RS-02",
+   "meter": "usual_duple",
+   "content": "rest",
+   "timeSignature": "2/4",
+   "macrobeats": [
+    2,
+    2
+   ],
+   "measureTicks": 48,
+   "pickupTicks": 0,
+   "difficulty": "easy",
+   "difficultyScore": 2.3,
+   "syllables": "(Du) de Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 12,
+     "kind": "rest",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "(Du)",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "de",
+     "syllableDisplay": "de",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "D-RS-03",
+   "meter": "usual_duple",
+   "content": "rest",
+   "timeSignature": "2/4",
+   "macrobeats": [
+    2,
+    2
+   ],
+   "measureTicks": 48,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 2.7,
+   "syllables": "Du (de) Du de",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 12,
+     "kind": "rest",
+     "tieToNext": false,
+     "syllable": "de",
+     "syllableDisplay": "(de)",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "de",
+     "syllableDisplay": "de",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "D-RS-04",
+   "meter": "usual_duple",
+   "content": "rest",
+   "timeSignature": "2/4",
+   "macrobeats": [
+    2,
+    2
+   ],
+   "measureTicks": 48,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 3.2,
+   "syllables": "Du ta (de) Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 6,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ta",
+     "syllableDisplay": "ta",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 12,
+     "kind": "rest",
+     "tieToNext": false,
+     "syllable": "de",
+     "syllableDisplay": "(de)",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "D-TI-01",
+   "meter": "usual_duple",
+   "content": "tie",
+   "timeSignature": "2/4",
+   "macrobeats": [
+    2,
+    2
+   ],
+   "measureTicks": 48,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 3.2,
+   "syllables": "Du de [Du] de",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": true,
+     "syllable": "de",
+     "syllableDisplay": "de",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 12,
+     "kind": "continuation",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "[Du]",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "de",
+     "syllableDisplay": "de",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "D-TI-02",
+   "meter": "usual_duple",
+   "content": "tie",
+   "timeSignature": "2/4",
+   "macrobeats": [
+    2,
+    2
+   ],
+   "measureTicks": 48,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 3.7,
+   "syllables": "Du [Du] ta de",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": true,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 6,
+     "kind": "continuation",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "[Du]",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 30,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ta",
+     "syllableDisplay": "ta",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "de",
+     "syllableDisplay": "de",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "D-UB-01",
+   "meter": "usual_duple",
+   "content": "upbeat",
+   "timeSignature": "2/4",
+   "macrobeats": [
+    2,
+    2
+   ],
+   "measureTicks": 48,
+   "pickupTicks": 12,
+   "difficulty": "moderate",
+   "difficultyScore": 3.2,
+   "syllables": "de Du Du",
+   "events": [
+    {
+     "startTick": -12,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "de",
+     "syllableDisplay": "de",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": true
+    },
+    {
+     "startTick": 0,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "D-UB-02",
+   "meter": "usual_duple",
+   "content": "upbeat",
+   "timeSignature": "2/4",
+   "macrobeats": [
+    2,
+    2
+   ],
+   "measureTicks": 48,
+   "pickupTicks": 12,
+   "difficulty": "moderate",
+   "difficultyScore": 4.1,
+   "syllables": "de ta Du Du",
+   "events": [
+    {
+     "startTick": -12,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "de",
+     "syllableDisplay": "de",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": true
+    },
+    {
+     "startTick": -6,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ta",
+     "syllableDisplay": "ta",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": true
+    },
+    {
+     "startTick": 0,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "D-UB-03",
+   "meter": "usual_duple",
+   "content": "upbeat",
+   "timeSignature": "2/4",
+   "macrobeats": [
+    2,
+    2
+   ],
+   "measureTicks": 48,
+   "pickupTicks": 6,
+   "difficulty": "moderate",
+   "difficultyScore": 4.1,
+   "syllables": "ta Du de Du",
+   "events": [
+    {
+     "startTick": -6,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ta",
+     "syllableDisplay": "ta",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": true
+    },
+    {
+     "startTick": 0,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "de",
+     "syllableDisplay": "de",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "T-MM-01",
+   "meter": "usual_triple",
+   "content": "macro_micro",
+   "timeSignature": "6/8",
+   "macrobeats": [
+    3,
+    3
+   ],
+   "measureTicks": 72,
+   "pickupTicks": 0,
+   "difficulty": "easy",
+   "difficultyScore": 0.8,
+   "syllables": "Du Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 36,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 36,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "T-MM-02",
+   "meter": "usual_triple",
+   "content": "macro_micro",
+   "timeSignature": "6/8",
+   "macrobeats": [
+    3,
+    3
+   ],
+   "measureTicks": 72,
+   "pickupTicks": 0,
+   "difficulty": "easy",
+   "difficultyScore": 1.6,
+   "syllables": "Du da di Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "da",
+     "syllableDisplay": "da",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "di",
+     "syllableDisplay": "di",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 36,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "T-MM-03",
+   "meter": "usual_triple",
+   "content": "macro_micro",
+   "timeSignature": "6/8",
+   "macrobeats": [
+    3,
+    3
+   ],
+   "measureTicks": 72,
+   "pickupTicks": 0,
+   "difficulty": "easy",
+   "difficultyScore": 1.6,
+   "syllables": "Du Du da di",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 36,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 48,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "da",
+     "syllableDisplay": "da",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 60,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "di",
+     "syllableDisplay": "di",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "T-MM-04",
+   "meter": "usual_triple",
+   "content": "macro_micro",
+   "timeSignature": "6/8",
+   "macrobeats": [
+    3,
+    3
+   ],
+   "measureTicks": 72,
+   "pickupTicks": 0,
+   "difficulty": "easy",
+   "difficultyScore": 2.4,
+   "syllables": "Du da di Du da di",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "da",
+     "syllableDisplay": "da",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "di",
+     "syllableDisplay": "di",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 48,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "da",
+     "syllableDisplay": "da",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 60,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "di",
+     "syllableDisplay": "di",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "T-DV-01",
+   "meter": "usual_triple",
+   "content": "division",
+   "timeSignature": "6/8",
+   "macrobeats": [
+    3,
+    3
+   ],
+   "measureTicks": 72,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 3.5,
+   "syllables": "Du ta da di Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 6,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ta",
+     "syllableDisplay": "ta",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "da",
+     "syllableDisplay": "da",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "di",
+     "syllableDisplay": "di",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 36,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "T-DV-02",
+   "meter": "usual_triple",
+   "content": "division",
+   "timeSignature": "6/8",
+   "macrobeats": [
+    3,
+    3
+   ],
+   "measureTicks": 72,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 3.5,
+   "syllables": "Du da ta di Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "da",
+     "syllableDisplay": "da",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 18,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ta",
+     "syllableDisplay": "ta",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "di",
+     "syllableDisplay": "di",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 36,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "T-DV-03",
+   "meter": "usual_triple",
+   "content": "division",
+   "timeSignature": "6/8",
+   "macrobeats": [
+    3,
+    3
+   ],
+   "measureTicks": 72,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 3.5,
+   "syllables": "Du da di ta Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "da",
+     "syllableDisplay": "da",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "di",
+     "syllableDisplay": "di",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 30,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ta",
+     "syllableDisplay": "ta",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 36,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "T-DV-04",
+   "meter": "usual_triple",
+   "content": "division",
+   "timeSignature": "6/8",
+   "macrobeats": [
+    3,
+    3
+   ],
+   "measureTicks": 72,
+   "pickupTicks": 0,
+   "difficulty": "difficult",
+   "difficultyScore": 5.3,
+   "syllables": "Du ta da ta di ta Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 6,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ta",
+     "syllableDisplay": "ta",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "da",
+     "syllableDisplay": "da",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 18,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ta",
+     "syllableDisplay": "ta",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "di",
+     "syllableDisplay": "di",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 30,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ta",
+     "syllableDisplay": "ta",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 36,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "T-DV-05",
+   "meter": "usual_triple",
+   "content": "division",
+   "timeSignature": "6/8",
+   "macrobeats": [
+    3,
+    3
+   ],
+   "measureTicks": 72,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 3.5,
+   "syllables": "Du Du ta da di",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 36,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 42,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ta",
+     "syllableDisplay": "ta",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 48,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "da",
+     "syllableDisplay": "da",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 60,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "di",
+     "syllableDisplay": "di",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "T-EL-01",
+   "meter": "usual_triple",
+   "content": "elongation",
+   "timeSignature": "6/8",
+   "macrobeats": [
+    3,
+    3
+   ],
+   "measureTicks": 72,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 2.7,
+   "syllables": "Du di Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "di",
+     "syllableDisplay": "di",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 36,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "T-EL-02",
+   "meter": "usual_triple",
+   "content": "elongation",
+   "timeSignature": "6/8",
+   "macrobeats": [
+    3,
+    3
+   ],
+   "measureTicks": 72,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 3.1,
+   "syllables": "Du di Du di",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "di",
+     "syllableDisplay": "di",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 60,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "di",
+     "syllableDisplay": "di",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "T-EL-03",
+   "meter": "usual_triple",
+   "content": "elongation",
+   "timeSignature": "6/8",
+   "macrobeats": [
+    3,
+    3
+   ],
+   "measureTicks": 72,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 2.7,
+   "syllables": "Du da Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "da",
+     "syllableDisplay": "da",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 36,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "T-EL-04",
+   "meter": "usual_triple",
+   "content": "elongation",
+   "timeSignature": "6/8",
+   "macrobeats": [
+    3,
+    3
+   ],
+   "measureTicks": 72,
+   "pickupTicks": 0,
+   "difficulty": "easy",
+   "difficultyScore": 1.9,
+   "syllables": "Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 72,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "half",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "T-EL-05",
+   "meter": "usual_triple",
+   "content": "elongation",
+   "timeSignature": "6/8",
+   "macrobeats": [
+    3,
+    3
+   ],
+   "measureTicks": 72,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 3.6,
+   "syllables": "Du ta di Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 18,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 18,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ta",
+     "syllableDisplay": "ta",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "di",
+     "syllableDisplay": "di",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 36,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "T-RS-01",
+   "meter": "usual_triple",
+   "content": "rest",
+   "timeSignature": "6/8",
+   "macrobeats": [
+    3,
+    3
+   ],
+   "measureTicks": 72,
+   "pickupTicks": 0,
+   "difficulty": "easy",
+   "difficultyScore": 2.3,
+   "syllables": "Du (di) Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 12,
+     "kind": "rest",
+     "tieToNext": false,
+     "syllable": "di",
+     "syllableDisplay": "(di)",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 36,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "T-RS-02",
+   "meter": "usual_triple",
+   "content": "rest",
+   "timeSignature": "6/8",
+   "macrobeats": [
+    3,
+    3
+   ],
+   "measureTicks": 72,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 2.7,
+   "syllables": "(Du) da di Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 12,
+     "kind": "rest",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "(Du)",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "da",
+     "syllableDisplay": "da",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "di",
+     "syllableDisplay": "di",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 36,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "T-RS-03",
+   "meter": "usual_triple",
+   "content": "rest",
+   "timeSignature": "6/8",
+   "macrobeats": [
+    3,
+    3
+   ],
+   "measureTicks": 72,
+   "pickupTicks": 0,
+   "difficulty": "easy",
+   "difficultyScore": 1.9,
+   "syllables": "Du (Du)",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 36,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 36,
+     "kind": "rest",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "(Du)",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "T-RS-04",
+   "meter": "usual_triple",
+   "content": "rest",
+   "timeSignature": "6/8",
+   "macrobeats": [
+    3,
+    3
+   ],
+   "measureTicks": 72,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 2.7,
+   "syllables": "Du (da) di Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 12,
+     "kind": "rest",
+     "tieToNext": false,
+     "syllable": "da",
+     "syllableDisplay": "(da)",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "di",
+     "syllableDisplay": "di",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 36,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "T-TI-01",
+   "meter": "usual_triple",
+   "content": "tie",
+   "timeSignature": "6/8",
+   "macrobeats": [
+    3,
+    3
+   ],
+   "measureTicks": 72,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 3.2,
+   "syllables": "Du [Du] da di",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 36,
+     "kind": "note",
+     "tieToNext": true,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 12,
+     "kind": "continuation",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "[Du]",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 48,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "da",
+     "syllableDisplay": "da",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 60,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "di",
+     "syllableDisplay": "di",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "T-TI-02",
+   "meter": "usual_triple",
+   "content": "tie",
+   "timeSignature": "6/8",
+   "macrobeats": [
+    3,
+    3
+   ],
+   "measureTicks": 72,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 4.0,
+   "syllables": "Du da di [Du] da di",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "da",
+     "syllableDisplay": "da",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": true,
+     "syllable": "di",
+     "syllableDisplay": "di",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 12,
+     "kind": "continuation",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "[Du]",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 48,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "da",
+     "syllableDisplay": "da",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 60,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "di",
+     "syllableDisplay": "di",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "T-UB-01",
+   "meter": "usual_triple",
+   "content": "upbeat",
+   "timeSignature": "6/8",
+   "macrobeats": [
+    3,
+    3
+   ],
+   "measureTicks": 72,
+   "pickupTicks": 12,
+   "difficulty": "moderate",
+   "difficultyScore": 3.2,
+   "syllables": "di Du Du",
+   "events": [
+    {
+     "startTick": -12,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "di",
+     "syllableDisplay": "di",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": true
+    },
+    {
+     "startTick": 0,
+     "ticks": 36,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 36,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "T-UB-02",
+   "meter": "usual_triple",
+   "content": "upbeat",
+   "timeSignature": "6/8",
+   "macrobeats": [
+    3,
+    3
+   ],
+   "measureTicks": 72,
+   "pickupTicks": 24,
+   "difficulty": "moderate",
+   "difficultyScore": 4.0,
+   "syllables": "da di Du di Du",
+   "events": [
+    {
+     "startTick": -24,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "da",
+     "syllableDisplay": "da",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": true
+    },
+    {
+     "startTick": -12,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "di",
+     "syllableDisplay": "di",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": true
+    },
+    {
+     "startTick": 0,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "di",
+     "syllableDisplay": "di",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 36,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "T-UB-03",
+   "meter": "usual_triple",
+   "content": "upbeat",
+   "timeSignature": "6/8",
+   "macrobeats": [
+    3,
+    3
+   ],
+   "measureTicks": 72,
+   "pickupTicks": 6,
+   "difficulty": "difficult",
+   "difficultyScore": 4.5,
+   "syllables": "ta Du da di Du",
+   "events": [
+    {
+     "startTick": -6,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ta",
+     "syllableDisplay": "ta",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": true
+    },
+    {
+     "startTick": 0,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "da",
+     "syllableDisplay": "da",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "di",
+     "syllableDisplay": "di",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 36,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "C-MM-01",
+   "meter": "usual_combined",
+   "content": "macro_micro",
+   "timeSignature": "2/4",
+   "macrobeats": [
+    2,
+    2
+   ],
+   "measureTicks": 48,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 4.1,
+   "syllables": "Du da di Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 8,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": 3
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 8,
+     "ticks": 8,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "da",
+     "syllableDisplay": "da",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": 3
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 16,
+     "ticks": 8,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "di",
+     "syllableDisplay": "di",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": 3
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "C-MM-02",
+   "meter": "usual_combined",
+   "content": "macro_micro",
+   "timeSignature": "2/4",
+   "macrobeats": [
+    2,
+    2
+   ],
+   "measureTicks": 48,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 4.1,
+   "syllables": "Du Du da di",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 8,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": 3
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 32,
+     "ticks": 8,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "da",
+     "syllableDisplay": "da",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": 3
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 40,
+     "ticks": 8,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "di",
+     "syllableDisplay": "di",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": 3
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "C-MM-03",
+   "meter": "usual_combined",
+   "content": "macro_micro",
+   "timeSignature": "2/4",
+   "macrobeats": [
+    2,
+    2
+   ],
+   "measureTicks": 48,
+   "pickupTicks": 0,
+   "difficulty": "difficult",
+   "difficultyScore": 4.5,
+   "syllables": "Du da di Du de",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 8,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": 3
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 8,
+     "ticks": 8,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "da",
+     "syllableDisplay": "da",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": 3
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 16,
+     "ticks": 8,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "di",
+     "syllableDisplay": "di",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": 3
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "de",
+     "syllableDisplay": "de",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "C-MM-04",
+   "meter": "usual_combined",
+   "content": "macro_micro",
+   "timeSignature": "2/4",
+   "macrobeats": [
+    2,
+    2
+   ],
+   "measureTicks": 48,
+   "pickupTicks": 0,
+   "difficulty": "difficult",
+   "difficultyScore": 4.5,
+   "syllables": "Du de Du da di",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "de",
+     "syllableDisplay": "de",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 8,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": 3
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 32,
+     "ticks": 8,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "da",
+     "syllableDisplay": "da",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": 3
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 40,
+     "ticks": 8,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "di",
+     "syllableDisplay": "di",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": 3
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "UP-MM-01",
+   "meter": "unusual_paired_2_3",
+   "content": "macro_micro",
+   "timeSignature": "5/8",
+   "macrobeats": [
+    2,
+    3
+   ],
+   "measureTicks": 60,
+   "pickupTicks": 0,
+   "difficulty": "easy",
+   "difficultyScore": 0.8,
+   "syllables": "Du Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 36,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "UP-MM-02",
+   "meter": "unusual_paired_2_3",
+   "content": "macro_micro",
+   "timeSignature": "5/8",
+   "macrobeats": [
+    2,
+    3
+   ],
+   "measureTicks": 60,
+   "pickupTicks": 0,
+   "difficulty": "easy",
+   "difficultyScore": 2.0,
+   "syllables": "Du be Du ba bi",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "be",
+     "syllableDisplay": "be",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ba",
+     "syllableDisplay": "ba",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 48,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "bi",
+     "syllableDisplay": "bi",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "UP-MM-03",
+   "meter": "unusual_paired_2_3",
+   "content": "macro_micro",
+   "timeSignature": "5/8",
+   "macrobeats": [
+    2,
+    3
+   ],
+   "measureTicks": 60,
+   "pickupTicks": 0,
+   "difficulty": "easy",
+   "difficultyScore": 1.6,
+   "syllables": "Du Du ba bi",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ba",
+     "syllableDisplay": "ba",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 48,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "bi",
+     "syllableDisplay": "bi",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "UP-MM-04",
+   "meter": "unusual_paired_2_3",
+   "content": "macro_micro",
+   "timeSignature": "5/8",
+   "macrobeats": [
+    2,
+    3
+   ],
+   "measureTicks": 60,
+   "pickupTicks": 0,
+   "difficulty": "easy",
+   "difficultyScore": 1.2,
+   "syllables": "Du be Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "be",
+     "syllableDisplay": "be",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 36,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "UP-DV-01",
+   "meter": "unusual_paired_2_3",
+   "content": "division",
+   "timeSignature": "5/8",
+   "macrobeats": [
+    2,
+    3
+   ],
+   "measureTicks": 60,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 3.9,
+   "syllables": "Du ta be Du ba bi",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 6,
+     "ticks": 6,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ta",
+     "syllableDisplay": "ta",
+     "notation": {
+      "value": "16th",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "be",
+     "syllableDisplay": "be",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ba",
+     "syllableDisplay": "ba",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 48,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "bi",
+     "syllableDisplay": "bi",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "UP-EL-01",
+   "meter": "unusual_paired_2_3",
+   "content": "elongation",
+   "timeSignature": "5/8",
+   "macrobeats": [
+    2,
+    3
+   ],
+   "measureTicks": 60,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 2.7,
+   "syllables": "Du Du bi",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 48,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "bi",
+     "syllableDisplay": "bi",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "UP-MM-05",
+   "meter": "unusual_paired_3_2",
+   "content": "macro_micro",
+   "timeSignature": "5/8",
+   "macrobeats": [
+    3,
+    2
+   ],
+   "measureTicks": 60,
+   "pickupTicks": 0,
+   "difficulty": "easy",
+   "difficultyScore": 0.8,
+   "syllables": "Du Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 36,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "UP-MM-06",
+   "meter": "unusual_paired_3_2",
+   "content": "macro_micro",
+   "timeSignature": "5/8",
+   "macrobeats": [
+    3,
+    2
+   ],
+   "measureTicks": 60,
+   "pickupTicks": 0,
+   "difficulty": "easy",
+   "difficultyScore": 2.0,
+   "syllables": "Du ba bi Du be",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ba",
+     "syllableDisplay": "ba",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "bi",
+     "syllableDisplay": "bi",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 48,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "be",
+     "syllableDisplay": "be",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "UU-MM-01",
+   "meter": "unusual_unpaired_2_2_3",
+   "content": "macro_micro",
+   "timeSignature": "7/8",
+   "macrobeats": [
+    2,
+    2,
+    3
+   ],
+   "measureTicks": 84,
+   "pickupTicks": 0,
+   "difficulty": "easy",
+   "difficultyScore": 1.2,
+   "syllables": "Du Du Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 48,
+     "ticks": 36,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "UU-MM-02",
+   "meter": "unusual_unpaired_2_2_3",
+   "content": "macro_micro",
+   "timeSignature": "7/8",
+   "macrobeats": [
+    2,
+    2,
+    3
+   ],
+   "measureTicks": 84,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 2.8,
+   "syllables": "Du be Du be Du ba bi",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "be",
+     "syllableDisplay": "be",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "be",
+     "syllableDisplay": "be",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 48,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 60,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ba",
+     "syllableDisplay": "ba",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 72,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "bi",
+     "syllableDisplay": "bi",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "UU-MM-03",
+   "meter": "unusual_unpaired_2_2_3",
+   "content": "macro_micro",
+   "timeSignature": "7/8",
+   "macrobeats": [
+    2,
+    2,
+    3
+   ],
+   "measureTicks": 84,
+   "pickupTicks": 0,
+   "difficulty": "easy",
+   "difficultyScore": 2.4,
+   "syllables": "Du be Du Du ba bi",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 12,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "be",
+     "syllableDisplay": "be",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 48,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 60,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "ba",
+     "syllableDisplay": "ba",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 72,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "bi",
+     "syllableDisplay": "bi",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "UU-EL-01",
+   "meter": "unusual_unpaired_2_2_3",
+   "content": "elongation",
+   "timeSignature": "7/8",
+   "macrobeats": [
+    2,
+    2,
+    3
+   ],
+   "measureTicks": 84,
+   "pickupTicks": 0,
+   "difficulty": "moderate",
+   "difficultyScore": 3.1,
+   "syllables": "Du Du be Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 12,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "be",
+     "syllableDisplay": "be",
+     "notation": {
+      "value": "eighth",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 48,
+     "ticks": 36,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "UU-MM-04",
+   "meter": "unusual_unpaired_3_2_2",
+   "content": "macro_micro",
+   "timeSignature": "7/8",
+   "macrobeats": [
+    3,
+    2,
+    2
+   ],
+   "measureTicks": 84,
+   "pickupTicks": 0,
+   "difficulty": "easy",
+   "difficultyScore": 1.2,
+   "syllables": "Du Du Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 36,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 36,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 60,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  },
+  {
+   "id": "UU-MM-05",
+   "meter": "unusual_unpaired_2_3_2",
+   "content": "macro_micro",
+   "timeSignature": "7/8",
+   "macrobeats": [
+    2,
+    3,
+    2
+   ],
+   "measureTicks": 84,
+   "pickupTicks": 0,
+   "difficulty": "easy",
+   "difficultyScore": 1.2,
+   "syllables": "Du Du Du",
+   "events": [
+    {
+     "startTick": 0,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 24,
+     "ticks": 36,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 1,
+      "tuplet": null
+     },
+     "isPickup": false
+    },
+    {
+     "startTick": 60,
+     "ticks": 24,
+     "kind": "note",
+     "tieToNext": false,
+     "syllable": "Du",
+     "syllableDisplay": "Du",
+     "notation": {
+      "value": "quarter",
+      "dots": 0,
+      "tuplet": null
+     },
+     "isPickup": false
+    }
+   ]
+  }
+ ]
+}
