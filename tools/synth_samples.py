@@ -5,7 +5,7 @@ Called by tools/make_samples.sh, which converts them to CAF.
 
   hihat_open   prompt notes; long (3.5 s) so the player can choke it at the note's end
   beat_strong  metronome / count-in on macrobeats: low tom-like thump
-  beat_weak    metronome / count-in on microbeats: woodblock
+  beat_weak    metronome / count-in on microbeats: short crisp tick, quieter than beat_strong
   tap          learner's key press feedback
 
 Every sample starts its attack at sample 0. [uncertain] Timbres are a first pass; tune by ear.
@@ -66,11 +66,15 @@ def beat_strong(seconds=0.25):
     return out
 
 
-def beat_weak(seconds=0.08):
+def beat_weak(seconds=0.03):
+    # Short crisp tick: 1.8 kHz with a 4 ms decay plus a 1 ms noise transient for a sharp edge.
+    rng = random.Random(3)
     out = []
     for i in range(int(seconds * RATE)):
         t = i / RATE
-        out.append((math.sin(2 * math.pi * 900 * t) + 0.5 * math.sin(2 * math.pi * 2350 * t)) * math.exp(-t / 0.015))
+        tone = math.sin(2 * math.pi * 1800 * t) * math.exp(-t / 0.004)
+        edge = rng.uniform(-1, 1) * 0.5 * math.exp(-t / 0.0007)
+        out.append(tone + edge)
     return out
 
 
@@ -83,5 +87,5 @@ if __name__ == "__main__":
     out = sys.argv[1]
     write(os.path.join(out, "hihat_open.wav"), hihat_open(), -4)
     write(os.path.join(out, "beat_strong.wav"), beat_strong(), -3)
-    write(os.path.join(out, "beat_weak.wav"), beat_weak(), -9)
+    write(os.path.join(out, "beat_weak.wav"), beat_weak(), -14)
     write(os.path.join(out, "tap.wav"), tap(), -10)

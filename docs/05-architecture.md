@@ -103,7 +103,7 @@ it with `afconvert` to CAF (mono, 16-bit, 44.1 kHz, attack at sample 0):
 |---|---|---|
 | `hihat_open` | prompt notes | 808-style open hi-hat, 3.5 s, choked by the mixer |
 | `beat_strong` | click / count-in on macrobeats | low tom-like thump |
-| `beat_weak` | click / count-in on microbeats | woodblock |
+| `beat_weak` | click / count-in on microbeats | short crisp tick (1.8 kHz, ~4 ms decay), quieter than `beat_strong` |
 | `tap` | key press feedback | short noise tick |
 
 No voice samples (deliberate, see `01-methodology.md` §7). **[uncertain]** Timbres are a first pass; tune by ear.
