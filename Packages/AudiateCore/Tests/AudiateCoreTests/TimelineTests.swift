@@ -46,6 +46,17 @@ struct TimelineTests {
         #expect(abs(Tempo(bpm: 200).seconds(forTicks: 12, in: fiveEight) - 0.3) < 1e-12)
     }
 
+    @Test(arguments: ["D-MM-01", "T-MM-01", "UP-MM-01"])
+    func teachingTempoIsSlowerAndBottomsOutAtTheRange(id: String) {
+        let meter = Fixtures.pattern(id).meter
+        let standard = Tempo.standard(for: meter).bpm
+        let tempos = (1...6).map { TempoPolicy.teaching(for: meter, attempt: $0).bpm }
+        #expect(abs(tempos[0] - standard * TempoPolicy.teachingFactor) < 1e-9)
+        #expect(zip(tempos, tempos.dropFirst()).allSatisfy { $0 >= $1 })
+        #expect(tempos.allSatisfy { $0 >= TempoPolicy.range(for: meter).lowerBound })
+        #expect(tempos.last == TempoPolicy.range(for: meter).lowerBound)
+    }
+
     @Test func echoLayoutCountInPromptResponse() throws {
         let t = try block(["D-DV-03"], bpm: 80) // 6 6 6 6 24
         #expect(t.measureDuration == 1.5)

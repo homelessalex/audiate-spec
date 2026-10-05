@@ -65,6 +65,8 @@ final class SessionRunner {
     private(set) var itemIndex = 0
     private(set) var attempt = 1
     private(set) var lastResult: Result?
+    /// Tempo of the attempt being played (teaching slows down after a miss).
+    private(set) var currentTempo: Tempo?
     private var advanceTask: Task<Void, Never>?
     private(set) var question: Question?
     private(set) var newlyPassed: [LevelKey] = []
@@ -109,6 +111,9 @@ final class SessionRunner {
         guard let block else { return "" }
         var s = "Pattern \(itemIndex + 1) of \(block.items.count)"
         if block.mode == .teaching { s += " · try \(attempt) of \(MasteryPolicy.maxTeachingAttempts)" }
+        if let tempo = currentTempo, let meter = blockMeter {
+            s += " · \(Int(tempo.bpm.rounded())) \(meter.isUnusual ? "eighths/min" : "BPM")"
+        }
         return s
     }
 
@@ -118,17 +123,19 @@ final class SessionRunner {
 
     private func playAttempt() {
         guard let block, let item = currentItem, let pattern = content.library.pattern(id: item.patternID) else { return }
+        let tempo = block.mode == .teaching ? TempoPolicy.teaching(for: pattern.meter, attempt: attempt) : block.tempo
+        currentTempo = tempo
         do {
             let timeline = switch block.kind {
-            case .echo: try Timeline.echoBlock(patterns: [pattern], tempo: block.tempo, clickStage: block.clickStage)
-            case .readWithModel: try Timeline.echoBlock(patterns: [pattern], tempo: block.tempo, clickStage: block.clickStage, gapMeasures: 0)
-            case .read: try Timeline.readBlock(patterns: [pattern], tempo: block.tempo, clickStage: block.clickStage)
+            case .echo: try Timeline.echoBlock(patterns: [pattern], tempo: tempo, clickStage: block.clickStage)
+            case .readWithModel: try Timeline.echoBlock(patterns: [pattern], tempo: tempo, clickStage: block.clickStage, gapMeasures: 0)
+            case .read: try Timeline.readBlock(patterns: [pattern], tempo: tempo, clickStage: block.clickStage)
             }
             self.timeline = timeline
             lastResult = nil
             phase = .playing
             try recorder.run(timeline, player: content.player, tapSound: true) { [weak self] taps in
-                self?.finishAttempt(block, item: item, pattern: pattern, timeline: timeline, rawTaps: taps)
+                self?.finishAttempt(block, item: item, pattern: pattern, tempo: tempo, timeline: timeline, rawTaps: taps)
             }
         } catch {
             self.error = "\(error)"
@@ -136,7 +143,7 @@ final class SessionRunner {
         }
     }
 
-    private func finishAttempt(_ block: TapBlock, item: PlannedItem, pattern: Pattern, timeline: Timeline, rawTaps: [Double]) {
+    private func finishAttempt(_ block: TapBlock, item: PlannedItem, pattern: Pattern, tempo: Tempo, timeline: Timeline, rawTaps: [Double]) {
         guard let slot = timeline.responses.first else { return }
         let compensation = LatencyCompensation(outputLatency: 0, inputOffset: model.inputOffset)
         let taps = rawTaps.map(compensation.blockTime(forRawBlockTime:))
@@ -144,7 +151,7 @@ final class SessionRunner {
                                       responseEnd: slot.end, mode: block.clickStage.timingMode)
         let downbeat = slot.end - timeline.measureDuration
         lastResult = Result(id: itemIndex, item: item, pattern: pattern, grade: grade,
-                            comparison: Self.comparison(grade, pattern: pattern, downbeat: downbeat, tempo: block.tempo))
+                            comparison: Self.comparison(grade, pattern: pattern, downbeat: downbeat, tempo: tempo))
         record(Attempt(date: model.now(), unitID: item.unitID, level: item.level, patternID: pattern.id,
                        exercise: block.exercise, mode: block.mode, passed: grade.passed, accuracy: grade.accuracy))
         phase = .verdict
@@ -213,7 +220,7 @@ final class SessionRunner {
         let slot = timeline.responses[index]
         let downbeat = slot.end - timeline.measureDuration
         let offset = model.inputOffset
-        let spt = block.tempo.secondsPerTick(in: meter)
+        let spt = (currentTempo ?? block.tempo).secondsPerTick(in: meter)
         return recorder.taps.map { $0 - offset }.filter { $0 >= slot.start - 0.15 && $0 < slot.end }.map { ($0 - downbeat) / spt }
     }
 

@@ -174,7 +174,7 @@ public struct SessionPlanner: Sendable {
         let meter = library.pattern(id: items[0].patternID)!.meter
         let level = items[0].level
         return .echo(EchoBlockSpec(
-            items: items, meterID: meter.id, tempo: .standard(for: meter),
+            items: items, meterID: meter.id, tempo: mode == .teaching ? TempoPolicy.teaching(for: meter) : .standard(for: meter),
             clickStage: mode == .teaching ? .a : .b, mode: mode,
             showSyllables: mode == .teaching && level >= .verbal
         ))
@@ -182,7 +182,8 @@ public struct SessionPlanner: Sendable {
 
     private func read(_ items: [PlannedItem], mode: PracticeMode) -> SessionStep {
         let meter = library.pattern(id: items[0].patternID)!.meter
-        return .read(ReadBlockSpec(items: items, meterID: meter.id, tempo: .standard(for: meter),
+        return .read(ReadBlockSpec(items: items, meterID: meter.id,
+                                   tempo: mode == .teaching ? TempoPolicy.teaching(for: meter) : .standard(for: meter),
                                    clickStage: mode == .teaching ? .a : .b, mode: mode))
     }
 

@@ -47,9 +47,10 @@ struct SessionPlannerTests {
         #expect(teaching.count == MasteryPolicy.maxNewPatternsPerSessionPerUnit)
         #expect(teaching.allSatisfy { $0.items.count == 1 }) // repeated until correct by the session runner
         #expect(teaching.allSatisfy { $0.clickStage == .a && !$0.showSyllables })
+        #expect(teaching.allSatisfy { $0.tempo.bpm == TempoPolicy.dupleBPM * TempoPolicy.teachingFactor })
         let evaluation = blocks.filter { $0.mode == .evaluation }
         #expect(!evaluation.isEmpty)
-        #expect(evaluation.allSatisfy { $0.clickStage == .b && !$0.showSyllables })
+        #expect(evaluation.allSatisfy { $0.clickStage == .b && !$0.showSyllables && $0.tempo.bpm == TempoPolicy.dupleBPM })
         // only the two taught patterns are evaluated
         let taught = Set(teaching.map(\.items[0].patternID))
         #expect(Set(evaluation.flatMap(\.items).map(\.patternID)) == taught)
