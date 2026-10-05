@@ -1,0 +1,358 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		80F81BBE4DB37781AAE87171 /* patterns.json in Resources */ = {isa = PBXBuildFile; fileRef = 09F9525E6BDCC383D21C1CD3 /* patterns.json */; };
+		AFED90FEB869DB11076C602C /* cells.json in Resources */ = {isa = PBXBuildFile; fileRef = D2F09D813ABABCF8CA6DA67A /* cells.json */; };
+		C8269945AE719123FADDA70A /* AudiateApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF61B91A0330217BD89CB123 /* AudiateApp.swift */; };
+		CB95E96340D6760F45AD5FEC /* AudiateCore in Frameworks */ = {isa = PBXBuildFile; productRef = 3570690D4D083C8BEAEE348A /* AudiateCore */; };
+		CFFD156538A83F214CC54A45 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85EFB2E5BE5CF7C868E09F68 /* ContentView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		09F9525E6BDCC383D21C1CD3 /* patterns.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = patterns.json; sourceTree = "<group>"; };
+		85EFB2E5BE5CF7C868E09F68 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		894E5E8D92BD03B5F00CE61A /* Audiate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Audiate.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8B72F5E78828354ADB8DEA84 /* AudiateCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AudiateCore; path = Packages/AudiateCore; sourceTree = SOURCE_ROOT; };
+		AF61B91A0330217BD89CB123 /* AudiateApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiateApp.swift; sourceTree = "<group>"; };
+		D2F09D813ABABCF8CA6DA67A /* cells.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = cells.json; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		36A5521725264D61B3C4CA62 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CB95E96340D6760F45AD5FEC /* AudiateCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		46FB865BFF76E64F9D03B9B9 /* data */ = {
+			isa = PBXGroup;
+			children = (
+				D2F09D813ABABCF8CA6DA67A /* cells.json */,
+				09F9525E6BDCC383D21C1CD3 /* patterns.json */,
+			);
+			path = data;
+			sourceTree = "<group>";
+		};
+		4A8F292A87CCD64B268BAF46 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				AF61B91A0330217BD89CB123 /* AudiateApp.swift */,
+				85EFB2E5BE5CF7C868E09F68 /* ContentView.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		7DA0FEFE9554FDE5C720BBA2 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				8B72F5E78828354ADB8DEA84 /* AudiateCore */,
+			);
+			path = Packages;
+			sourceTree = "<group>";
+		};
+		E53660857C7B20D33B25AB40 = {
+			isa = PBXGroup;
+			children = (
+				4A8F292A87CCD64B268BAF46 /* App */,
+				46FB865BFF76E64F9D03B9B9 /* data */,
+				7DA0FEFE9554FDE5C720BBA2 /* Packages */,
+				F3A68A6E26759F79B1D6DAF3 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F3A68A6E26759F79B1D6DAF3 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				894E5E8D92BD03B5F00CE61A /* Audiate.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		7D1D144A9A23F203FAAC5EB6 /* Audiate */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C513E8F7F1CF4BF91BD5C0EA /* Build configuration list for PBXNativeTarget "Audiate" */;
+			buildPhases = (
+				45DA9222B828DDF3FE56B872 /* Sources */,
+				3EEE669497A528651E195A3A /* Resources */,
+				36A5521725264D61B3C4CA62 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Audiate;
+			packageProductDependencies = (
+				3570690D4D083C8BEAEE348A /* AudiateCore */,
+			);
+			productName = Audiate;
+			productReference = 894E5E8D92BD03B5F00CE61A /* Audiate.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		D90B5059C3A7F5F03E4FEB81 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = 1EAE70B0A8BFCDA25B15E2E9 /* Build configuration list for PBXProject "Audiate" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = E53660857C7B20D33B25AB40;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				10DCD1096129C357D180A55A /* XCLocalSwiftPackageReference "Packages/AudiateCore" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = F3A68A6E26759F79B1D6DAF3 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				7D1D144A9A23F203FAAC5EB6 /* Audiate */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		3EEE669497A528651E195A3A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AFED90FEB869DB11076C602C /* cells.json in Resources */,
+				80F81BBE4DB37781AAE87171 /* patterns.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		45DA9222B828DDF3FE56B872 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C8269945AE719123FADDA70A /* AudiateApp.swift in Sources */,
+				CFFD156538A83F214CC54A45 /* ContentView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		07CB30BAB474A6A1DD64EEA6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		6703E88D89A0A5024500F3D1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Audiate;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.audiate.Audiate;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		77E2F7AB653A9E1CC7EEC5A5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		E6F87FF88C654338C267C3B4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Audiate;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.audiate.Audiate;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1EAE70B0A8BFCDA25B15E2E9 /* Build configuration list for PBXProject "Audiate" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				77E2F7AB653A9E1CC7EEC5A5 /* Debug */,
+				07CB30BAB474A6A1DD64EEA6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		C513E8F7F1CF4BF91BD5C0EA /* Build configuration list for PBXNativeTarget "Audiate" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6703E88D89A0A5024500F3D1 /* Debug */,
+				E6F87FF88C654338C267C3B4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		10DCD1096129C357D180A55A /* XCLocalSwiftPackageReference "Packages/AudiateCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/AudiateCore;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		3570690D4D083C8BEAEE348A /* AudiateCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = AudiateCore;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = D90B5059C3A7F5F03E4FEB81 /* Project object */;
+}

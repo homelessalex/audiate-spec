@@ -1,0 +1,15 @@
+public enum RhythmError: Error, Hashable, Sendable {
+    case notOnSyllableGrid(meterID: String, tick: Int)
+    case unsupportedMacrobeatSize(Int)
+    case notNotatable(meterID: String, ticks: Int)
+    case invalidTimeSignature(String)
+    case invalidToken(String)
+    case unknownMeter(String)
+    case unsupportedTicksPerMicrobeat(Int)
+    case cellLengthMismatch(tokens: String, macrobeatSize: Int)
+    case eventsNotContiguous(patternID: String, atTick: Int)
+    case pickupNotAtBarline(patternID: String)
+    case measureLengthMismatch(patternID: String, expected: Int, actual: Int)
+    case invalidTie(patternID: String, eventIndex: Int)
+    case incompleteTuplet(patternID: String, eventIndex: Int)
+}
