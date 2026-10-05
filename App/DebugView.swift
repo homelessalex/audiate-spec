@@ -11,7 +11,6 @@ struct DebugView: View {
     @State private var patternID = "D-DV-03"
     @State private var bpm = TempoPolicy.dupleBPM
     @State private var stage = ClickStage.b
-    @State private var voice = PromptVoice.neutral
     @State private var repeats = 1
     @State private var tapSound = true
     @State private var report: [String] = []
@@ -45,10 +44,6 @@ struct DebugView: View {
                 }
                 Picker("Click stage", selection: $stage) {
                     ForEach(ClickStage.allCases, id: \.self) { Text($0.rawValue.uppercased()).tag($0) }
-                }
-                .pickerStyle(.segmented)
-                Picker("Prompt voice", selection: $voice) {
-                    ForEach(PromptVoice.allCases, id: \.self) { Text($0.rawValue).tag($0) }
                 }
                 .pickerStyle(.segmented)
                 Stepper("Patterns in block: \(repeats)", value: $repeats, in: 1...6)
@@ -90,7 +85,7 @@ struct DebugView: View {
         report = []
         do {
             let timeline = try Timeline.echoBlock(patterns: Array(repeating: pattern, count: repeats),
-                                                  tempo: Tempo(bpm: bpm), clickStage: stage, voice: voice)
+                                                  tempo: Tempo(bpm: bpm), clickStage: stage)
             let compensation = LatencyCompensation(outputLatency: 0, inputOffset: context.inputOffset(for: model.outputDevice))
             let mode = stage.timingMode
             try recorder.run(timeline, player: player, tapSound: tapSound) { rawTaps in

@@ -1,7 +1,7 @@
 extension Timeline {
     /// `| count-in | prompt 1 | response 1 | prompt 2 | response 2 | … |` without stopping the pulse.
-    /// A pickup sits at the end of the preceding measure; the count-in voice stops where it begins.
-    public static func echoBlock(patterns: [Pattern], tempo: Tempo, clickStage: ClickStage, voice: PromptVoice,
+    /// A pickup sits at the end of the preceding measure; the count-in stops where it begins.
+    public static func echoBlock(patterns: [Pattern], tempo: Tempo, clickStage: ClickStage,
                                  deriver: SyllableDeriver = SyllableDeriver()) throws -> Timeline {
         guard let first = patterns.first else { throw TimelineError.emptyBlock }
         let meter = first.meter
@@ -13,37 +13,38 @@ extension Timeline {
 
         var sounds: [ScheduledSound] = []
         let measureCount = 1 + 2 * patterns.count
+        let countInEnd = meter.measureTicks - first.pickupTicks
 
-        // Clicks: count-in always; afterwards per stage.
-        for m in 0..<measureCount where m == 0 || clickStage.clicksAfterCountIn {
+        // Count-in: macro + micro beats (establishes meter type); afterwards per click stage.
+        for m in 0..<measureCount {
             for span in meter.macrobeatSpans {
-                for micro in 0..<span.microbeats where micro == 0 || clickStage.clicksMicrobeats {
+                for micro in 0..<span.microbeats {
                     let tick = span.startTick + micro * Rhythm.ticksPerMicrobeat
+                    let byStage = clickStage.clicksAfterCountIn && (micro == 0 || clickStage.clicksMicrobeats)
+                    let byCountIn = m == 0 && tick < countInEnd
+                    guard byStage || byCountIn else { continue }
                     sounds.append(ScheduledSound(time: time(measure: m, tick: tick), sound: .click(accented: micro == 0)))
                 }
             }
         }
 
-        // Count-in voice: macrobeats in usual meters, every microbeat in unusual ones.
-        let countInEnd = meter.measureTicks - first.pickupTicks
-        for span in meter.macrobeatSpans {
-            for micro in 0..<span.microbeats where micro == 0 || meter.isUnusual {
-                let tick = span.startTick + micro * Rhythm.ticksPerMicrobeat
-                guard tick < countInEnd else { continue }
-                sounds.append(ScheduledSound(time: time(measure: 0, tick: tick),
-                                             sound: .syllable(try deriver.syllable(in: meter, atTick: tick))))
-            }
-        }
-
+        var prompts: [PromptSlot] = []
         var responses: [ResponseSlot] = []
         for (i, pattern) in patterns.enumerated() {
             let promptMeasure = 1 + 2 * i
-            for event in pattern.events where event.isOnset {
-                let sound: Sound = voice == .neutral
-                    ? .neutral
-                    : .syllable(try deriver.syllable(in: meter, atTick: event.startTick))
-                sounds.append(ScheduledSound(time: time(measure: promptMeasure, tick: event.startTick), sound: sound))
+            for (index, event) in pattern.events.enumerated() where event.isOnset {
+                sounds.append(ScheduledSound(time: time(measure: promptMeasure, tick: event.startTick), sound: .hiHat,
+                                             duration: Double(Self.soundingTicks(pattern.events, from: index)) * spt))
             }
+            prompts.append(PromptSlot(
+                patternID: pattern.id,
+                start: time(measure: promptMeasure, tick: -pattern.pickupTicks),
+                end: time(measure: promptMeasure + 1, tick: 0),
+                cues: try pattern.events.map { event in
+                    SyllableCue(time: time(measure: promptMeasure, tick: event.startTick), duration: Double(event.ticks) * spt,
+                                text: try deriver.display(for: event, in: meter), kind: event.kind)
+                }
+            ))
             let responseMeasure = promptMeasure + 1
             responses.append(ResponseSlot(
                 patternID: pattern.id,
@@ -54,9 +55,20 @@ extension Timeline {
             ))
         }
 
-        // Stable sort keeps clicks before voices at equal times.
+        // Stable sort keeps clicks before prompt notes at equal times.
         let sorted = sounds.enumerated().sorted { ($0.element.time, $0.offset) < ($1.element.time, $1.offset) }.map(\.element)
-        return Timeline(sounds: sorted, responses: responses, measureDuration: measure,
+        return Timeline(sounds: sorted, prompts: prompts, responses: responses, measureDuration: measure,
                         duration: Double(measureCount) * measure)
+    }
+
+    /// A note sounds through the continuations tied to it.
+    static func soundingTicks(_ events: [RhythmEvent], from index: Int) -> Int {
+        var ticks = events[index].ticks
+        var i = index
+        while events[i].tieToNext, i + 1 < events.count {
+            i += 1
+            ticks += events[i].ticks
+        }
+        return ticks
     }
 }

@@ -25,20 +25,32 @@ struct BlockTimingTests {
 
     func clickTimeline(_ id: String, bpm: Double) throws -> (timeline: Timeline, clicks: [ScheduledSound]) {
         let p = try #require(Self.library.pattern(id: id))
-        let t = try Timeline.echoBlock(patterns: [p, p, p], tempo: Tempo(bpm: bpm), clickStage: .a, voice: .neutral)
-        let clicks = t.sounds.filter { !$0.sound.isVoice }
-        return (Timeline(sounds: clicks, responses: [], measureDuration: t.measureDuration, duration: t.duration), clicks)
+        let t = try Timeline.echoBlock(patterns: [p, p, p], tempo: Tempo(bpm: bpm), clickStage: .a)
+        let clicks = t.sounds.filter { $0.sound != .hiHat }
+        return (Timeline(sounds: clicks, measureDuration: t.measureDuration, duration: t.duration), clicks)
     }
 
-    @Test func bankHasEverySoundTheTimelineUses() {
-        let table = SyllableTable.standard
-        let syllables = Set(table.usualDuple + table.usualTriple + table.unusualDuple + table.unusualTriple + table.thirds + [table.division])
-        let needed = syllables.map { Sound.syllable($0).sampleName }
-            + [Sound.neutral, .click(accented: true), .click(accented: false)].map(\.sampleName) + [SampleBank.tapSampleName]
+    @Test func bankHasEverySound() {
+        let needed = [Sound.hiHat, .click(accented: true), .click(accented: false)].map(\.sampleName) + [SampleBank.tapSampleName]
         for name in needed {
             #expect(Self.bank.samples[name] != nil, "\(name)")
         }
-        #expect(Self.bank.samples.values.allSatisfy { $0.count <= Int(Self.bank.sampleRate * 0.25) + 1 })
+        // long enough to sustain a dotted half at the slowest triple tempo
+        let longest = try! Tempo(bpm: TempoPolicy.tripleRange.lowerBound).seconds(forTicks: 72, in: #require(Self.library.meters["usual_triple"]))
+        #expect(Double(Self.bank.samples["hihat_open"]!.count) / Self.bank.sampleRate >= longest)
+    }
+
+    @Test func sustainedSoundsAreChokedAtTheirDuration() throws {
+        let rate = Self.bank.sampleRate
+        let sounds = [ScheduledSound(time: 0.1, sound: .hiHat, duration: 0.375)]
+        let mixed = try BlockMixer.mix(sounds, duration: 1.0, bank: Self.bank)
+        let start = BlockMixer.frame(for: 0.1, rate: rate), end = BlockMixer.frame(for: 0.475, rate: rate)
+        #expect(mixed[..<start].allSatisfy { $0 == 0 })
+        #expect(mixed[(end - BlockMixer.frame(for: 0.05, rate: rate))..<(end - BlockMixer.frame(for: 0.02, rate: rate))].contains { abs($0) > 0.01 })
+        #expect(mixed[end...].allSatisfy { $0 == 0 })
+        // without a duration the one-shot rings out
+        let free = try BlockMixer.mix([ScheduledSound(time: 0, sound: .hiHat)], duration: 0.1, bank: Self.bank)
+        #expect(free.count == Self.bank.samples["hihat_open"]!.count)
     }
 
     @Test func mixerPlacesSoundsOnExactFrames() throws {

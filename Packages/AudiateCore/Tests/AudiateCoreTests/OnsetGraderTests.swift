@@ -16,7 +16,7 @@ struct OnsetGraderTests {
 
     static func makeCase(_ raw: RawPattern) throws -> Case {
         let p = Fixtures.pattern(raw.id)
-        let t = try Timeline.echoBlock(patterns: [p], tempo: .standard(for: p.meter), clickStage: .b, voice: .neutral)
+        let t = try Timeline.echoBlock(patterns: [p], tempo: .standard(for: p.meter), clickStage: .b)
         return Case(slot: t.responses[0])
     }
 

@@ -7,14 +7,14 @@ Tap exercises share the onset grader (§2).
 
 | ID | Name | Levels | Prompt | Response | Graded by |
 |---|---|---|---|---|---|
-| E1 | Echo | AO, VA, GA | Pattern played (AO/GA: "bah"; VA: syllables) | Tap it back in the next measure | Onset grader |
-| E2 | Name the syllables | VA, GV | Pattern played on "bah" | Choose syllable string (4 options) | Exact choice |
+| E1 | Echo | AO, VA, GA | Pattern played on hi-hat (VA teaching mode: syllables shown in sync as text) | Tap it back in the next measure | Onset grader |
+| E2 | Name the syllables | VA, GV | Pattern played on hi-hat | Choose syllable string (4 options) | Exact choice |
 | E3 | Which meter? | PS, GA | Series of 4 patterns, one meter | Choose meter | Exact choice |
 | E4 | Same or different | GA | Two patterns, same meter | Same / Different | Exact choice |
 | E5 | Read | SA (one familiar), CS (series of 4), GS (unfamiliar) | Notation | Tap (and chant aloud) after count-in | Onset grader |
-| E6 | Write (dictation) | SA, CS, GS | Pattern played twice on "bah" | Build notation from cell palette | Structural match |
+| E6 | Write (dictation) | SA, CS, GS | Pattern played twice on hi-hat | Build notation from cell palette | Structural match |
 | E7 | Meter from notation | CS | Series of patterns, time signature hidden | Choose meter / time signature | Exact choice |
-| E8 | Answer differently | IA | Pattern on "bah" | Tap a *different* pattern in the same meter | Improvisation grader |
+| E8 | Answer differently | IA | Pattern on hi-hat | Tap a *different* pattern in the same meter | Improvisation grader |
 | E9 | Compose and perform | IS | Empty measure(s) | Build with palette, then perform it (E5) | E5 grader on own pattern |
 | E10 | Hold the pulse | warm-up, drills | 2 measures with click, then silence | Tap macrobeats through silence | Pulse grader |
 | E11 | Audiate the gap | drills (after VA) | Pattern, then one **silent** measure | Tap the pattern in the third measure | Onset grader |
@@ -28,8 +28,12 @@ The pulse never stops inside a block:
 | count-in | prompt 1 | response 1 | prompt 2 | response 2 | ... | (end)
 ```
 
-- Count-in: one measure in the pattern's meter, spoken macrobeat syllables (`Du Du` / `Du Du`
-  for usual meters, `Du be Du ba bi` structure for unusual), plus click per the click stage.
+- Count-in: one measure in the pattern's meter: strong click on macrobeats, weak click on microbeats
+  (so duple/triple and the unusual grouping are heard before the first pattern). No voice.
+- Prompt: open hi-hat on every onset, sustained through elongations and ties, choked at the end of
+  the note; rests are silent.
+- Syllables (from `VA`, teaching mode): shown as text, each highlighted while its event sounds
+  (`Timeline.prompts[].cues`). Hidden in evaluation mode; shown after the attempt.
 - Upbeat patterns: the pickup sits at the end of the preceding measure; response measure is
   likewise preceded by the pickup position. Count-in is shortened accordingly.
 - Block size: 4–6 patterns, same meter.

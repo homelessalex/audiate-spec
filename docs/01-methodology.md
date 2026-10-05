@@ -91,8 +91,8 @@ Two categories. Each content unit is taken through them in order.
 
 | Level | Code | What the learner does |
 |---|---|---|
-| Aural/Oral | `AO` | Hears a pattern on a neutral syllable ("bah"\*), echoes it |
-| Verbal Association | `VA` | Hears and echoes patterns **with rhythm syllables**; names meter |
+| Aural/Oral | `AO` | Hears a pattern on a neutral sound ("bah"\*), echoes it |
+| Verbal Association | `VA` | Hears and echoes patterns **with rhythm syllables**\*\*; names meter |
 | Partial Synthesis | `PS` | Hears a *series* of familiar patterns, identifies the meter (context) |
 | Symbolic Association | `SA` | Reads and writes familiar patterns individually |
 | Composite Synthesis | `CS` | Reads and writes series of familiar patterns; identifies meter/time signature |
@@ -108,8 +108,11 @@ Two categories. Each content unit is taken through them in order.
 | Creativity/Improvisation — symbolic | `IS` | Writes own patterns, then performs them |
 | Theoretical understanding | `TU` | Note values, time signatures, alternative notations of the same meter |
 
-\* Gordon's neutral syllable is "bah". It sounds almost like the unusual-meter syllable "ba", so the
-app's neutral sample is "bum" by default (setting). Everywhere in these docs "bah" = the neutral syllable.
+\* Gordon's neutral syllable is "bah". The app has no voice: the neutral sound is an open hi-hat
+(see §7). Everywhere in these docs "bah" = the neutral sound.
+
+\*\* Without a voice, the app plays the pattern on the hi-hat and shows the syllables as text in sync;
+the learner chants them aloud (see §7).
 
 Gordon allows "bridging" (moving back and forth between levels, e.g. VA ↔ GA). The app does this
 automatically through review (see curriculum §4).
@@ -123,7 +126,8 @@ automatically through review (see curriculum §4).
 - **Evaluation mode**: the learner performs alone, once, without support; this is what is graded
   for mastery.
 - Meter and tempo are established before every pattern block (count-in in the pattern's meter).
-- Patterns are presented without pitch (unpitched voice/percussion).
+- Patterns are presented without pitch. The app uses percussion only (open hi-hat, choked at the end of
+  each note so elongations and rests stay audible).
 - Patterns are graded easy / moderately difficult / difficult. Gordon derived these empirically;
   the app uses a heuristic score instead **[uncertain: not Gordon's own classification]**.
 
@@ -145,4 +149,5 @@ An app cannot grade movement. It does:
 | Learner chants syllables aloud | Learner chants aloud (not graded) + taps; syllable *recognition* is graded via choice tasks | Keyboard-only input |
 | Group then individual | Teaching mode then evaluation mode | Single user |
 | Teacher chooses next patterns | Mastery + spaced review scheduler | Self-paced |
+| Teacher chants patterns on "bah" and on syllables | No voice at all: patterns are played on an open hi-hat (choked at the note's end, so durations are audible); at `VA` in teaching mode the syllables are shown as text in sync with the hi-hat and the learner chants them aloud; in evaluation mode only sound, syllables shown after the attempt | The learner prefers not to hear a voice, and synthesized speech sounds unnatural. Cost: `VA` gets a visual cue that Gordon's purely aural level doesn't have. This is mitigated by removing it in evaluation mode. Syllables are text, not notation, so "sound before sight" still holds. Pronunciation is explained once in onboarding |
 | No metronome; meter is felt | Click is a scaffold that fades out by level | Adults without a teacher drift; fading keeps the goal of internal pulse |

@@ -13,7 +13,7 @@ Audiate/
   Resources/
     patterns.json, cells.json, curriculum.json
     Bravura.otf (+ OFL.txt)
-    Samples/ du.caf de.caf ta.caf da.caf di.caf be.caf ba.caf bi.caf neutral.caf click_hi.caf click_lo.caf tap.caf
+    Samples/ hihat_open.caf beat_strong.caf beat_weak.caf tap.caf
   tools/build_patterns.py, tools/make_samples.sh
 ```
 
@@ -37,8 +37,10 @@ Audiate/
 
 ## 3. Audio (AudiateAudio)
 
-- One `AVAudioEngine`, a pool of `AVAudioPlayerNode`s (e.g. 8) → main mixer.
-- All samples preloaded as `AVAudioPCMBuffer` at the engine's output format.
+- One `AVAudioEngine`. A block is pre-mixed by `BlockMixer` into one buffer, with every sound at an exact
+  sample offset, and played on one `AVAudioPlayerNode`; a second node plays the tap sound
+  (see `timing-verification.md`).
+- All samples preloaded as mono Float32 (`SampleBank`).
 - **Scheduling:** compute each event's sample time relative to a block start anchor
   (`AVAudioTime(sampleTime:atRate:)` on the player's timeline, or host time via
   `AVAudioTime(hostTime:)`). Schedule a whole block (count-in + all prompts + clicks) ahead of time;
@@ -46,8 +48,8 @@ Audiate/
 - Keep a `BlockClock` that maps block-relative seconds ↔ host time
   (`AVAudioTime.hostTime(forSeconds:)` / `seconds(forHostTime:)`), anchored at the scheduled
   start host time.
-- Voice syllables: one-shot samples whose perceptual onset is trimmed to sample 0 (see §6).
-  Elongations: play the syllable sample; do not stretch.
+- No voice. Prompt notes use a long open hi-hat sample, cut at the note's sounding duration
+  (`ScheduledSound.duration`, ties included) with a 10 ms choke fade. Clicks are one-shots.
 - Tap sound: short click played on keyDown (low-latency monitoring, toggleable).
 
 ## 4. Input and timing
@@ -82,7 +84,7 @@ Screens:
 3. **Unit detail** — patterns of a unit with per-level status; free practice of any unlocked item
    (does not count toward gates unless in evaluation mode).
 4. **Settings** — session length, tempo offsets, click override, two-hand mode, grade sustain,
-   calibration, sample voice (bundled / my recordings).
+   calibration.
 5. **Onboarding** — 4 short screens: what audiation is, syllables, how echo works, calibration.
 
 Notation view: `RhythmStaffView(pattern:, showSyllables:, playhead:)` drawing `NotationLayout`
@@ -94,13 +96,17 @@ never touch UI state directly; they post to the main actor.
 
 ## 6. Samples
 
-`tools/make_samples.sh` (to be written in M1): generate syllables with macOS `say`
-(e.g. `say -v Samantha -o du.aiff "doo"`), convert with `afconvert` to CAF/Linear PCM,
-trim leading silence (threshold −40 dBFS) and fade-out to ≤ 250 ms.
-Spellings for TTS: Du→"doo", de→"day", ta→"tah", da→"dah", di→"dee", be→"bay", ba→"bah", bi→"bee",
-neutral→"bum" **[uncertain: tune by ear; "bah" collides with syllable "ba" — that's why neutral uses "bum"]**.
+`tools/make_samples.sh` synthesizes percussion with `tools/synth_samples.py` (stdlib only) and converts
+it with `afconvert` to CAF (mono, 16-bit, 44.1 kHz, attack at sample 0):
 
-Later (M5): in-app recording of the user's own voice per syllable, auto-trimmed, replacing the TTS set.
+| Sample | Use | Sound |
+|---|---|---|
+| `hihat_open` | prompt notes | 808-style open hi-hat, 3.5 s, choked by the mixer |
+| `beat_strong` | click / count-in on macrobeats | low tom-like thump |
+| `beat_weak` | click / count-in on microbeats | woodblock |
+| `tap` | key press feedback | short noise tick |
+
+No voice samples (deliberate, see `01-methodology.md` §7). **[uncertain]** Timbres are a first pass; tune by ear.
 
 ## 7. Persistence (SwiftData)
 

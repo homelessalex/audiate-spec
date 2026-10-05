@@ -35,7 +35,8 @@ Acceptance:
 
 Scope: `curriculum.json`, `Gate`, `MasteryPolicy`, `LeitnerScheduler`, SwiftData persistence,
 `SessionRunner` state machine, Session screen with E1 (echo) and E2 (name the syllables),
-feedback without visuals (sound-before-sight), click stages A/B, Home with progress grid.
+feedback without visuals (sound-before-sight), click stages A/B, Home with progress grid,
+synchronized syllable text for VA teaching mode (`Timeline.prompts[].cues`).
 
 Acceptance:
 - A new user can complete U1 AO → VA across multiple days (simulate dates in tests).
@@ -67,7 +68,7 @@ Acceptance:
 
 ## M5 — Polish
 
-Two-hand mode, grade-sustain option, own-voice recording, onboarding, settings, U5–U12 content
+Two-hand mode, grade-sustain option, onboarding (incl. how to pronounce the syllables), settings, U5–U12 content
 verified end-to-end, theory track (E12), app icon, sandboxing, notarized build.
 
 ## Later (optional)
