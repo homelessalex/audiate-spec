@@ -26,6 +26,22 @@ enum Fixtures {
         catch { fatalError("raw patterns failed to decode: \(error)") }
     }()
 
+    static let curriculum: Curriculum = {
+        do { return try Curriculum(json: load("curriculum.json")) }
+        catch { fatalError("curriculum failed to load: \(error)") }
+    }()
+
+    static var calendar: Calendar {
+        var c = Calendar(identifier: .gregorian)
+        c.timeZone = TimeZone(identifier: "UTC")!
+        return c
+    }
+
+    /// Noon UTC on 2026-01-01 plus `day` days.
+    static func day(_ day: Int, hour: Int = 12) -> Date {
+        Date(timeIntervalSince1970: 1_767_225_600 + Double(day) * 86_400 + Double(hour) * 3_600)
+    }
+
     static func pattern(_ id: String) -> Pattern {
         guard let p = library.pattern(id: id) else { fatalError("no pattern \(id)") }
         return p

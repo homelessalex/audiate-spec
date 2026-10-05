@@ -1,5 +1,6 @@
 import AudiateAudio
 import AudiateCore
+import Foundation
 import Observation
 
 /// Plays a timeline and records melodic-rhythm taps in block time, output latency removed.
@@ -32,6 +33,11 @@ final class TapRecorder {
             self.isRunning = false
             onFinish(self.taps)
         }
+    }
+
+    /// Block time of what is being heard right now (for display only, never for grading).
+    func heardTime() -> Double? {
+        clock.map { $0.blockTime(forUptime: ProcessInfo.processInfo.systemUptime) - latency }
     }
 
     /// Key or pad press; ignored when no block is running.

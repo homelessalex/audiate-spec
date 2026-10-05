@@ -3,6 +3,17 @@ extension Timeline {
     /// A pickup sits at the end of the preceding measure; the count-in stops where it begins.
     public static func echoBlock(patterns: [Pattern], tempo: Tempo, clickStage: ClickStage,
                                  deriver: SyllableDeriver = SyllableDeriver()) throws -> Timeline {
+        try block(patterns: patterns, tempo: tempo, clickStage: clickStage, responses: true, deriver: deriver)
+    }
+
+    /// `| count-in | prompt 1 | prompt 2 | … |`: patterns to listen to, no response measures (E2, E3, E4).
+    public static func listenBlock(patterns: [Pattern], tempo: Tempo, clickStage: ClickStage,
+                                   deriver: SyllableDeriver = SyllableDeriver()) throws -> Timeline {
+        try block(patterns: patterns, tempo: tempo, clickStage: clickStage, responses: false, deriver: deriver)
+    }
+
+    static func block(patterns: [Pattern], tempo: Tempo, clickStage: ClickStage, responses withResponses: Bool,
+                      deriver: SyllableDeriver) throws -> Timeline {
         guard let first = patterns.first else { throw TimelineError.emptyBlock }
         let meter = first.meter
         guard patterns.allSatisfy({ $0.meter == meter }) else { throw TimelineError.mixedMeters }
@@ -12,7 +23,8 @@ extension Timeline {
         func time(measure m: Int, tick: Int) -> Double { Double(m) * measure + Double(tick) * spt }
 
         var sounds: [ScheduledSound] = []
-        let measureCount = 1 + 2 * patterns.count
+        let measuresPerPattern = withResponses ? 2 : 1
+        let measureCount = 1 + measuresPerPattern * patterns.count
         let countInEnd = meter.measureTicks - first.pickupTicks
 
         // Count-in: macro + micro beats (establishes meter type); afterwards per click stage.
@@ -31,7 +43,7 @@ extension Timeline {
         var prompts: [PromptSlot] = []
         var responses: [ResponseSlot] = []
         for (i, pattern) in patterns.enumerated() {
-            let promptMeasure = 1 + 2 * i
+            let promptMeasure = 1 + measuresPerPattern * i
             for (index, event) in pattern.events.enumerated() where event.isOnset {
                 sounds.append(ScheduledSound(time: time(measure: promptMeasure, tick: event.startTick), sound: .hiHat,
                                              duration: Double(Self.soundingTicks(pattern.events, from: index)) * spt))
@@ -45,6 +57,7 @@ extension Timeline {
                                 text: try deriver.display(for: event, in: meter), kind: event.kind)
                 }
             ))
+            guard withResponses else { continue }
             let responseMeasure = promptMeasure + 1
             responses.append(ResponseSlot(
                 patternID: pattern.id,

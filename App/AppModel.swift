@@ -2,39 +2,96 @@ import AudiateAudio
 import AudiateCore
 import Foundation
 import Observation
+import SwiftData
 
-/// Loads the bundled library and samples and owns the single audio engine.
+/// Loads bundled content, owns the audio engine, the store and the learner's progress.
 @MainActor
 @Observable
 final class AppModel {
-    let library: PatternLibrary?
-    let player: BlockPlayer?
+    struct Content {
+        let library: PatternLibrary
+        let curriculum: Curriculum
+        let player: BlockPlayer
+    }
+
+    let content: Content?
     let loadError: String?
+    let container: ModelContainer
+    let calendar = Calendar.current
+    private(set) var progress = LearnerProgress()
+    var session: SessionRunner?
+
+    /// Date injection: launch with `-AudiateDayOffset N` to pretend it's N days later.
+    let dayOffset = UserDefaults.standard.integer(forKey: "AudiateDayOffset")
 
     init() {
         do {
-            let (library, player) = try Self.load(from: .main)
-            self.library = library
-            self.player = player
+            container = try ModelContainer(for: CalibrationProfile.self, AttemptRecord.self, ItemStateRecord.self, LevelPassRecord.self)
+        } catch {
+            fatalError("SwiftData container: \(error)")
+        }
+        do {
+            content = try Self.load(from: .main)
             loadError = nil
         } catch {
-            library = nil
-            player = nil
+            content = nil
             loadError = "\(error)"
         }
+        progress = store.load()
     }
 
-    private static func load(from bundle: Bundle) throws -> (PatternLibrary, BlockPlayer) {
+    var library: PatternLibrary? { content?.library }
+    var player: BlockPlayer? { content?.player }
+    var outputDevice: OutputDevice? { OutputDevice.current() }
+    private var store: ProgressStore { ProgressStore(context: container.mainContext) }
+
+    func now() -> Date {
+        Date().addingTimeInterval(Double(dayOffset) * 86_400)
+    }
+
+    /// Input offset in seconds for the current output, 0 if not calibrated.
+    var inputOffset: Double { container.mainContext.inputOffset(for: outputDevice) }
+
+    /// Records and persists an attempt; returns levels that became passed.
+    @discardableResult
+    func record(_ attempt: Attempt) -> [LevelKey] {
+        guard let content else { return [] }
+        let before = progress
+        let passed = progress.record(attempt, curriculum: content.curriculum, library: content.library, calendar: calendar)
+        store.save(attempt, before: before, after: progress)
+        return passed
+    }
+
+    func planSession() -> SessionPlan? {
+        guard let content else { return nil }
+        let planner = SessionPlanner(curriculum: content.curriculum, library: content.library)
+        var rng = SystemRandomNumberGenerator()
+        return planner.plan(progress, date: now(), using: &rng)
+    }
+
+    func startSession() {
+        guard let content, let plan = planSession(), !plan.isEmpty else { return }
+        session = SessionRunner(plan: plan, content: content, model: self)
+    }
+
+    func endSession() {
+        session?.pause()
+        session = nil
+    }
+
+    private static func load(from bundle: Bundle) throws -> Content {
         guard let patterns = bundle.url(forResource: "patterns", withExtension: "json"),
               let cells = bundle.url(forResource: "cells", withExtension: "json"),
+              let curriculum = bundle.url(forResource: "curriculum", withExtension: "json"),
               let samples = bundle.url(forResource: "Samples", withExtension: nil) else {
             throw AppError.missingResource
         }
-        let library = try PatternLibrary(patternsJSON: Data(contentsOf: patterns), cellsJSON: Data(contentsOf: cells))
-        return (library, try BlockPlayer(bank: SampleBank.load(directory: samples)))
+        return Content(
+            library: try PatternLibrary(patternsJSON: Data(contentsOf: patterns), cellsJSON: Data(contentsOf: cells)),
+            curriculum: try Curriculum(json: Data(contentsOf: curriculum)),
+            player: try BlockPlayer(bank: SampleBank.load(directory: samples))
+        )
     }
-
-    var outputDevice: OutputDevice? { OutputDevice.current() }
 }
 
 enum AppError: Error {
