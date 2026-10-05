@@ -4,7 +4,7 @@ Synthesizes the percussion samples (stdlib only) as mono 16-bit WAV at 44.1 kHz.
 Called by tools/make_samples.sh, which converts them to CAF.
 
   hihat_open   prompt notes; long (3.5 s) so the player can choke it at the note's end
-  beat_strong  metronome / count-in on macrobeats: low tom-like thump
+  beat_strong  metronome / count-in on macrobeats: crisp 1 kHz tick, louder than beat_weak
   beat_weak    metronome / count-in on microbeats: short crisp tick, quieter than beat_strong
   tap          learner's key press feedback
 
@@ -56,13 +56,16 @@ def hihat_open(seconds=3.5, decay=0.9):
     return out
 
 
-def beat_strong(seconds=0.25):
-    out, phase = [], 0.0
+def beat_strong(seconds=0.04):
+    # Accent: same kind of crisp tick as beat_weak, lower (1 kHz), longer decay (7 ms), louder.
+    # No pitch sweep: a falling thump sounded doubled on small speakers.
+    rng = random.Random(2)
+    out = []
     for i in range(int(seconds * RATE)):
         t = i / RATE
-        freq = 70 + 110 * math.exp(-t / 0.03)  # pitch drop 180 → 70 Hz
-        phase += 2 * math.pi * freq / RATE
-        out.append(math.sin(phase) * math.exp(-t / 0.07))
+        tone = math.sin(2 * math.pi * 1000 * t) * math.exp(-t / 0.007)
+        edge = rng.uniform(-1, 1) * 0.5 * math.exp(-t / 0.0007)
+        out.append(tone + edge)
     return out
 
 

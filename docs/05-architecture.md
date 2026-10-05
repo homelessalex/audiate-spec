@@ -102,7 +102,7 @@ it with `afconvert` to CAF (mono, 16-bit, 44.1 kHz, attack at sample 0):
 | Sample | Use | Sound |
 |---|---|---|
 | `hihat_open` | prompt notes | 808-style open hi-hat, 3.5 s, choked by the mixer |
-| `beat_strong` | click / count-in on macrobeats | low tom-like thump |
+| `beat_strong` | click / count-in on macrobeats | crisp tick (1 kHz, ~7 ms decay), louder than `beat_weak` |
 | `beat_weak` | click / count-in on microbeats | short crisp tick (1.8 kHz, ~4 ms decay), quieter than `beat_strong` |
 | `tap` | key press feedback | short noise tick |
 
