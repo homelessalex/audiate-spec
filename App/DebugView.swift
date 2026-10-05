@@ -55,8 +55,10 @@ struct DebugView: View {
                     recorder.isRunning ? stop(player) : play(pattern, player: player)
                 }
                 .keyboardShortcut(.return, modifiers: [])
-                if recorder.isRunning { Text("Tap Space in each response measure… (\(recorder.tapCount) taps)") }
+                if recorder.isRunning { Text("Tap (Space or click the pad) in each response measure…") }
             }
+
+            TapPad(recorder: recorder)
 
             Text(latencySummary(player)).font(.caption).foregroundStyle(.secondary)
 
@@ -93,7 +95,8 @@ struct DebugView: View {
                 report = timeline.responses.enumerated().map { i, slot in
                     let grade = OnsetGrader.grade(expected: slot.expectedOnsets, taps: taps,
                                                   responseStart: slot.start, responseEnd: slot.end, mode: mode)
-                    return Self.describe(grade, index: i + 1, slot: slot, mode: mode)
+                    return Self.describe(grade, index: i + 1, slot: slot, mode: mode, taps: taps,
+                                         measureStart: slot.end - timeline.measureDuration)
                 }
                 print(report.joined(separator: "\n"))
             }
@@ -107,7 +110,8 @@ struct DebugView: View {
         recorder.cancel()
     }
 
-    static func describe(_ g: OnsetGrade, index: Int, slot: ResponseSlot, mode: TimingMode) -> String {
+    static func describe(_ g: OnsetGrade, index: Int, slot: ResponseSlot, mode: TimingMode,
+                         taps: [Double], measureStart: Double) -> String {
         var lines = [String(format: "#%d %@ %@  hits %d/%d  misses %d  extras %d  mean %.1f ms  max %.1f ms  tol %.1f ms  acc %.0f%%",
                             index, slot.patternID, g.passed ? "PASS" : "FAIL", g.hits.count, slot.expectedOnsets.count,
                             g.misses.count, g.extras.count, g.meanAbsError * 1000, g.maxAbsError * 1000,
@@ -115,6 +119,9 @@ struct DebugView: View {
         if let ratio = g.tempoRatio { lines.append(String(format: "   %@ tempo ratio %.3f", mode.rawValue, ratio)) }
         let errors = g.hits.map { String(format: "%+.0f", $0.error * 1000) }.joined(separator: " ")
         if !errors.isEmpty { lines.append("   errors ms: \(errors)") }
+        func ms(_ times: [Double]) -> String { times.map { String(format: "%.0f", ($0 - measureStart) * 1000) }.joined(separator: " ") }
+        let nearby = taps.filter { $0 >= slot.start - 0.3 && $0 < slot.end }
+        lines.append("   ms from response downbeat — expected: \(ms(slot.expectedOnsets))  taps: \(ms(nearby))")
         return lines.joined(separator: "\n")
     }
 }

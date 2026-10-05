@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		050CF60584D9DB39265C4179 /* TapPad.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15445B34628C4AB38844B93B /* TapPad.swift */; };
 		0C4086979F573ED2B2F23465 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0203DD6E0965C8E5832F1DDD /* AppModel.swift */; };
 		532D736DBE4233217C586A7D /* Samples in Resources */ = {isa = PBXBuildFile; fileRef = 45CD7BC307976DB31E1B093A /* Samples */; };
 		60CBB7CFF22B25EA09503E75 /* CalibrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 802F0890C6D0D2673D8BE66A /* CalibrationView.swift */; };
@@ -25,6 +26,7 @@
 /* Begin PBXFileReference section */
 		0203DD6E0965C8E5832F1DDD /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		09F9525E6BDCC383D21C1CD3 /* patterns.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = patterns.json; sourceTree = "<group>"; };
+		15445B34628C4AB38844B93B /* TapPad.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TapPad.swift; sourceTree = "<group>"; };
 		2CD3E3C7EE900193F6867A7A /* CalibrationProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationProfile.swift; sourceTree = "<group>"; };
 		45CD7BC307976DB31E1B093A /* Samples */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Samples; path = Resources/Samples; sourceTree = SOURCE_ROOT; };
 		4A2D4AAFD4C11EC9D4ECD285 /* DebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugView.swift; sourceTree = "<group>"; };
@@ -70,6 +72,7 @@
 				802F0890C6D0D2673D8BE66A /* CalibrationView.swift */,
 				85EFB2E5BE5CF7C868E09F68 /* ContentView.swift */,
 				4A2D4AAFD4C11EC9D4ECD285 /* DebugView.swift */,
+				15445B34628C4AB38844B93B /* TapPad.swift */,
 				96E02CC93B8433E77734A286 /* TapRecorder.swift */,
 				7E822DD943D591D74ADE3472 /* WindowID.swift */,
 			);
@@ -186,6 +189,7 @@
 				60CBB7CFF22B25EA09503E75 /* CalibrationView.swift in Sources */,
 				CFFD156538A83F214CC54A45 /* ContentView.swift in Sources */,
 				FF4D9A683935F035B194B243 /* DebugView.swift in Sources */,
+				050CF60584D9DB39265C4179 /* TapPad.swift in Sources */,
 				7621434118C6237776A5C493 /* TapRecorder.swift in Sources */,
 				7DA4AFAD4F5B5FFB5BF5BFA0 /* WindowID.swift in Sources */,
 			);

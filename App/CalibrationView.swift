@@ -21,7 +21,7 @@ struct CalibrationView: View {
                       systemImage: "exclamationmark.triangle")
                     .foregroundStyle(.orange)
             }
-            Text("Press Start, then tap Space together with every click. The first four clicks are for settling in.")
+            Text("Press Start, then tap together with every click — Space or the pad below, whichever you will use in exercises. The first four clicks are for settling in.")
             if let current = device.flatMap({ context.calibration(for: $0.uid) }) {
                 Text("Current offset: \(current.inputOffsetMs, specifier: "%.0f") ms").foregroundStyle(.secondary)
             }
@@ -31,6 +31,8 @@ struct CalibrationView: View {
                     .disabled(recorder.isRunning || model.player == nil)
                     .keyboardShortcut(.return, modifiers: [])
             }
+
+            TapPad(recorder: recorder)
 
             if let result {
                 if result.isAccepted, let median = result.medianOffset {

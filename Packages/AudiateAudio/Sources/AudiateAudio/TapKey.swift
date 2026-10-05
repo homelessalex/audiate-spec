@@ -6,6 +6,8 @@ public enum TapKey: Hashable, Sendable {
     case f
     /// Melodic rhythm in two-hand mode.
     case j
+    /// Mouse / trackpad click on the tap pad; same role as Space.
+    case pointer
 
     init?(keyCode: UInt16) {
         switch keyCode {
