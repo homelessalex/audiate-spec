@@ -18,9 +18,8 @@ public enum Gate {
                 .flatMap(\.meters)
             return has(.verbal) && Set(meters).count >= 2
         case .symbolic:
-            // Reading runs alongside the ear levels; per pattern it waits for the AO teaching echoes
-            // (LearnerProgress.hasHeard). Deviation from Gordon, docs/01-methodology.md §7.
-            return isUnlocked(LevelKey(unitID: key.unitID, level: .aural), curriculum: curriculum, passed: passed)
+            // Sound before sight: no notation of a unit's patterns before this.
+            return has(.partialSynthesis)
         case .compositeSynthesis:
             return has(.symbolic)
         case .generalizationAural, .generalizationVerbal:

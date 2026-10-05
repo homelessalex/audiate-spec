@@ -1,8 +1,9 @@
 import Foundation
 
 /// Builds today's session (docs/02-curriculum.md §5): review of due items, then new material at the
-/// ear frontier, with reading from notation right after each pattern has been echoed by ear
-/// (sound before sight per pattern). Warm-up and audiation drills arrive in M4.
+/// ear frontier. Reading steps appear only for units whose SA level is unlocked (sound before sight).
+/// Every tap step is played pattern by pattern, each attempt with its own count-in; teaching repeats a
+/// pattern until it is correct. Warm-up and audiation drills arrive in M4.
 public struct SessionPlanner: Sendable {
     public let curriculum: Curriculum
     public let library: PatternLibrary
@@ -75,7 +76,7 @@ public struct SessionPlanner: Sendable {
                              using rng: inout some RandomNumberGenerator) -> [SessionStep] {
         guard let unit = curriculum.unit(id: key.unitID) else { return [] }
         let patterns = curriculum.patterns(of: unit, in: library)
-        let introduced = patterns.filter { progress.teachingCount(patternID: $0.id, level: key.level) >= MasteryPolicy.teachingEchoes }
+        let introduced = patterns.filter { progress.isIntroduced(patternID: $0.id, level: key.level) }
         let fresh = patterns.filter { !introduced.contains($0) }.prefix(MasteryPolicy.maxNewPatternsPerSessionPerUnit)
         let readsUnit = isReading(unit, progress)
         func item(_ p: Pattern, _ level: SkillLevel) -> PlannedItem {
@@ -84,11 +85,11 @@ public struct SessionPlanner: Sendable {
 
         var steps: [SessionStep] = []
         for p in fresh {
-            steps.append(echo(Array(repeating: item(p, key.level), count: MasteryPolicy.teachingEchoes), mode: .teaching))
+            steps.append(echo([item(p, key.level)], mode: .teaching))
             if key.level == .aural {
                 taughtNow.insert(p.id)
                 if readsUnit {
-                    steps.append(read(Array(repeating: item(p, .symbolic), count: MasteryPolicy.teachingReads), mode: .teaching))
+                    steps.append(read([item(p, .symbolic)], mode: .teaching))
                 }
             }
         }
@@ -202,13 +203,15 @@ public struct SessionPlanner: Sendable {
     }
 
     func seconds(_ step: SessionStep) -> Double {
-        func measures(_ meterID: String, _ tempo: Tempo, _ count: Int) -> Double {
+        /// Each attempt: count-in + its measures + the verdict; teaching is assumed to take two attempts.
+        func attempts(_ meterID: String, _ tempo: Tempo, items: Int, measuresPerAttempt: Int, mode: PracticeMode) -> Double {
             guard let meter = library.meters[meterID] else { return 0 }
-            return Double(count) * tempo.seconds(forTicks: meter.measureTicks, in: meter) + MasteryPolicy.stepOverheadSeconds
+            let attempt = Double(1 + measuresPerAttempt) * tempo.seconds(forTicks: meter.measureTicks, in: meter) + MasteryPolicy.verdictSeconds
+            return Double(items) * attempt * (mode == .teaching ? 2 : 1) + MasteryPolicy.stepOverheadSeconds
         }
         switch step {
-        case .echo(let s): return measures(s.meterID, s.tempo, 1 + s.items.count * (2 + EchoPolicy.gapMeasures))
-        case .read(let s): return measures(s.meterID, s.tempo, 1 + s.items.count * 2)
+        case .echo(let s): return attempts(s.meterID, s.tempo, items: s.items.count, measuresPerAttempt: 2 + EchoPolicy.gapMeasures, mode: s.mode)
+        case .read(let s): return attempts(s.meterID, s.tempo, items: s.items.count, measuresPerAttempt: 2, mode: s.mode)
         case .nameSyllables: return MasteryPolicy.nameSyllablesSeconds
         }
     }

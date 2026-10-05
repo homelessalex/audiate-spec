@@ -31,10 +31,9 @@ The working name "Audiate" is a placeholder.
 
 ## Non-negotiable rules (from the methodology)
 
-1. **Sound before sight — per pattern.** A pattern's notation is never shown before the learner has
-   heard and echoed that pattern by ear (its `AO` teaching echoes). Ear exercises (echo, name the
-   syllables) never show notation. Reading follows in the same lesson. This deliberately relaxes Gordon's
-   per-unit order (`docs/01-methodology.md` §7); gates in `docs/02-curriculum.md` §3.
+1. **Sound before sight.** Notation for a pattern is never shown until that pattern's content unit
+   has passed the aural/oral and verbal levels (and partial synthesis). Before that there is no visual
+   rhythm at all — feedback is yes/no. See `docs/02-curriculum.md` → gates.
 2. **Meter context first.** Every pattern is preceded by an established meter and tempo
    (preparatory count-in in the pattern's meter). Never present a pattern "cold".
 3. **Echo in time.** Responses happen in the measure(s) right after the prompt, without stopping

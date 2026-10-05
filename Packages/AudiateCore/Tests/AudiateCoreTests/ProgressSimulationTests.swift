@@ -33,11 +33,7 @@ struct ProgressSimulationTests {
                     #expect(q.item.level == .verbal)
                     record(q.item, .nameSyllables, q.mode)
                 case .read(let block):
-                    // sound before sight, per pattern: notation only after the pattern's ear teaching
-                    for item in block.items {
-                        #expect(progress.hasHeard(patternID: item.patternID), "day \(day): \(item.patternID) read before heard")
-                    }
-                    block.items.forEach { record($0, .read, block.mode) }
+                    Issue.record("day \(day): reading scheduled before SA is unlocked: \(block.items.map(\.patternID))")
                 }
             }
         }
@@ -49,6 +45,6 @@ struct ProgressSimulationTests {
         #expect(vaDay > aoDay)
         #expect(vaDay <= 7)
         #expect(Gate.isUnlocked(LevelKey(unitID: "U2", level: .aural), curriculum: curriculum, passed: progress.passed))
-        #expect(passedOn[LevelKey(unitID: "U1", level: .symbolic)] != nil, "reading U1 is learned alongside the ear")
+        #expect(!Gate.isUnlocked(LevelKey(unitID: "U1", level: .symbolic), curriculum: curriculum, passed: progress.passed))
     }
 }

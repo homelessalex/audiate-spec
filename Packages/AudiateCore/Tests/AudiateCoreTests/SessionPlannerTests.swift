@@ -20,16 +20,23 @@ struct SessionPlannerTests {
         plan.steps.compactMap { if case .read(let r) = $0 { r } else { nil } }
     }
 
-    @Test func newPatternIsEchoedByEarThenRead() {
-        let p = plan(LearnerProgress(), day: 0)
-        // step 0: ear teaching of pattern A, step 1: see-and-hear reading of A, then the same for B
-        guard case .echo(let ear) = p.steps[0], case .read(let look) = p.steps[1] else {
-            Issue.record("expected echo then read, got \(p.steps.prefix(2))"); return
+    @Test func noReadingWhileOnlyEarLevelsAreOpen() {
+        #expect(reads(plan(LearnerProgress(), day: 0)).isEmpty)
+    }
+
+    @Test func taughtOnceCorrectOrAfterMaxAttempts() {
+        var progress = LearnerProgress()
+        func teach(_ id: String, passed: Bool) {
+            progress.record(Attempt(date: Fixtures.day(0), unitID: "U1", level: .aural, patternID: id, exercise: .echo,
+                                    mode: .teaching, passed: passed, accuracy: passed ? 1 : 0.5),
+                            curriculum: Fixtures.curriculum, library: Fixtures.library, calendar: calendar)
         }
-        #expect(ear.mode == .teaching && look.mode == .teaching && look.playsModel)
-        #expect(Set(look.items.map(\.patternID)) == [ear.items[0].patternID])
-        #expect(look.items.count == MasteryPolicy.teachingReads)
-        #expect(reads(p).contains { $0.mode == .evaluation && $0.clickStage == .b })
+        teach("D-MM-01", passed: false)
+        #expect(!progress.isIntroduced(patternID: "D-MM-01", level: .aural))
+        teach("D-MM-01", passed: true)
+        #expect(progress.isIntroduced(patternID: "D-MM-01", level: .aural))
+        for _ in 0..<MasteryPolicy.maxTeachingAttempts { teach("D-MM-02", passed: false) }
+        #expect(progress.isIntroduced(patternID: "D-MM-02", level: .aural))
     }
 
     @Test func newLearnerStartsWithU1AuralTeaching() {
@@ -38,7 +45,7 @@ struct SessionPlannerTests {
         let blocks = echoes(p)
         let teaching = blocks.filter { $0.mode == .teaching }
         #expect(teaching.count == MasteryPolicy.maxNewPatternsPerSessionPerUnit)
-        #expect(teaching.allSatisfy { $0.items.count == MasteryPolicy.teachingEchoes && Set($0.items).count == 1 })
+        #expect(teaching.allSatisfy { $0.items.count == 1 }) // repeated until correct by the session runner
         #expect(teaching.allSatisfy { $0.clickStage == .a && !$0.showSyllables })
         let evaluation = blocks.filter { $0.mode == .evaluation }
         #expect(!evaluation.isEmpty)
@@ -54,7 +61,7 @@ struct SessionPlannerTests {
             for block in echoes(plan(LearnerProgress(), day: day, seed: UInt64(day))) {
                 let meters = Set(block.items.compactMap { Fixtures.library.pattern(id: $0.patternID)?.meter.id })
                 #expect(meters == [block.meterID])
-                #expect(block.items.count >= MasteryPolicy.minBlockSize)
+                if block.mode == .evaluation { #expect(block.items.count >= MasteryPolicy.minBlockSize) }
             }
         }
     }

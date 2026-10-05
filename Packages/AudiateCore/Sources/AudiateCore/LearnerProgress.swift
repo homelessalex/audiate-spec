@@ -24,9 +24,15 @@ public struct LearnerProgress: Codable, Hashable, Sendable {
         attempts.filter { $0.patternID == patternID && $0.level == level && $0.mode == .teaching }.count
     }
 
-    /// Sound before sight, per pattern: notation may be shown once the pattern was echoed by ear in teaching.
+    /// Taught at `level`: performed correctly in teaching mode, or the teaching attempts ran out.
+    public func isIntroduced(patternID: String, level: SkillLevel) -> Bool {
+        let teaching = attempts.filter { $0.patternID == patternID && $0.level == level && $0.mode == .teaching }
+        return teaching.contains(where: \.passed) || teaching.count >= MasteryPolicy.maxTeachingAttempts
+    }
+
+    /// The pattern has been taught by ear.
     public func hasHeard(patternID: String) -> Bool {
-        teachingCount(patternID: patternID, level: .aural) >= MasteryPolicy.teachingEchoes
+        isIntroduced(patternID: patternID, level: .aural)
     }
 
     public func dueItems(on date: Date) -> [ItemState] {

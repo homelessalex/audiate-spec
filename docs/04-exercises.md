@@ -25,8 +25,11 @@ Tap exercises share the onset grader (§2).
 The pulse never stops inside a block:
 
 ```
-| count-in | prompt 1 | hold | response 1 | prompt 2 | hold | response 2 | ... | (end)
+| count-in | prompt | hold | response |  → yes/no → next attempt (again with a count-in)
 ```
+
+- One pattern per attempt. Teaching: the same pattern again until correct (max
+  `MasteryPolicy.maxTeachingAttempts`). Evaluation: one attempt per pattern.
 
 - Hold: `EchoPolicy.gapMeasures` silent measures (default 1) between prompt and response; the click goes
   on per the click stage. The learner audiates the pattern, then echoes it.
@@ -39,21 +42,17 @@ The pulse never stops inside a block:
   (`Timeline.prompts[].cues`). Hidden in evaluation mode; shown after the attempt.
 - Upbeat patterns: the pickup sits at the end of the preceding measure; response measure is
   likewise preceded by the pickup position. Count-in is shortened accordingly.
-- Block size: 4–6 patterns, same meter.
+- Step size: teaching 1 pattern; evaluation 4–6 patterns of one meter, each with its own count-in.
 
-### Feedback (sound before sight, per pattern)
+### Feedback (sound before sight)
 
-- During ear exercises: no notation, no visual rhythm — only the pulse indicator and phase labels
-  (Listen / Hold it / Your turn).
-- After an attempt the pattern has been heard, so feedback shows it on the staff with a beat grid
-  (macrobeats tall, microbeats short, aligned under the notes) and a comparison:
-  row "notes" (onset + sounding length of each note) and row "you" (taps), each hit joined to its note,
-  colored green (|error| ≤ ½ tol) or orange with the error in ms; misses and extras in red.
-  Plus counts of on time / early / late / missed / extra, and an audio replay "model vs. you"
-  (model measure, then your taps).
-- While reading (E5): beat grid lit with the pulse, a cursor through the measure being read, the
-  sounding note highlighted, taps appear live under the staff.
-- Syllables are shown after the attempt from `VA` on.
+- Right after each attempt: **yes / no** only. No notation, grid, timing strip or counts before the
+  unit reaches `SA`.
+- From `SA` on (reading): the verdict also shows the pattern on the staff with a beat grid and a
+  comparison: row "notes" (onset + sounding length) and row "you" (taps joined to their notes, error
+  in ms, missed/extra in red). While reading: beat grid lit with the pulse, cursor, the sounding note
+  highlighted, taps appear live.
+- Syllables are shown in VA teaching mode in sync with the prompt.
 
 ## 2. Onset grader (E1, E5, E9, E11)
 

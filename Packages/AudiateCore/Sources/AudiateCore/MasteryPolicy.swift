@@ -19,9 +19,11 @@ public enum MasteryPolicy {
     // Session
     public static let sessionSeconds = 12.0 * 60
     public static let reviewShare = 0.40
-    public static let teachingEchoes = 3
-    /// See-and-hear readings of a new pattern right after its ear echoes.
-    public static let teachingReads = 2
+    /// Teaching mode repeats a pattern until it is performed correctly, at most this many times;
+    /// after that the pattern counts as introduced anyway and comes back in evaluation.
+    public static let maxTeachingAttempts = 4
+    /// Rough time the yes/no verdict stays on screen after each attempt.
+    public static let verdictSeconds = 1.2
     public static let maxNewPatternsPerSessionPerUnit = 2
     public static let evaluationBlockSize = 4...6
     public static let minBlockSize = 3

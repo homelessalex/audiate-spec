@@ -40,8 +40,8 @@ synchronized syllable text for VA teaching mode (`Timeline.prompts[].cues`).
 
 Acceptance:
 - A new user can complete U1 AO → VA across multiple days (simulate dates in tests).
-- No pattern's notation is shown before its AO teaching echoes (planner test). *(Changed: sound before
-  sight per pattern; reading with notation was pulled forward from M3.)*
+- No notation is visible anywhere for units below SA (gate + planner tests). The staff renderer and
+  reading steps already exist and switch on at SA (M3).
 
 > Prompt: *Implement M2 from docs/06. Curriculum and gates per docs/02 §1–4; exercises E1 and E2 per
 > docs/04. Mastery thresholds in one MasteryPolicy file. Add date injection for tests.*

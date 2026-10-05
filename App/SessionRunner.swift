@@ -3,15 +3,17 @@ import AudiateCore
 import Foundation
 import Observation
 
-/// Drives one session: `ready → playing → feedback → next` for tap blocks (echo, read),
-/// `question → answered → next` for E2, then `summary`. Audio callbacks reach it on the main actor.
+/// Drives one session. Tap steps (echo, read) go pattern by pattern: each attempt is a short block with its
+/// own count-in (`playing`), followed at once by a yes/no `verdict`. Teaching repeats a pattern until it
+/// is correct (at most MasteryPolicy.maxTeachingAttempts); evaluation gives one attempt.
+/// E2 runs as `question`; the session ends in `summary`. Audio callbacks reach it on the main actor.
 @MainActor
 @Observable
 final class SessionRunner {
     enum Phase: Equatable {
         case ready
         case playing
-        case feedback
+        case verdict
         case question
         case summary
     }
@@ -44,9 +46,7 @@ final class SessionRunner {
         let item: PlannedItem
         let pattern: Pattern
         let grade: OnsetGrade
-        let feedback: EchoFeedback
-        let tapsFromDownbeat: [Double]
-        let syllables: String
+        /// Shown only for reading (from SA); ear steps give yes/no.
         let comparison: StaffRenderer.Comparison
     }
 
@@ -61,7 +61,11 @@ final class SessionRunner {
     private(set) var stepIndex = 0
     private(set) var phase: Phase = .ready
     private(set) var timeline: Timeline?
-    private(set) var results: [Result] = []
+    /// Pattern being practiced within the current tap step, and its attempt number (1-based).
+    private(set) var itemIndex = 0
+    private(set) var attempt = 1
+    private(set) var lastResult: Result?
+    private var advanceTask: Task<Void, Never>?
     private(set) var question: Question?
     private(set) var newlyPassed: [LevelKey] = []
     private(set) var error: String?
@@ -96,20 +100,35 @@ final class SessionRunner {
 
     // MARK: - Tap blocks
 
+    /// Return on the ready screen: starts (or resumes) the step at the current pattern.
     func startBlock() {
-        guard let block else { return }
-        let patterns = block.items.compactMap { content.library.pattern(id: $0.patternID) }
+        playAttempt()
+    }
+
+    var progressLabel: String {
+        guard let block else { return "" }
+        var s = "Pattern \(itemIndex + 1) of \(block.items.count)"
+        if block.mode == .teaching { s += " · try \(attempt) of \(MasteryPolicy.maxTeachingAttempts)" }
+        return s
+    }
+
+    var currentItem: PlannedItem? {
+        block.flatMap { $0.items.indices.contains(itemIndex) ? $0.items[itemIndex] : nil }
+    }
+
+    private func playAttempt() {
+        guard let block, let item = currentItem, let pattern = content.library.pattern(id: item.patternID) else { return }
         do {
             let timeline = switch block.kind {
-            case .echo: try Timeline.echoBlock(patterns: patterns, tempo: block.tempo, clickStage: block.clickStage)
-            case .readWithModel: try Timeline.echoBlock(patterns: patterns, tempo: block.tempo, clickStage: block.clickStage, gapMeasures: 0)
-            case .read: try Timeline.readBlock(patterns: patterns, tempo: block.tempo, clickStage: block.clickStage)
+            case .echo: try Timeline.echoBlock(patterns: [pattern], tempo: block.tempo, clickStage: block.clickStage)
+            case .readWithModel: try Timeline.echoBlock(patterns: [pattern], tempo: block.tempo, clickStage: block.clickStage, gapMeasures: 0)
+            case .read: try Timeline.readBlock(patterns: [pattern], tempo: block.tempo, clickStage: block.clickStage)
             }
             self.timeline = timeline
-            results = []
+            lastResult = nil
             phase = .playing
             try recorder.run(timeline, player: content.player, tapSound: true) { [weak self] taps in
-                self?.finishBlock(block, patterns: patterns, timeline: timeline, rawTaps: taps)
+                self?.finishAttempt(block, item: item, pattern: pattern, timeline: timeline, rawTaps: taps)
             }
         } catch {
             self.error = "\(error)"
@@ -117,27 +136,50 @@ final class SessionRunner {
         }
     }
 
-    private func finishBlock(_ block: TapBlock, patterns: [Pattern], timeline: Timeline, rawTaps: [Double]) {
+    private func finishAttempt(_ block: TapBlock, item: PlannedItem, pattern: Pattern, timeline: Timeline, rawTaps: [Double]) {
+        guard let slot = timeline.responses.first else { return }
         let compensation = LatencyCompensation(outputLatency: 0, inputOffset: model.inputOffset)
         let taps = rawTaps.map(compensation.blockTime(forRawBlockTime:))
-        let deriver = SyllableDeriver()
-        results = zip(block.items, zip(patterns, timeline.responses)).enumerated().map { i, entry in
-            let (item, (pattern, slot)) = entry
-            let grade = OnsetGrader.grade(expected: slot.expectedOnsets, taps: taps, responseStart: slot.start,
-                                          responseEnd: slot.end, mode: block.clickStage.timingMode)
-            let downbeat = slot.end - timeline.measureDuration
-            return Result(
-                id: i, item: item, pattern: pattern, grade: grade, feedback: EchoFeedback(grade),
-                tapsFromDownbeat: taps.filter { $0 >= slot.start - 0.15 && $0 < slot.end }.map { $0 - downbeat },
-                syllables: (try? deriver.line(for: pattern)) ?? "",
-                comparison: Self.comparison(grade, pattern: pattern, downbeat: downbeat, tempo: block.tempo)
-            )
+        let grade = OnsetGrader.grade(expected: slot.expectedOnsets, taps: taps, responseStart: slot.start,
+                                      responseEnd: slot.end, mode: block.clickStage.timingMode)
+        let downbeat = slot.end - timeline.measureDuration
+        lastResult = Result(id: itemIndex, item: item, pattern: pattern, grade: grade,
+                            comparison: Self.comparison(grade, pattern: pattern, downbeat: downbeat, tempo: block.tempo))
+        record(Attempt(date: model.now(), unitID: item.unitID, level: item.level, patternID: pattern.id,
+                       exercise: block.exercise, mode: block.mode, passed: grade.passed, accuracy: grade.accuracy))
+        phase = .verdict
+        // Ear steps: yes/no only, then straight on. Reading (from SA) waits for Return so the comparison can be read.
+        guard !block.showsNotation else { return }
+        advanceTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(MasteryPolicy.verdictSeconds))
+            guard !Task.isCancelled else { return }
+            self?.advance()
         }
-        for result in results {
-            record(Attempt(date: model.now(), unitID: result.item.unitID, level: result.item.level, patternID: result.pattern.id,
-                           exercise: block.exercise, mode: block.mode, passed: result.grade.passed, accuracy: result.grade.accuracy))
+    }
+
+    /// Will the current pattern be tried again after this verdict?
+    var willRetry: Bool {
+        guard let block, let result = lastResult else { return false }
+        return block.mode == .teaching && !result.grade.passed && attempt < MasteryPolicy.maxTeachingAttempts
+    }
+
+    /// After a verdict: retry the pattern, go to the next one, or finish the step.
+    func advance() {
+        advanceTask?.cancel()
+        guard phase == .verdict else { return }
+        if stepForward() { playAttempt() } else { next() }
+    }
+
+    /// Moves to the next attempt; false when the step is done.
+    private func stepForward() -> Bool {
+        guard let block else { return false }
+        if willRetry {
+            attempt += 1
+        } else {
+            itemIndex += 1
+            attempt = 1
         }
-        phase = .feedback
+        return itemIndex < block.items.count
     }
 
     /// "Pattern vs. you" in measure ticks: note spans, hits joined to their notes, misses, extras.
@@ -175,13 +217,6 @@ final class SessionRunner {
         return recorder.taps.map { $0 - offset }.filter { $0 >= slot.start - 0.15 && $0 < slot.end }.map { ($0 - downbeat) / spt }
     }
 
-    func replay(_ result: Result) {
-        guard let block,
-              let t = try? Timeline.replay(pattern: result.pattern, tempo: block.tempo, tapsFromDownbeat: result.tapsFromDownbeat)
-        else { return }
-        _ = try? content.player.play(t) {}
-    }
-
     // MARK: - Name the syllables
 
     func playQuestion() {
@@ -216,16 +251,24 @@ final class SessionRunner {
         enterStep()
     }
 
-    /// Esc: stop the block; the step can be started again (nothing is recorded for it).
+    /// Esc: stop; the step resumes at the same pattern and attempt (nothing is recorded for the interrupted one).
     func pause() {
+        advanceTask?.cancel()
         content.player.stop()
         recorder.cancel()
-        if phase == .playing { phase = .ready }
+        if phase == .verdict, !stepForward() {
+            next()
+            return
+        }
+        if phase == .playing || phase == .verdict { phase = .ready }
     }
 
     private func enterStep() {
+        advanceTask?.cancel()
         timeline = nil
-        results = []
+        itemIndex = 0
+        attempt = 1
+        lastResult = nil
         question = nil
         switch step {
         case .echo, .read:
