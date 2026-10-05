@@ -25,11 +25,18 @@ Tap exercises share the onset grader (§2).
 The pulse never stops inside a block:
 
 ```
-| count-in | prompt | hold | response |  → yes/no → next attempt (again with a count-in)
+| count-in | prompt | hold | response | lead-in | prompt | hold | response | lead-in | ...
 ```
 
+- The whole session is one uninterrupted pulse (`FlowSequencer`). The lead-in after a response is the
+  next attempt's count-in; the yes/no verdict of the attempt just finished is shown during it.
+- A change of meter or tempo (e.g. teaching → evaluation) adds one count-in measure in the new tempo.
 - One pattern per attempt. Teaching: the same pattern again until correct (max
   `MasteryPolicy.maxTeachingAttempts`). Evaluation: one attempt per pattern.
+- E2 in the flow: `| lead-in | prompt | prompt | answer | answer |` — heard twice, answered with keys
+  1–4 within the answer measures; no answer counts as wrong.
+- When the plan runs out the next session is planned and appended; the flow stops only when there is
+  nothing left to practice, or on Esc (pause; resume restarts the interrupted attempt with a count-in).
 
 - Hold: `EchoPolicy.gapMeasures` silent measures (default 1) between prompt and response; the click goes
   on per the click stage. The learner audiates the pattern, then echoes it.

@@ -72,6 +72,53 @@ public final class BlockPlayer {
         blockNode.stop()
     }
 
+    /// Chunks kept queued ahead of playback (~0.28 s at 44.1 kHz with 2048-frame chunks).
+    public static let queuedChunks = 6
+
+    /// Plays an open-ended stream. `provider(from, to)` returns the sounds starting in `[from, to)`,
+    /// or nil once the stream has ended; it is called on the main actor about `queuedChunks` chunks
+    /// ahead of what is heard. Returns the clock anchored at the stream's first sample.
+    @discardableResult
+    public func stream(provider: @escaping @MainActor (Double, Double) -> [ScheduledSound]?,
+                       onFinish: @escaping @MainActor () -> Void) throws -> BlockClock {
+        stop()
+        if !engine.isRunning { try engine.start() }
+        generation += 1
+        stream = Stream(renderer: StreamRenderer(bank: bank), provider: provider, onFinish: onFinish)
+        for _ in 0..<Self.queuedChunks { scheduleNextChunk(generation) }
+        let anchor = mach_absolute_time() + AVAudioTime.hostTime(forSeconds: Self.startLead)
+        blockNode.play(at: AVAudioTime(hostTime: anchor))
+        return BlockClock(anchorHostTime: anchor)
+    }
+
+    private struct Stream {
+        var renderer: StreamRenderer
+        let provider: @MainActor (Double, Double) -> [ScheduledSound]?
+        let onFinish: @MainActor () -> Void
+        var ended = false
+    }
+
+    private var stream: Stream?
+
+    private func scheduleNextChunk(_ current: Int) {
+        guard generation == current, var s = stream else { return }
+        var sounds: [ScheduledSound] = []
+        if !s.ended {
+            let range = s.renderer.nextRange
+            if let next = s.provider(range.from, range.to) { sounds = next } else { s.ended = true }
+        }
+        guard let samples = try? s.renderer.render(adding: sounds), let buffer = Self.buffer(samples, format: format) else { return }
+        let last = s.ended && !s.renderer.isRinging
+        let onFinish = s.onFinish
+        stream = s
+        blockNode.scheduleBuffer(buffer, at: nil, options: [], completionCallbackType: last ? .dataPlayedBack : .dataConsumed) { [weak self] _ in
+            Task { @MainActor in
+                guard let self, self.generation == current else { return }
+                if last { onFinish() } else { self.scheduleNextChunk(current) }
+            }
+        }
+    }
+
     /// Short click on keyDown for low-latency monitoring.
     public func playTap() {
         guard let tapBuffer, engine.isRunning else { return }

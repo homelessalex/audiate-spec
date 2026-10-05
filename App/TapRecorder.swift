@@ -3,37 +3,43 @@ import AudiateCore
 import Foundation
 import Observation
 
-/// Plays a timeline and records melodic-rhythm taps in block time, output latency removed.
+/// Records melodic-rhythm taps (Space, J, the tap pad) in block time with output latency removed.
 /// Timing comes from the audio clock anchor and NSEvent timestamps, never from UI timers.
 @MainActor
 @Observable
 final class TapRecorder {
     private(set) var isRunning = false
     private(set) var tapCount = 0
-    private let monitor = KeyTapMonitor()
     /// Taps so far, in block time with output latency removed (input offset not yet applied).
     private(set) var taps: [Double] = []
+    private let monitor = KeyTapMonitor()
     private var clock: BlockClock?
     private var latency = 0.0
     private var tapSound = true
     private weak var player: BlockPlayer?
 
-    func run(_ timeline: Timeline, player: BlockPlayer, tapSound: Bool, onFinish: @escaping @MainActor ([Double]) -> Void) throws {
-        cancel()
+    /// Starts listening against `clock` (the audio is already scheduled by the caller).
+    func start(clock: BlockClock, player: BlockPlayer, tapSound: Bool) {
+        stop()
         taps = []
         tapCount = 0
         latency = player.outputLatency
         self.tapSound = tapSound
         self.player = player
-        clock = nil
-        monitor.start { [weak self] event in self?.tap(event) }
+        self.clock = clock
         isRunning = true
-        clock = try player.play(timeline) { [weak self] in
+        monitor.start { [weak self] event in self?.tap(event) }
+    }
+
+    /// Plays a fixed timeline and records until it ends (debug player, calibration).
+    func run(_ timeline: Timeline, player: BlockPlayer, tapSound: Bool, onFinish: @escaping @MainActor ([Double]) -> Void) throws {
+        stop()
+        let clock = try player.play(timeline) { [weak self] in
             guard let self else { return }
-            self.monitor.stop()
-            self.isRunning = false
+            self.stop()
             onFinish(self.taps)
         }
+        start(clock: clock, player: player, tapSound: tapSound)
     }
 
     /// Block time of what is being heard right now (for display only, never for grading).
@@ -41,7 +47,7 @@ final class TapRecorder {
         clock.map { $0.blockTime(forUptime: ProcessInfo.processInfo.systemUptime) - latency }
     }
 
-    /// Key or pad press; ignored when no block is running.
+    /// Key or pad press; ignored when not running.
     func tap(_ event: TapEvent) {
         guard isRunning, let clock, event.isDown, event.key != .f else { return }
         if tapSound { player?.playTap() }
@@ -49,8 +55,10 @@ final class TapRecorder {
         tapCount += 1
     }
 
-    func cancel() {
+    func stop() {
         monitor.stop()
-        if isRunning { isRunning = false }
+        isRunning = false
     }
+
+    func cancel() { stop() }
 }

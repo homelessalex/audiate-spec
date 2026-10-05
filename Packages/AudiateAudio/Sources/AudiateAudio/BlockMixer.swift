@@ -9,28 +9,36 @@ public enum BlockMixer {
     public static let chokeSeconds = 0.010
 
     public static func mix(_ sounds: [ScheduledSound], duration: Double, bank: SampleBank) throws -> [Float] {
-        let rate = bank.sampleRate
-        let placed = try sounds.map { s -> (offset: Int, sample: ArraySlice<Float>, fade: Int) in
-            guard let sample = bank.samples[s.sound.sampleName] else { throw AudioError.missingSample(s.sound.sampleName) }
-            guard let sustain = s.duration else { return (frame(for: s.time, rate: rate), sample[...], 0) }
-            let length = min(sample.count, max(1, frame(for: sustain, rate: rate)))
-            return (frame(for: s.time, rate: rate), sample.prefix(length), min(frame(for: chokeSeconds, rate: rate), length / 2))
-        }
-        let length = placed.map { $0.offset + $0.sample.count }.reduce(frame(for: duration, rate: rate), max)
+        let placed = try sounds.map { (offset: frame(for: $0.time, rate: bank.sampleRate), samples: try voice(for: $0, bank: bank)) }
+        let length = placed.map { $0.offset + $0.samples.count }.reduce(frame(for: duration, rate: bank.sampleRate), max)
         var out = [Float](repeating: 0, count: length)
-        for (offset, sample, fade) in placed {
-            let fadeStart = sample.count - fade
-            for (i, v) in zip(sample.indices, sample) {
-                let k = i - sample.startIndex
-                let gain: Float = k < fadeStart ? 1 : Float(sample.count - k) / Float(fade + 1)
-                out[offset + k] += v * gain
+        for (offset, samples) in placed {
+            for (k, v) in samples.enumerated() {
+                out[offset + k] += v
             }
         }
-        // Overlaps are rare and short; hard-limit instead of normalizing so levels stay consistent.
+        limit(&out)
+        return out
+    }
+
+    /// The sample a sound plays: cut at its duration with a choke fade when it sustains.
+    public static func voice(for sound: ScheduledSound, bank: SampleBank) throws -> [Float] {
+        guard let sample = bank.samples[sound.sound.sampleName] else { throw AudioError.missingSample(sound.sound.sampleName) }
+        guard let sustain = sound.duration else { return sample }
+        let length = min(sample.count, max(1, frame(for: sustain, rate: bank.sampleRate)))
+        let fade = min(frame(for: chokeSeconds, rate: bank.sampleRate), length / 2)
+        var out = Array(sample.prefix(length))
+        for k in (length - fade)..<length {
+            out[k] *= Float(length - k) / Float(fade + 1)
+        }
+        return out
+    }
+
+    /// Overlaps are rare and short; hard-limit instead of normalizing so levels stay consistent.
+    static func limit(_ out: inout [Float]) {
         for i in out.indices where abs(out[i]) > 1 {
             out[i] = out[i] > 0 ? 1 : -1
         }
-        return out
     }
 
     public static func frame(for seconds: Double, rate: Double) -> Int {

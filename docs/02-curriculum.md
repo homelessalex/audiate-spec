@@ -90,8 +90,8 @@ Rules:
 - Never more than 2 new patterns introduced per session per unit (teaching mode).
 - Teaching mode for a pattern: echoed with support (click stage A, syllables at VA) until it is correct,
   at most `MasteryPolicy.maxTeachingAttempts` (4) tries → then it enters the evaluation pool.
-- Every tap attempt is its own short block (count-in → prompt → hold → response) followed at once by a
-  yes/no verdict.
+- Steps and sessions run as one continuous flow (`docs/04-exercises.md` §1): the verdict of each attempt
+  shows during the next lead-in measure; the learner stops when they want.
 
 ## 6. Click (metronome) fading
 
@@ -117,9 +117,9 @@ Tempo is macrobeat BPM.
 | Usual triple | 56 | 46–66 |
 | Unusual (per microbeat eighth) | eighth = 200 | 168–232 |
 
-Teaching mode plays at `TempoPolicy.teachingFactor` (85 %) of the default and slows by
-`TempoPolicy.retryFactor` (5 %) after each miss, never below the range's lower bound (the slowest tempo
-at which the macrobeat is still felt as the pulse). Evaluation always uses the default tempo, so mastery
+Teaching mode plays at `TempoPolicy.teachingFactor` (85 %) of the default, never below the range's lower
+bound (the slowest tempo at which the macrobeat is still felt as the pulse). The tempo stays constant
+within a step: the session is one uninterrupted pulse. Evaluation always uses the default tempo, so mastery
 results stay comparable.
 
 In inference levels, tempo is randomized within range per block so the learner does not bind

@@ -1,194 +1,190 @@
 import AudiateCore
 import SwiftUI
 
-/// Full-window session. Keyboard-first: Space (or the pad) taps, Return continues, Esc pauses.
-/// Ear steps never show notation or any visual rhythm; reading steps exist only from SA on (sound before sight).
+/// One uninterrupted pulse: Count-in → Listen → Hold it → Your turn → (verdict while the next count-in
+/// ticks) → … Keyboard: Space or the pad taps, 1–4 answer "name the syllables", Esc pauses.
+/// Ear steps never show notation or any visual rhythm (sound before sight).
 struct SessionView: View {
     @Environment(AppModel.self) private var model
     let runner: SessionRunner
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(spacing: 0) {
             HStack {
-                Text("Step \(min(runner.stepIndex + 1, runner.plan.steps.count)) of \(runner.plan.steps.count)")
-                    .foregroundStyle(.secondary)
                 Spacer()
-                Button("End session") { model.endSession() }
+                Button("End session") {
+                    runner.end()
+                }
             }
-            .padding(.bottom, 16)
-
             Group {
-                switch runner.phase {
-                case .ready: EchoReadyView(runner: runner)
-                case .playing: EchoPlayingView(runner: runner)
-                case .verdict: VerdictView(runner: runner)
-                case .question: QuestionView(runner: runner)
-                case .summary: SummaryView(runner: runner)
+                switch runner.state {
+                case .running: FlowView(runner: runner)
+                case .paused: PausedView(runner: runner)
+                case .finished: SummaryView(runner: runner)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-
             if let error = runner.error { Text(error).foregroundStyle(.red) }
             Button("Pause") { runner.pause() }
                 .keyboardShortcut(.cancelAction)
                 .hidden()
         }
         .padding(28)
+        .onAppear { runner.start() }
     }
 }
 
-private struct EchoReadyView: View {
+private struct FlowView: View {
     let runner: SessionRunner
 
     var body: some View {
-        VStack(spacing: 18) {
-            if let block = runner.block {
-                Text(Self.title(block)).font(.title.bold())
-                Text(Self.instructions(block)).multilineTextAlignment(.center).foregroundStyle(.secondary).frame(maxWidth: 480)
-                Text("\(block.items.count) \(block.items.count == 1 ? "pattern" : "patterns") · \(block.mode == .teaching ? "teaching" : "evaluation") · \(block.items[0].level.code)")
-                    .font(.callout.monospaced()).foregroundStyle(.secondary)
-                if runner.itemIndex > 0 || runner.attempt > 1 {
-                    Text("Paused — continues with pattern \(runner.itemIndex + 1), try \(runner.attempt)").foregroundStyle(.secondary)
-                }
-                if block.showsNotation, let item = runner.currentItem, let p = runner.pattern(item.patternID) {
-                    RhythmStaffView(pattern: p, beatGrid: true)
-                }
-            }
-            Button("Start") { runner.startBlock() }
-                .controlSize(.large)
-                .buttonStyle(.borderedProminent)
-                .keyboardShortcut(.defaultAction)
-        }
-    }
-
-    static func title(_ block: SessionRunner.TapBlock) -> String {
-        switch block.kind {
-        case .echo: block.mode == .teaching ? "New pattern" : "Echo"
-        case .readWithModel: "See how it looks"
-        case .read: "Read"
-        }
-    }
-
-    static func instructions(_ block: SessionRunner.TapBlock) -> String {
-        var s: String
-        switch block.kind {
-        case .echo:
-            s = "Count-in, then you hear a pattern. Hold it in your head for one measure, then tap it back (Space or the pad)."
-            if block.showSyllables { s += " Chant the syllables aloud as you tap." }
-            s += block.mode == .teaching
-                ? " You'll hear right away whether it was right; the pattern repeats until you get it."
-                : " One try per pattern — this round counts toward mastery."
-        case .readWithModel:
-            s = "Watch the notation while the pattern plays, then read it back in the next measure."
-        case .read:
-            s = "The pattern appears one measure early. Read it when its measure comes — tap and chant."
-        }
-        return s
-    }
-}
-
-private struct EchoPlayingView: View {
-    let runner: SessionRunner
-
-    var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 22) {
             TimelineView(.animation) { _ in
-                if let timeline = runner.timeline, let block = runner.block {
-                    let state = PlaybackState(timeline: timeline, block: block, meter: runner.blockMeter,
-                                              time: runner.recorder.heardTime())
-                    VStack(spacing: 22) {
-                        Text(state.label).font(.system(size: 40, weight: .bold))
-                        Text(runner.progressLabel).foregroundStyle(.secondary)
-                        PulseView(beat: state.beat)
-                        if block.showsNotation, let item = runner.currentItem, let p = runner.pattern(item.patternID) {
-                            // the beat grid ties the notes to the pulse; the cursor and lit note show what sounds now
-                            RhythmStaffView(pattern: p, beatGrid: true, currentTick: state.showsCursor ? state.tick : nil,
-                                            liveTaps: state.isResponse ? runner.liveTaps(responseIndex: 0) : [])
-                        }
-                        if block.showSyllables, let cues = state.cues {
-                            SyllableLine(cues: cues, highlighted: state.highlightedCue)
-                        }
+                let t = runner.heardTime ?? -1
+                let measure = runner.flow.measure(at: t)
+                let attempt = measure?.attemptIndex.map { runner.flow.attempts[$0] }
+                VStack(spacing: 18) {
+                    Text(attempt.map(Self.title) ?? " ").font(.title3).foregroundStyle(.secondary)
+                    Text(Self.label(measure?.role, attempt: attempt)).font(.system(size: 44, weight: .bold))
+                    Text(attempt.map(Self.detail) ?? " ").foregroundStyle(.secondary)
+                    PulseView(on: Self.isOnMacrobeat(t, measure: measure, attempt: attempt))
+                    // verdict of the attempt that just ended, shown while the next count-in ticks
+                    if let m = measure, m.role == .leadIn || m.role == .countIn,
+                       let done = runner.flow.attempt(endingAt: m.start), let verdict = runner.verdicts[done.index] {
+                        VerdictBadge(verdict: verdict, pattern: done.pattern)
+                    } else if let attempt, attempt.showSyllables, let role = measure?.role {
+                        SyllableLine(cues: attempt.prompt.cues, highlighted: Self.cue(t, role: role, attempt: attempt))
+                    } else if let attempt, attempt.kind == .read || attempt.kind == .readWithModel {
+                        RhythmStaffView(pattern: attempt.pattern, beatGrid: true,
+                                        currentTick: Self.readingTick(t, role: measure?.role, attempt: attempt))
+                    }
+                    if let attempt, let q = attempt.question {
+                        QuestionOptions(runner: runner, attempt: attempt, question: q)
                     }
                 }
+                .frame(minHeight: 360)
             }
             TapPad(recorder: runner.recorder)
                 .frame(maxWidth: 520)
             Text("Esc to pause").font(.caption).foregroundStyle(.secondary)
         }
     }
+
+    static func title(_ a: FlowSequencer.FlowAttempt) -> String {
+        switch a.kind {
+        case .echo: a.mode == .teaching ? "New pattern" : "Echo"
+        case .readWithModel: "See how it looks"
+        case .read: "Read"
+        case .nameSyllables: "Name the syllables"
+        }
+    }
+
+    static func label(_ role: FlowSequencer.Role?, attempt: FlowSequencer.FlowAttempt?) -> String {
+        switch role {
+        case .countIn: "Count-in"
+        case .leadIn: attempt == nil ? "…" : "Get ready"
+        case .prompt: attempt?.kind == .read ? "Look ahead" : "Listen"
+        case .hold: "Hold it"
+        case .response: attempt?.kind == .echo ? "Your turn" : "Read"
+        case .answer: "Choose"
+        case nil: " "
+        }
+    }
+
+    static func detail(_ a: FlowSequencer.FlowAttempt) -> String {
+        var s = "\(a.item.unitID) \(a.item.level.code)"
+        if a.mode == .teaching { s += " · try \(a.position.attempt) of \(MasteryPolicy.maxTeachingAttempts)" }
+        s += " · \(Int(a.tempo.bpm.rounded())) \(a.pattern.meter.isUnusual ? "eighths/min" : "BPM")"
+        return s
+    }
+
+    static func isOnMacrobeat(_ t: Double, measure: FlowSequencer.Measure?, attempt: FlowSequencer.FlowAttempt?) -> Bool {
+        guard let measure else { return false }
+        let meter = attempt?.pattern.meter
+        let spt = measure.duration / Double(meter?.measureTicks ?? 1)
+        let offset = t - measure.start
+        return (meter?.macrobeatSpans.map { Double($0.startTick) * spt } ?? [0]).contains { offset >= $0 && offset - $0 < 0.12 }
+    }
+
+    /// Syllable cues are timed in the prompt measure; in the response they follow the same positions.
+    static func cue(_ t: Double, role: FlowSequencer.Role, attempt: FlowSequencer.FlowAttempt) -> Int? {
+        let local: Double
+        switch role {
+        case .prompt: local = t
+        case .response: local = t - (attempt.response.map { $0.end - attempt.measureDuration } ?? t) + (attempt.prompt.end - attempt.measureDuration)
+        default: return nil
+        }
+        return attempt.prompt.cues.firstIndex { local >= $0.time && local < $0.time + $0.duration }
+    }
+
+    static func readingTick(_ t: Double, role: FlowSequencer.Role?, attempt: FlowSequencer.FlowAttempt) -> Double? {
+        let spt = attempt.tempo.secondsPerTick(in: attempt.pattern.meter)
+        switch role {
+        case .response: return attempt.response.map { (t - ($0.end - attempt.measureDuration)) / spt }
+        case .prompt where attempt.kind == .readWithModel: return (t - (attempt.prompt.end - attempt.measureDuration)) / spt
+        default: return nil
+        }
+    }
 }
 
-/// What to show at the current heard time: phase, pulse, pattern, playhead, syllables.
-private struct PlaybackState {
-    var label = "Get ready"
-    /// Whether a macrobeat flash is on.
-    var beat: Bool?
-    var patternIndex: Int?
-    /// Measure-relative tick in the prompt or response measure.
-    var tick: Double?
-    var isResponse = false
-    /// Cursor while the pattern sounds (model) or is being read (response); not during look-ahead.
-    var showsCursor = false
-    var cues: [SyllableCue]?
-    var highlightedCue: Int?
+private struct VerdictBadge: View {
+    let verdict: SessionRunner.Verdict
+    let pattern: AudiateCore.Pattern
 
-    init(timeline: Timeline, block: SessionRunner.TapBlock, meter: Meter?, time: Double?) {
-        guard let t = time, t >= 0 else {
-            patternIndex = 0
-            return
-        }
-        let measure = timeline.measureDuration
-        let m = Int(t / measure)
-        let inMeasure = t - Double(m) * measure
-        let spt = measure / Double(meter?.measureTicks ?? 1)
-        let macroStarts = meter?.macrobeatSpans.map { Double($0.startTick) * spt } ?? [0]
-        beat = macroStarts.contains { inMeasure >= $0 && inMeasure - $0 < 0.12 } ? true : nil
-
-        guard let role = timeline.role(at: t) else {
-            label = "…"
-            return
-        }
-        let i: Int
-        switch role {
-        case .countIn:
-            label = "Count-in"
-            patternIndex = 0
-            return
-        case .prompt(let k):
-            i = k
-            label = switch block.kind {
-            case .echo: "Listen"
-            case .readWithModel: "Listen & look"
-            case .read: "Look ahead"
+    var body: some View {
+        VStack(spacing: 8) {
+            HStack(spacing: 14) {
+                Image(systemName: verdict.passed ? "checkmark.circle.fill" : "xmark.circle.fill")
+                    .font(.system(size: 64))
+                    .foregroundStyle(verdict.passed ? .green : .red)
+                Text(verdict.passed ? "Yes" : "No").font(.system(size: 36, weight: .bold))
             }
-        case .hold(let k):
-            i = k
-            label = "Hold it"
-        case .response(let k):
-            i = k
-            label = block.kind == .echo ? "Your turn" : "Read"
+            ForEach(verdict.reasons, id: \.self) { Text($0).font(.title3) }
+            if let answer = verdict.answer, !verdict.passed {
+                Text(answer).font(.title3.monospaced()).foregroundStyle(.secondary)
+            }
+            if let comparison = verdict.comparison {
+                RhythmStaffView(pattern: pattern, zoom: 1.6, beatGrid: true, comparison: comparison)
+            }
         }
-        patternIndex = i
-        if case .hold = role { return }
-        tick = inMeasure / spt
-        if case .response = role { isResponse = true }
-        showsCursor = isResponse || block.kind == .readWithModel
-        // syllable cues are timed for the prompt measure; follow the same positions in the response
-        let promptMeasure = timeline.measureRoles.firstIndex(of: .prompt(i)) ?? m
-        let local = t - Double(m - promptMeasure) * measure
-        cues = timeline.prompts[i].cues
-        highlightedCue = cues?.firstIndex { local >= $0.time && local < $0.time + $0.duration }
+    }
+}
+
+private struct QuestionOptions: View {
+    let runner: SessionRunner
+    let attempt: FlowSequencer.FlowAttempt
+    let question: NameSyllablesSpec
+
+    var body: some View {
+        let chosen = runner.choices[attempt.index]
+        VStack(spacing: 8) {
+            ForEach(question.options.indices, id: \.self) { i in
+                Button {
+                    runner.choose(i)
+                } label: {
+                    HStack {
+                        Text("\(i + 1)").foregroundStyle(.secondary)
+                        Text(question.options[i]).font(.title3.monospaced())
+                        Spacer()
+                        if chosen == i { Image(systemName: "hand.point.left.fill") }
+                    }
+                    .frame(width: 360)
+                }
+                .keyboardShortcut(KeyEquivalent(Character("\(i + 1)")), modifiers: [])
+                .disabled(chosen != nil)
+            }
+        }
     }
 }
 
 private struct PulseView: View {
-    let beat: Bool?
+    let on: Bool
 
     var body: some View {
         Circle()
-            .fill(beat != nil ? Color.accentColor : Color.secondary.opacity(0.15))
+            .fill(on ? Color.accentColor : Color.secondary.opacity(0.15))
             .frame(width: 56, height: 56)
-            .animation(.easeOut(duration: 0.08), value: beat != nil)
+            .animation(.easeOut(duration: 0.08), value: on)
     }
 }
 
@@ -207,82 +203,18 @@ struct SyllableLine: View {
     }
 }
 
-/// Yes or no, right after the attempt. Ear steps move on by themselves; reading (from SA) shows the
-/// notes-vs-taps comparison and waits for Return.
-private struct VerdictView: View {
+private struct PausedView: View {
     let runner: SessionRunner
 
     var body: some View {
-        VStack(spacing: 20) {
-            if let r = runner.lastResult {
-                Image(systemName: r.grade.passed ? "checkmark.circle.fill" : "xmark.circle.fill")
-                    .font(.system(size: 96))
-                    .foregroundStyle(r.grade.passed ? .green : .red)
-                Text(r.grade.passed ? "Yes" : "No").font(.system(size: 40, weight: .bold))
-                ForEach(r.grade.errors, id: \.self) { error in
-                    Text(Self.describe(error)).font(.title3)
-                }
-                Text(runner.willRetry ? "Again" : " ").font(.title2).foregroundStyle(.secondary)
-                if runner.block?.showsNotation == true {
-                    RhythmStaffView(pattern: r.pattern, zoom: 1.7, beatGrid: true, comparison: r.comparison)
-                    Button("Continue") { runner.advance() }
-                        .controlSize(.large)
-                        .buttonStyle(.borderedProminent)
-                        .keyboardShortcut(.defaultAction)
-                }
-            }
+        VStack(spacing: 18) {
+            Text("Paused").font(.largeTitle.bold())
+            Text("Resume starts the current pattern again with a count-in.").foregroundStyle(.secondary)
+            Button("Resume") { runner.start() }
+                .controlSize(.large)
+                .buttonStyle(.borderedProminent)
+                .keyboardShortcut(.defaultAction)
         }
-    }
-
-    static func describe(_ error: AttemptError) -> String {
-        switch error {
-        case .missedBeat: "Missed a beat"
-        case .extraTap: "Extra tap"
-        case .timingOff: "Timing off"
-        }
-    }
-}
-
-private struct QuestionView: View {
-    let runner: SessionRunner
-
-    var body: some View {
-        VStack(spacing: 20) {
-            Text("Name the syllables").font(.title.bold())
-            Text("Listen to the pattern, then pick its syllables (keys 1–\(runner.question?.spec.options.count ?? 4)).")
-                .foregroundStyle(.secondary)
-            if let q = runner.question {
-                Button(q.plays == 0 ? "Play" : "Replay") { runner.playQuestion() }
-                    .disabled(!runner.canReplayQuestion)
-                VStack(spacing: 10) {
-                    ForEach(q.spec.options.indices, id: \.self) { i in
-                        Button {
-                            runner.choose(i)
-                        } label: {
-                            HStack {
-                                Text("\(i + 1)").foregroundStyle(.secondary)
-                                Text(q.spec.options[i]).font(.title3.monospaced())
-                                Spacer()
-                                if let chosen = q.chosen, i == q.spec.correctIndex || i == chosen {
-                                    Image(systemName: i == q.spec.correctIndex ? "checkmark.circle.fill" : "xmark.circle.fill")
-                                        .foregroundStyle(i == q.spec.correctIndex ? .green : .red)
-                                }
-                            }
-                            .frame(width: 380)
-                        }
-                        .keyboardShortcut(KeyEquivalent(Character("\(i + 1)")), modifiers: [])
-                        .disabled(q.chosen != nil || q.plays == 0)
-                    }
-                }
-                if q.chosen != nil {
-                    Button("Continue") { runner.next() }
-                        .controlSize(.large)
-                        .buttonStyle(.borderedProminent)
-                        .keyboardShortcut(.defaultAction)
-                }
-            }
-        }
-        .onAppear { if runner.question?.plays == 0 { runner.playQuestion() } }
     }
 }
 

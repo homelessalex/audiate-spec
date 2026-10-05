@@ -114,3 +114,22 @@ struct BlockTimingTests {
         return (out, outFormat.sampleRate)
     }
 }
+
+@Suite("Stream rendering")
+struct StreamRenderingTests {
+    @Test func chunksMatchTheWholeBlockMix() throws {
+        let p = try #require(BlockTimingTests.library.pattern(id: "D-TI-02"))
+        let t = try Timeline.echoBlock(patterns: [p, p], tempo: Tempo(bpm: 80), clickStage: .a)
+        let bank = BlockTimingTests.bank
+        let whole = try BlockMixer.mix(t.sounds, duration: t.duration, bank: bank)
+
+        var renderer = StreamRenderer(bank: bank, chunkFrames: 1000)
+        var streamed: [Float] = []
+        while streamed.count < whole.count {
+            let range = renderer.nextRange
+            streamed += try renderer.render(adding: t.sounds.filter { $0.time >= range.from && $0.time < range.to })
+        }
+        #expect(Array(streamed.prefix(whole.count)) == whole)
+        #expect(streamed.dropFirst(whole.count).allSatisfy { $0 == 0 })
+    }
+}

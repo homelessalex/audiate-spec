@@ -84,7 +84,7 @@ final class AppModel {
     }
 
     func endSession() {
-        session?.pause()
+        session?.end()
         session = nil
     }
 

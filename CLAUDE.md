@@ -39,6 +39,7 @@ The working name "Audiate" is a placeholder.
 3. **Echo in time.** Responses happen in the measure(s) right after the prompt, without stopping
    the pulse. The app never waits for the user to start. A silent "hold it" measure between prompt and
    response is allowed (the pulse goes on); its length is one constant (`EchoPolicy.gapMeasures`).
+   A whole session is one pulse: the verdict of an attempt shows during the next lead-in measure.
 4. **Syllables are derived, never stored by hand.** Use the algorithm in `docs/03-rhythm-model.md`.
 5. **Timing is measured against the audio clock**, with latency compensation. Never against UI
    timers or `Date()`.
