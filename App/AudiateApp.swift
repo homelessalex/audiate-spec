@@ -3,6 +3,7 @@ import SwiftUI
 
 @main
 struct AudiateApp: App {
+    @NSApplicationDelegateAdaptor private var delegate: AppDelegate
     @State private var model = AppModel()
 
     var body: some Scene {
@@ -27,4 +28,9 @@ struct AudiateApp: App {
         .modelContainer(model.container)
         .keyboardShortcut("d", modifiers: [.command, .shift])
     }
+}
+
+/// Single-window app: closing the last window quits instead of leaving it alive in the Dock.
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { true }
 }
