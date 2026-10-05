@@ -219,6 +219,9 @@ private struct VerdictView: View {
                     .font(.system(size: 96))
                     .foregroundStyle(r.grade.passed ? .green : .red)
                 Text(r.grade.passed ? "Yes" : "No").font(.system(size: 40, weight: .bold))
+                ForEach(r.grade.errors, id: \.self) { error in
+                    Text(Self.describe(error)).font(.title3)
+                }
                 Text(runner.willRetry ? "Again" : " ").font(.title2).foregroundStyle(.secondary)
                 if runner.block?.showsNotation == true {
                     RhythmStaffView(pattern: r.pattern, zoom: 1.7, beatGrid: true, comparison: r.comparison)
@@ -228,6 +231,14 @@ private struct VerdictView: View {
                         .keyboardShortcut(.defaultAction)
                 }
             }
+        }
+    }
+
+    static func describe(_ error: AttemptError) -> String {
+        switch error {
+        case .missedBeat: "Missed a beat"
+        case .extraTap: "Extra tap"
+        case .timingOff: "Timing off"
         }
     }
 }

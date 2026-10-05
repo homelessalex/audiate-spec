@@ -24,3 +24,26 @@ struct FeedbackAndListenTests {
         #expect(t.duration == 4.5)
     }
 }
+
+@Suite("Attempt errors")
+struct AttemptErrorTests {
+    let expected = [0.0, 0.375, 0.75, 1.125] // tol 0.08, mean limit 0.04
+
+    func errors(_ taps: [Double], _ mode: TimingMode = .absolute) -> [AttemptError] {
+        OnsetGrader.grade(expected: expected, taps: taps, responseStart: 0, responseEnd: 1.5, mode: mode).errors
+    }
+
+    @Test func passHasNoErrors() {
+        #expect(errors(expected).isEmpty)
+    }
+
+    @Test func eachKindOfMistake() {
+        #expect(errors([0.0, 0.375, 1.125]) == [.missedBeat])
+        #expect(errors(expected + [0.56]) == [.extraTap])
+        #expect(errors([0.0, 0.375, 1.125, 0.56]) == [.missedBeat, .extraTap])
+        #expect(errors(expected.map { $0 + 0.06 }) == [.timingOff])       // all late beyond the mean limit
+        #expect(errors([]) == [.missedBeat])
+        let drift = expected.map { $0 * 1.12 }                              // tempo drift without a click
+        #expect(errors(drift, .relative) == [.timingOff])
+    }
+}

@@ -46,8 +46,9 @@ The pulse never stops inside a block:
 
 ### Feedback (sound before sight)
 
-- Right after each attempt: **yes / no** only. No notation, grid, timing strip or counts before the
-  unit reaches `SA`.
+- Right after each attempt: **yes / no**, and on "no" the kind of mistake (`AttemptError`):
+  missed a beat · extra tap (e.g. on a rest) · timing off (all notes hit, but too far off on average or
+  the tempo drifted). No notation, grid, timing strip or counts before the unit reaches `SA`.
 - From `SA` on (reading): the verdict also shows the pattern on the staff with a beat grid and a
   comparison: row "notes" (onset + sounding length) and row "you" (taps joined to their notes, error
   in ms, missed/extra in red). While reading: beat grid lit with the pulse, cursor, the sounding note
@@ -76,7 +77,9 @@ Inputs: expected onsets `E` (seconds from response start; only `note` events), t
 
 Key repeat events are ignored. Taps closer than 30 ms to the previous tap are debounced.
 
-**Optional (setting "Grade sustain", off by default):** for notes ≥ 24 ticks, key must stay down
+**Optional (setting "Grade sustain", off by default — not implemented yet):** the learner's goal is
+drum parts, where a note's length is set by the next stroke, not by holding; revisit for keyboards.
+ for notes ≥ 24 ticks, key must stay down
 ≥ 60 % of the note's duration; for rests, key must be up. Rationale: MLT stresses sustaining
 elongations; this is the keyboard analogue.
 
