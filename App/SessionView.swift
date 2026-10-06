@@ -199,8 +199,8 @@ struct NotationOptions: View {
     }
 }
 
-/// Σ|error| as a bar: empty = every note dead on, full = at the edge of tolerance on every note,
-/// or a missed note / extra tap.
+/// Mean |error| as a bar: empty = every note dead on, full = at the edge of the tolerance, or a missed
+/// note / extra tap. The tick marks where the mean must stay to pass.
 struct AccuracyBar: View {
     let score: AccuracyScore
 
@@ -214,11 +214,19 @@ struct AccuracyBar: View {
                         .mask(alignment: .leading) {
                             Rectangle().frame(width: max(6, geo.size.width * score.fraction))
                         }
+                    if let limit = score.passLimit {
+                        Rectangle()
+                            .fill(Color.primary.opacity(0.7))
+                            .frame(width: 2, height: 18)
+                            .offset(x: geo.size.width * limit - 1)
+                    }
                 }
             }
             .frame(width: 260, height: 12)
             Text(score.isMax ? "Off the scale — a missed note or an extra tap"
-                             : String(format: "Total error %.0f ms (scale ends at %.0f ms)", score.totalError * 1000, score.maximum * 1000))
+                             : String(format: "Average error %.0f ms%@ (scale ends at %.0f ms)", score.meanError * 1000,
+                                      score.passLimit.map { String(format: ", pass under %.0f", $0 * score.maximum * 1000) } ?? "",
+                                      score.maximum * 1000))
                 .font(.caption).foregroundStyle(.secondary)
         }
     }

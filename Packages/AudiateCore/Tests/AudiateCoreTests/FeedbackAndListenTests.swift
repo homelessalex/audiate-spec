@@ -50,18 +50,19 @@ struct AttemptErrorTests {
 
 @Suite("Accuracy scale")
 struct AccuracyScoreTests {
-    let expected = [0.0, 0.375, 0.75, 1.125] // tol 0.08 → maximum 0.32
+    let expected = [0.0, 0.375, 0.75, 1.125] // tol 0.08
 
     func score(_ taps: [Double]) -> AccuracyScore {
         AccuracyScore(OnsetGrader.grade(expected: expected, taps: taps, responseStart: 0, responseEnd: 1.5, mode: .absolute))
     }
 
-    @Test func sumOfAbsoluteErrors() {
+    @Test func meanOfAbsoluteErrors() {
         let s = score([0.01, 0.375 - 0.02, 0.75, 1.125 + 0.03])
-        #expect(abs(s.totalError - 0.06) < 1e-9)
-        #expect(abs(s.maximum - 0.32) < 1e-9)
+        #expect(abs(s.meanError - 0.015) < 1e-9)
+        #expect(abs(s.maximum - 0.08) < 1e-9)
+        #expect(s.passLimit == 0.5)
         #expect(!s.isMax)
-        #expect(abs(s.fraction - 0.06 / 0.32) < 1e-9)
+        #expect(abs(s.fraction - 0.015 / 0.08) < 1e-9)
         #expect(score(expected).fraction == 0)
     }
 
@@ -73,7 +74,7 @@ struct AccuracyScoreTests {
     @Test func pulseScore() {
         let beats = (0..<4).map { Double($0) * 0.75 }
         let ok = AccuracyScore(PulseGrader.grade(beats: beats, taps: beats.map { $0 + 0.01 }))
-        #expect(abs(ok.totalError - 0.04) < 1e-9 && !ok.isMax)
+        #expect(abs(ok.meanError - 0.01) < 1e-9 && !ok.isMax && ok.passLimit == nil)
         #expect(AccuracyScore(PulseGrader.grade(beats: beats, taps: Array(beats.dropLast()))).fraction == 1)
     }
 }
