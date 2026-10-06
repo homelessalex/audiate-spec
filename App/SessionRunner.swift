@@ -30,6 +30,8 @@ final class SessionRunner {
     private(set) var verdicts: [Int: Verdict] = [:]
     /// E2 answers by attempt index.
     private(set) var choices: [Int: Int] = [:]
+    /// The E2 just answered, kept on screen with its result until the flow resumes.
+    private(set) var lastAnswer: (question: NameNotationSpec, chosen: Int)?
     private(set) var newlyPassed: [LevelKey] = []
     /// After the day's work: endless practice of taught patterns, not counted.
     private(set) var isFreePractice: Bool
@@ -177,9 +179,12 @@ final class SessionRunner {
     func choose(_ option: Int) {
         guard state == .choosing, let index = flow.awaiting, flow.attempts[index].question != nil, choices[index] == nil else { return }
         choices[index] = option
+        if let question = flow.attempts[index].question { lastAnswer = (question, option) }
         gradeAwaiting()
+        // a wrong answer stays longer so the right notation can be studied
+        let pause = option == flow.attempts[index].question?.correctIndex ? MasteryPolicy.verdictSeconds : Self.wrongAnswerSeconds
         Task { [weak self] in
-            try? await Task.sleep(for: .seconds(MasteryPolicy.verdictSeconds))
+            try? await Task.sleep(for: .seconds(pause))
             self?.continueAfterChoice(index)
         }
     }
@@ -193,6 +198,7 @@ final class SessionRunner {
         flow = FlowSequencer(steps: flow.steps, library: content.library, from: flow.attempts[index + 1].position)
         verdicts = [:]
         choices = [:]
+        lastAnswer = nil
         state = .paused
         start()
     }
@@ -202,6 +208,8 @@ final class SessionRunner {
                                             patternID: attempt.pattern.id, exercise: exercise, mode: attempt.mode,
                                             passed: passed, accuracy: accuracy))
     }
+
+    static let wrongAnswerSeconds = 2.5
 
     static func describe(_ error: AttemptError) -> String {
         switch error {

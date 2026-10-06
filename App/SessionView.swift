@@ -144,13 +144,23 @@ private struct ChoiceView: View {
 
     var body: some View {
         VStack(spacing: 18) {
-            Text("Which notation did you hear?").font(.title.bold())
-            if let pending = runner.pendingQuestion {
-                NotationOptions(question: pending.question, chosen: runner.choices[pending.attempt.index], enabled: true) {
-                    runner.choose($0)
+            if let answer = runner.lastAnswer {
+                // the answer stays on screen, the right notation highlighted, until the flow resumes
+                let right = answer.chosen == answer.question.correctIndex
+                HStack(spacing: 12) {
+                    Image(systemName: right ? "checkmark.circle.fill" : "xmark.circle.fill")
+                        .font(.system(size: 44))
+                        .foregroundStyle(right ? .green : .red)
+                    Text(right ? "Yes" : "No — this one").font(.title.bold())
                 }
+                NotationOptions(question: answer.question, chosen: answer.chosen, enabled: false) { _ in }
+            } else {
+                Text("Which notation did you hear?").font(.title.bold())
+                if let pending = runner.pendingQuestion {
+                    NotationOptions(question: pending.question, chosen: nil, enabled: true) { runner.choose($0) }
+                }
+                Text("Click or press 1–4. Esc to pause.").font(.caption).foregroundStyle(.secondary)
             }
-            Text("Click or press 1–4. Esc to pause.").font(.caption).foregroundStyle(.secondary)
         }
     }
 }
@@ -177,6 +187,13 @@ private struct NotationOptions: View {
                         }
                     }
                     .padding(8)
+                    .overlay {
+                        if let chosen, i == question.correctIndex || i == chosen {
+                            RoundedRectangle(cornerRadius: 8)
+                                .strokeBorder(i == question.correctIndex ? Color.green : Color.red, lineWidth: 3)
+                        }
+                    }
+                    .opacity(chosen == nil || i == question.correctIndex || i == chosen ? 1 : 0.35)
                 }
                 .buttonStyle(.bordered)
                 .keyboardShortcut(KeyEquivalent(Character("\(i + 1)")), modifiers: [])
