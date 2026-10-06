@@ -15,11 +15,15 @@ struct ProgressSimulationTests {
 
         for day in 0..<14 {
             // several sessions a day, as the flow chains them, until the day's work runs out
-            for session in 0..<10 {
+            for session in 0..<40 {
                 let plan = planner.plan(progress, date: Fixtures.day(day), using: &rng)
                 if plan.isEmpty { break }
-                #expect(session < 9, "day \(day): planning never runs dry")
+                #expect(session < 39, "day \(day): planning never runs dry")
                 for step in plan.steps {
+                    // inference levels work on unfamiliar patterns only
+                    if case .echo(let b) = step {
+                        for item in b.items where item.generated != nil { #expect(!library.isFamiliar(item.generated!.shape)) }
+                    }
                     // sound before sight: notation only for units that already passed AO by ear
                     for unit in StepAttempts.notationUnits(step) {
                         #expect(Gate.canShowNotation(unitID: unit, passed: progress.passed), "day \(day): notation of \(unit)")

@@ -22,13 +22,18 @@ public struct FlowSequencer: Sendable {
         case dictation
         case whichMeter
         case meterFromNotation
+        case sameOrDifferent
+        case answerDifferently
+        case compose
 
         /// The pulse stops after the attempt until the learner answers.
-        public var awaitsInput: Bool { [.nameNotation, .dictation, .whichMeter, .meterFromNotation].contains(self) }
+        public var awaitsInput: Bool {
+            [.nameNotation, .dictation, .whichMeter, .meterFromNotation, .sameOrDifferent, .compose].contains(self)
+        }
         /// Begins a new stream instead of following the previous lead-in.
-        public var startsFresh: Bool { self == .whichMeter || self == .meterFromNotation }
+        public var startsFresh: Bool { self == .whichMeter || isSilent }
         /// Nothing sounds.
-        public var isSilent: Bool { self == .meterFromNotation }
+        public var isSilent: Bool { self == .meterFromNotation || self == .compose }
     }
 
     /// step / item within the step / try (1-based).
@@ -238,14 +243,21 @@ public struct FlowSequencer: Sendable {
                                                 .whichMeter, .evaluation, w.tempo, .c)
         case .meterFromNotation(let m):
             guard let first = m.series.first else { return nil }
-            let attempt = FlowAttempt(
-                index: index, position: position, step: step, kind: .meterFromNotation,
-                item: PlannedItem(patternID: first.id, unitID: m.unitID, level: .compositeSynthesis, purpose: .review),
-                pattern: first, mode: .evaluation, tempo: .standard(for: first.meter), clickStage: .c, showNotation: true,
-                measureDuration: 0, start: start, end: start, prompt: nil, response: nil)
-            return Built(attempt: attempt, roles: [], sounds: [])
+            return silent(step, kind: .meterFromNotation, pattern: first, unitID: m.unitID, level: .compositeSynthesis,
+                          position: position, start: start, index: index)
+        case .compose(let c):
+            guard let meter = library.meters[c.meterID] else { return nil }
+            return silent(step, kind: .compose, pattern: Self.pulsePattern(meter), unitID: c.unitID, level: .improvisationSymbolic,
+                          position: position, start: start, index: index)
+        case .sameOrDifferent(let d):
+            series = [d.first, d.second]
+            (item, kind, mode, tempo, stage) = (PlannedItem(generated: d.first, unitID: d.unitID, level: .generalizationAural),
+                                                .sameOrDifferent, .evaluation, d.tempo, .c)
+        case .answerDifferently(let a):
+            (item, kind, mode, tempo, stage) = (PlannedItem(generated: a.prompt, unitID: a.unitID, level: .improvisationAural),
+                                                .answerDifferently, .evaluation, a.tempo, .c)
         }
-        guard let pattern = series.first ?? library.pattern(id: item.patternID) else { return nil }
+        guard let pattern = series.first ?? item.pattern(in: library) else { return nil }
 
         let timeline: Timeline
         do {
@@ -253,7 +265,8 @@ public struct FlowSequencer: Sendable {
             case .echo: try Timeline.echoBlock(patterns: [pattern], tempo: tempo, clickStage: stage, gapMeasures: gap)
             case .readWithModel: try Timeline.echoBlock(patterns: [pattern], tempo: tempo, clickStage: stage, gapMeasures: 0)
             case .read: try Timeline.readBlock(patterns: [pattern], tempo: tempo, clickStage: stage)
-            case .whichMeter: try Timeline.listenBlock(patterns: series, tempo: tempo, clickStage: stage)
+            case .whichMeter, .sameOrDifferent: try Timeline.listenBlock(patterns: series, tempo: tempo, clickStage: stage)
+            case .answerDifferently: try Timeline.echoBlock(patterns: [pattern], tempo: tempo, clickStage: stage)
             default: try Timeline.listenBlock(patterns: [pattern, pattern], tempo: tempo, clickStage: stage)
             }
         } catch {
@@ -279,6 +292,27 @@ public struct FlowSequencer: Sendable {
         return Built(attempt: attempt, roles: roles, sounds: sounds)
     }
 
+    /// An attempt with nothing to play (E7, E9 composing): shown at once, the next stream starts afterwards.
+    private func silent(_ step: SessionStep, kind: Kind, pattern: Pattern, unitID: String, level: SkillLevel,
+                        position: Position, start: Double, index: Int) -> Built {
+        let attempt = FlowAttempt(
+            index: index, position: position, step: step, kind: kind,
+            item: PlannedItem(patternID: pattern.id, unitID: unitID, level: level, purpose: .review),
+            pattern: pattern, mode: .evaluation, tempo: .standard(for: pattern.meter), clickStage: .c, showNotation: true,
+            measureDuration: 0, start: start, end: start, prompt: nil, response: nil)
+        return Built(attempt: attempt, roles: [], sounds: [])
+    }
+
+    /// One note per macrobeat: stands in for a pattern where there is none (E10, E9).
+    static func pulsePattern(_ meter: Meter) -> Pattern {
+        var tick = 0
+        let events = meter.macrobeatSpans.map { span -> RhythmEvent in
+            defer { tick += span.ticks }
+            return RhythmEvent(startTick: tick, ticks: span.ticks, kind: .note, tieToNext: false)
+        }
+        return Pattern(id: "pulse:\(meter.id)", meter: meter, content: .macroMicro, pickupTicks: 0, events: events)
+    }
+
     /// E10: `| lead-in | with click | silent × n |`; the beats of the silence are the expected taps.
     private func buildPulse(_ h: HoldPulseSpec, meter: Meter, step: SessionStep, position: Position, start: Double, index: Int) -> Built? {
         let measure = h.tempo.seconds(forTicks: meter.measureTicks, in: meter)
@@ -293,13 +327,7 @@ public struct FlowSequencer: Sendable {
         }
         let end = silentStart + Double(h.silentMeasures) * measure
         let firstBeat = h.tempo.seconds(forTicks: meter.macrobeatSpans[0].ticks, in: meter)
-        // one note per macrobeat stands in for the pattern
-        var tick = 0
-        let events = meter.macrobeatSpans.map { span -> RhythmEvent in
-            defer { tick += span.ticks }
-            return RhythmEvent(startTick: tick, ticks: span.ticks, kind: .note, tieToNext: false)
-        }
-        let pulse = Pattern(id: "pulse:\(meter.id)", meter: meter, content: .macroMicro, pickupTicks: 0, events: events)
+        let pulse = Self.pulsePattern(meter)
         let attempt = FlowAttempt(
             index: index, position: position, step: step, kind: .holdPulse,
             item: PlannedItem(patternID: pulse.id, unitID: h.unitID, level: .aural, purpose: .review),

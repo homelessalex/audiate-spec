@@ -7,11 +7,16 @@ enum StepAttempts {
         func attempt(_ unitID: String, _ level: SkillLevel, _ patternID: String?, _ exercise: ExerciseKind, _ mode: PracticeMode) -> Attempt {
             Attempt(date: date, unitID: unitID, level: level, patternID: patternID, exercise: exercise, mode: mode, passed: true, accuracy: 1)
         }
+        // generated patterns are graded per unit, not per pattern
+        func id(_ item: PlannedItem) -> String? { item.generated == nil ? item.patternID : nil }
         switch step {
-        case .echo(let b): return b.items.map { attempt($0.unitID, $0.level, $0.patternID, b.exercise, b.mode) }
-        case .read(let b): return b.items.map { attempt($0.unitID, $0.level, $0.patternID, .read, b.mode) }
-        case .nameNotation(let q): return [attempt(q.item.unitID, q.item.level, q.item.patternID, .nameNotation, q.mode)]
-        case .dictation(let d): return [attempt(d.item.unitID, d.item.level, d.item.patternID, .write, d.mode)]
+        case .echo(let b): return b.items.map { attempt($0.unitID, $0.level, id($0), b.exercise, b.mode) }
+        case .read(let b): return b.items.map { attempt($0.unitID, $0.level, id($0), .read, b.mode) }
+        case .nameNotation(let q): return [attempt(q.item.unitID, q.item.level, id(q.item), .nameNotation, q.mode)]
+        case .dictation(let d): return [attempt(d.item.unitID, d.item.level, id(d.item), .write, d.mode)]
+        case .sameOrDifferent(let s): return [attempt(s.unitID, .generalizationAural, nil, .sameOrDifferent, .evaluation)]
+        case .answerDifferently(let a): return [attempt(a.unitID, .improvisationAural, nil, .answerDifferently, .evaluation)]
+        case .compose(let c): return [attempt(c.unitID, .improvisationSymbolic, nil, .composeAndPerform, .evaluation)]
         case .holdPulse(let h): return [attempt(h.unitID, .aural, nil, .holdThePulse, .practice)]
         case .whichMeter(let w): return [attempt(w.unitID, w.level, nil, .whichMeter, .evaluation)]
         case .meterFromNotation(let m): return [attempt(m.unitID, .compositeSynthesis, nil, .meterFromNotation, .evaluation)]
@@ -26,7 +31,8 @@ enum StepAttempts {
         case .nameNotation(let q): [q.item.unitID]
         case .dictation(let d): [d.item.unitID]
         case .meterFromNotation(let m): [m.unitID]
-        case .holdPulse, .whichMeter: []
+        case .compose(let c): [c.unitID]
+        case .holdPulse, .whichMeter, .sameOrDifferent, .answerDifferently: []
         }
     }
 }

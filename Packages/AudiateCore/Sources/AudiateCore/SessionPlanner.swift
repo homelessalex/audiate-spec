@@ -13,6 +13,8 @@ public struct SessionPlanner: Sendable {
 
     /// Levels whose items are reviewed (familiar-pattern levels with exercises).
     public static let implementedLevels: Set<SkillLevel> = [.aural, .verbal, .symbolic]
+    /// Inference attempts (generated patterns) per unit per level per day.
+    public static let maxInferenceAttemptsPerDay = 8
     /// Unit-level attempts (E3, E7, CS series) per unit per exercise per day.
     public static let maxUnitAttemptsPerDay = 4
     /// Patterns in an E3/E7/CS series.
@@ -53,6 +55,7 @@ public struct SessionPlanner: Sendable {
         steps += otherReading(progress, frontiers: Set(frontiers.map(\.unitID)), date: date,
                               budget: sessionSeconds - seconds(steps), using: &rng)
         steps += unitLevels(progress, date: date, using: &rng)
+        steps += inferenceLevels(progress, date: date, using: &rng)
         if steps.contains(where: { if case .holdPulse = $0 { false } else { true } }) {
             steps += audiationDrill(progress, date: date, using: &rng)
         }
@@ -142,6 +145,82 @@ public struct SessionPlanner: Sendable {
                    let series = series(unit, patterns, using: &rng) {
                     steps.append(read(series.map { PlannedItem(patternID: $0.id, unitID: unit.id, level: .compositeSynthesis, purpose: .new) },
                                       mode: .evaluation))
+                }
+            }
+        }
+        return steps
+    }
+
+    // MARK: - Inference: GA, GV, GS, IA, IS
+
+    /// Content the learner knows: every unit that has passed VA (combined triplets once U10 has).
+    private func knownContent(_ progress: LearnerProgress) -> Set<ContentKind> {
+        let units = curriculum.units.filter { progress.passed.contains(LevelKey(unitID: $0.id, level: .verbal)) }
+        var contents = Set(units.flatMap { curriculum.patterns(of: $0, in: library).map(\.content) }).union([.macroMicro])
+        if units.flatMap(\.meters).contains(where: { library.meters[$0]?.allowsThirds == true }) { contents.insert(.combined) }
+        return contents
+    }
+
+    /// Unfamiliar patterns from the generator, at a tempo drawn from the meter's range so a pattern isn't
+    /// bound to one tempo (docs/02-curriculum.md §7).
+    private func inferenceLevels(_ progress: LearnerProgress, date: Date, using rng: inout some RandomNumberGenerator) -> [SessionStep] {
+        let generator = PatternGenerator(library: library)
+        let unlocked = knownContent(progress)
+        var steps: [SessionStep] = []
+        for unit in curriculum.units {
+            for level in [SkillLevel.generalizationAural, .generalizationVerbal, .generalizationSymbolic, .improvisationAural, .improvisationSymbolic] {
+                let key = LevelKey(unitID: unit.id, level: level)
+                guard !progress.passed.contains(key), Gate.isUnlocked(key, curriculum: curriculum, passed: progress.passed),
+                      progress.attempts.filter({ $0.levelKey == key && $0.mode == .evaluation && calendar.isDate($0.date, inSameDayAs: date) }).count
+                        < Self.maxInferenceAttemptsPerDay,
+                      let meterID = unit.meters.randomElement(using: &rng), let meter = library.meters[meterID] else { continue }
+                let range = TempoPolicy.range(for: meter)
+                let tempo = Tempo(bpm: Double.random(in: range, using: &rng).rounded())
+                func fresh() -> Pattern? { try? generator.generate(meter: meter, unlocked: unlocked, using: &rng) }
+                func item(_ p: Pattern) -> PlannedItem { PlannedItem(generated: p, unitID: unit.id, level: level) }
+
+                switch level {
+                case .generalizationAural:
+                    let patterns = (0..<3).compactMap { _ in fresh() }
+                    if !patterns.isEmpty {
+                        steps.append(.echo(EchoBlockSpec(items: patterns.map(item), meterID: meterID, tempo: tempo, clickStage: .c,
+                                                         mode: .evaluation, showNotation: false)))
+                    }
+                    if let first = fresh() {
+                        let different = DistractorGenerator.distractors(for: first, library: library, count: 1, using: &rng).first
+                        let second = Bool.random(using: &rng) ? first : (different ?? first)
+                        steps.append(.sameOrDifferent(SameOrDifferentSpec(unitID: unit.id, first: first, second: second, tempo: tempo)))
+                    }
+                case .generalizationVerbal:
+                    for _ in 0..<2 {
+                        guard let target = fresh() else { continue }
+                        let wrong = DistractorGenerator.distractors(for: target, library: library, using: &rng)
+                        guard !wrong.isEmpty else { continue }
+                        let options = ([target] + wrong).shuffled(using: &rng)
+                        steps.append(.nameNotation(NameNotationSpec(item: item(target), tempo: tempo, options: options,
+                                                                    correctIndex: options.firstIndex(of: target)!, mode: .evaluation)))
+                    }
+                case .generalizationSymbolic:
+                    let patterns = (0..<3).compactMap { _ in fresh() }
+                    if !patterns.isEmpty {
+                        steps.append(.read(ReadBlockSpec(items: patterns.map(item), meterID: meterID, tempo: tempo, clickStage: .c, mode: .evaluation)))
+                    }
+                    if let target = fresh(), let answer = Dictation.cells(for: target, in: library) {
+                        steps.append(.dictation(DictationSpec(item: item(target), tempo: tempo, answer: answer,
+                                                              palette: Dictation.palette(for: meter, contents: unlocked, answer: answer, library: library),
+                                                              mode: .evaluation)))
+                    }
+                case .improvisationAural:
+                    for _ in 0..<2 {
+                        guard let prompt = fresh() else { continue }
+                        steps.append(.answerDifferently(AnswerDifferentlySpec(unitID: unit.id, prompt: prompt, tempo: tempo, unlocked: unlocked)))
+                    }
+                case .improvisationSymbolic:
+                    steps.append(.compose(ComposeSpec(unitID: unit.id, meterID: meterID,
+                                                      palette: Dictation.palette(for: meter, contents: unlocked, answer: [], library: library),
+                                                      tempo: tempo)))
+                default:
+                    break
                 }
             }
         }
@@ -293,7 +372,7 @@ public struct SessionPlanner: Sendable {
         var order: [String] = []
         var groups: [String: [PlannedItem]] = [:]
         for item in items {
-            guard let meter = library.pattern(id: item.patternID)?.meter.id else { continue }
+            guard let meter = item.pattern(in: library)?.meter.id else { continue }
             let key = "\(meter)|\(item.level.rawValue)"
             if groups[key] == nil { order.append(key) }
             groups[key, default: []].append(item)
@@ -310,7 +389,7 @@ public struct SessionPlanner: Sendable {
     }
 
     private func echo(_ items: [PlannedItem], mode: PracticeMode) -> SessionStep {
-        let meter = library.pattern(id: items[0].patternID)!.meter
+        let meter = items[0].pattern(in: library)!.meter
         let level = items[0].level
         return .echo(EchoBlockSpec(
             items: items, meterID: meter.id, tempo: mode == .teaching ? TempoPolicy.teaching(for: meter) : .standard(for: meter),
@@ -320,7 +399,7 @@ public struct SessionPlanner: Sendable {
     }
 
     private func read(_ items: [PlannedItem], mode: PracticeMode) -> SessionStep {
-        let meter = library.pattern(id: items[0].patternID)!.meter
+        let meter = items[0].pattern(in: library)!.meter
         return .read(ReadBlockSpec(items: items, meterID: meter.id,
                                    tempo: mode == .teaching ? TempoPolicy.teaching(for: meter) : .standard(for: meter),
                                    clickStage: .forStep(level: items[0].level, mode: mode), mode: mode))
@@ -350,7 +429,8 @@ public struct SessionPlanner: Sendable {
         switch step {
         case .echo(let s): return attempts(s.meterID, s.tempo, items: s.items.count, measuresPerAttempt: 2 + s.gapMeasures, mode: s.mode)
         case .read(let s): return attempts(s.meterID, s.tempo, items: s.items.count, measuresPerAttempt: 2, mode: s.mode)
-        case .nameNotation, .dictation, .whichMeter, .meterFromNotation: return MasteryPolicy.nameNotationSeconds
+        case .nameNotation, .dictation, .whichMeter, .meterFromNotation, .sameOrDifferent, .answerDifferently, .compose:
+            return MasteryPolicy.nameNotationSeconds
         case .holdPulse(let h):
             guard let meter = library.meters[h.meterID] else { return 0 }
             return Double(1 + PulsePolicy.clickedMeasures + h.silentMeasures) * h.tempo.seconds(forTicks: meter.measureTicks, in: meter)
