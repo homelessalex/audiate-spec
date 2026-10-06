@@ -48,6 +48,22 @@ response, the session as one uninterrupted pulse with a yes/no verdict per attem
 duple and triple units in parallel (groups), daily limits with free practice after the day's work, no
 cursor on the staff.
 
+## To check on device as the levels open
+
+Built and covered by tests, not yet tried by the learner. Check each when the level becomes available
+and note anything odd:
+
+- [ ] **E10 Hold the pulse** (daily warm-up, first step of the day): silence grows 2 → 4 → 8 → 16 measures;
+      the verdict says how far you drifted.
+- [ ] **Stage C** (VA evaluation on): click only in the count-in; pulse light hidden; grading tolerates a
+      steady tempo change up to 8 %.
+- [ ] **E2 Which notation?** (VA): heard twice, four notations, no time limit; the answer stays on screen.
+- [ ] **E6 Dictation** (SA): cells per beat with keys 1–9, arrows, ⌫, Return; result shows the first wrong beat.
+- [ ] **E5 Reading** (SA): look-ahead measure then read; notes-vs-taps comparison after the attempt.
+- [ ] **E3 Which meter?** (PS, after U1 and U2 VA): count-in gives only the macrobeat; duple and triple at 66.
+- [ ] **E7 Meter from notation** + series reading (CS): no time signature, no beat grid.
+- [ ] **Free practice** after the day's work, and the flow ending with "That's all for today".
+
 ## M2 — First playable loop: U1–U2 at AO and VA ✅
 
 Scope (as built): `curriculum.json` with unit groups, `Gate`, `MasteryPolicy`, `LeitnerScheduler`,
