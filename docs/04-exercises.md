@@ -45,8 +45,8 @@ The pulse never stops inside a block:
   (so duple/triple and the unusual grouping are heard before the first pattern). No voice.
 - Prompt: open hi-hat on every onset, sustained through elongations and ties, choked at the end of
   the note; rests are silent.
-- From `VA`: the pattern's notation is in view during the attempt, with a beat grid under the notes
-  and a cursor while it sounds and while it is played back.
+- From `VA`: the pattern's notation is in view during the attempt, with a static beat grid under the
+  notes. No cursor or lit notes: following a cursor replaces reading.
 - Upbeat patterns: the pickup sits at the end of the preceding measure; response measure is
   likewise preceded by the pickup position. Count-in is shortened accordingly.
 - Step size: teaching 1 pattern; evaluation 4–6 patterns of one meter, back to back in the flow.
@@ -58,8 +58,7 @@ The pulse never stops inside a block:
   the tempo drifted). No notation, grid, timing strip or counts before the unit reaches `SA`.
 - From `SA` on (reading): the verdict also shows the pattern on the staff with a beat grid and a
   comparison: row "notes" (onset + sounding length) and row "you" (taps joined to their notes, error
-  in ms, missed/extra in red). While reading: beat grid lit with the pulse, cursor, the sounding note
-  highlighted, taps appear live.
+  in ms, missed/extra in red). While reading: static beat grid only (no cursor, no lit notes).
 - No syllables in the UI (VA = notation association).
 
 ## 2. Onset grader (E1, E5, E9, E11)

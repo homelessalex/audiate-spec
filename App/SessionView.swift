@@ -54,8 +54,8 @@ private struct FlowView: View {
                        let done = runner.flow.attempt(endingAt: m.start), let verdict = runner.verdicts[done.index] {
                         VerdictBadge(verdict: verdict, pattern: done.pattern)
                     } else if let attempt, attempt.showNotation {
-                        RhythmStaffView(pattern: attempt.pattern, beatGrid: true,
-                                        currentTick: Self.cursorTick(t, role: measure?.role, attempt: attempt))
+                        // no cursor: where the sound is must be read from the notes, not followed
+                        RhythmStaffView(pattern: attempt.pattern, beatGrid: true)
                     } else if let attempt, let q = attempt.question {
                         NotationOptions(question: q, chosen: nil, enabled: false) { _ in }
                     }
@@ -105,16 +105,6 @@ private struct FlowView: View {
         let spt = measure.duration / Double(meter?.measureTicks ?? 1)
         let offset = t - measure.start
         return (meter?.macrobeatSpans.map { Double($0.startTick) * spt } ?? [0]).contains { offset >= $0 && offset - $0 < 0.12 }
-    }
-
-    /// Cursor on the staff while the pattern sounds (prompt, unless reading cold) and while it is played back.
-    static func cursorTick(_ t: Double, role: FlowSequencer.Role?, attempt: FlowSequencer.FlowAttempt) -> Double? {
-        let spt = attempt.tempo.secondsPerTick(in: attempt.pattern.meter)
-        switch role {
-        case .response: return attempt.response.map { (t - ($0.end - attempt.measureDuration)) / spt }
-        case .prompt where attempt.kind != .read: return (t - (attempt.prompt.end - attempt.measureDuration)) / spt
-        default: return nil
-        }
     }
 }
 
