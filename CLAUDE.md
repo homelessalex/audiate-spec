@@ -31,9 +31,10 @@ The working name "Audiate" is a placeholder.
 
 ## Non-negotiable rules (from the methodology)
 
-1. **Sound before sight.** Notation for a pattern is never shown until that pattern's content unit
-   has passed the aural/oral and verbal levels (and partial synthesis). Before that there is no visual
-   rhythm at all — feedback is yes/no. See `docs/02-curriculum.md` → gates.
+1. **Sound before sight.** A unit's notation is never shown until the unit has passed `AO` (echo by
+   ear). Before that there is no visual rhythm at all — feedback is yes/no. From `VA` on the notation is
+   attached to the sound (VA = notation association instead of Gordon's syllables, see
+   `docs/01-methodology.md` §7). Gates in `docs/02-curriculum.md` §3.
 2. **Meter context first.** Every pattern is preceded by an established meter and tempo
    (preparatory count-in in the pattern's meter). Never present a pattern "cold".
 3. **Echo in time.** Responses happen in the measure(s) right after the prompt, without stopping

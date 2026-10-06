@@ -40,7 +40,7 @@ Codes from `01-methodology.md` §4. Each unit runs through:
 | U(n+1) `AO` | U(n) `VA` passed |
 | U(n) `VA` | U(n) `AO` passed |
 | U(n) `PS` | U(n) `VA` passed **and** at least two different meters have `VA` passed (PS needs a contrast). For U1 this means PS waits until U2 `VA`. |
-| U(n) `SA` | U(n) `PS` passed — **sound before sight: no notation of a unit's patterns before this** |
+| U(n) `SA` | U(n) `VA` passed (deviation: `VA` = notation association, see `01-methodology.md` §7) |
 | U(n) `CS` | U(n) `SA` passed |
 | U(n) `GA`, `GV` | U(n) `VA` passed and U(n) `SA` passed |
 | U(n) `GS` | U(n) `CS` and `GV` passed |

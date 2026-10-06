@@ -40,8 +40,8 @@ synchronized syllable text for VA teaching mode (`Timeline.prompts[].cues`).
 
 Acceptance:
 - A new user can complete U1 AO → VA across multiple days (simulate dates in tests).
-- No notation is visible anywhere for units below SA (gate + planner tests). The staff renderer and
-  reading steps already exist and switch on at SA (M3).
+- No notation is visible for a unit before it passed AO (gate + planner simulation test). From VA the
+  notation is attached to the sound (deviation, see 01 §7); reading (SA) follows VA.
 
 > Prompt: *Implement M2 from docs/06. Curriculum and gates per docs/02 §1–4; exercises E1 and E2 per
 > docs/04. Mastery thresholds in one MasteryPolicy file. Add date injection for tests.*

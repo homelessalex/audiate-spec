@@ -29,6 +29,6 @@ public enum MasteryPolicy {
     public static let minBlockSize = 3
     /// Rough time per step outside the audio (reading feedback, pressing Return).
     public static let stepOverheadSeconds = 8.0
-    /// Rough time per E2 question including its prompt.
-    public static let nameSyllablesSeconds = 12.0
+    /// Rough time per E2 question including its prompt and the choice.
+    public static let nameNotationSeconds = 12.0
 }

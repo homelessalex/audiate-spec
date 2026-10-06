@@ -1,5 +1,5 @@
 public enum SessionStep: Hashable, Sendable {
     case echo(EchoBlockSpec)
-    case nameSyllables(NameSyllablesSpec)
+    case nameNotation(NameNotationSpec)
     case read(ReadBlockSpec)
 }

@@ -13,7 +13,7 @@ struct FlowSequencerTests {
         let meter = Fixtures.pattern(ids[0]).meter
         return .echo(EchoBlockSpec(items: ids.map { item($0, level: level) }, meterID: meter.id,
                                    tempo: mode == .teaching ? TempoPolicy.teaching(for: meter) : .standard(for: meter),
-                                   clickStage: mode == .teaching ? .a : .b, mode: mode, showSyllables: false))
+                                   clickStage: mode == .teaching ? .a : .b, mode: mode, showNotation: false))
     }
 
     /// Reports outcomes in order until the stream ends; returns the attempts' (pattern, try).
@@ -100,14 +100,16 @@ struct FlowSequencerTests {
         #expect(pickup[0].time >= leadIn.start + leadIn.duration * FlowSequencer.undecidedFraction)
     }
 
-    @Test func nameTheSyllablesListensTwiceThenAnswers() {
-        let q = NameSyllablesSpec(item: item("D-MM-02", level: .verbal), tempo: Tempo(bpm: 80),
-                                  options: ["Du de Du", "Du Du", "Du Du de", "Du de Du de"], correctIndex: 0, mode: .evaluation)
-        let flow = run([.nameSyllables(q)], outcomes: { _ in true })
-        #expect(flow.measures.map(\.role) == [.countIn, .prompt, .prompt, .answer, .answer, .leadIn])
+    @Test func nameTheNotationListensTwiceThenThePulseStopsForTheChoice() {
+        let options = ["D-MM-02", "D-MM-01", "D-MM-03", "D-MM-04"].map(Fixtures.pattern)
+        let q = NameNotationSpec(item: item("D-MM-02", level: .verbal), tempo: Tempo(bpm: 80), options: options,
+                                 correctIndex: 0, mode: .evaluation)
+        let flow = FlowSequencer(steps: [.nameNotation(q), echo(["D-MM-01"], mode: .evaluation)], library: library)
+        #expect(flow.measures.map(\.role) == [.countIn, .prompt, .prompt, .leadIn])
         #expect(flow.attempts[0].response == nil)
         #expect(flow.attempts[0].question == q)
-        expectContinuousPulse(flow)
+        let after = flow.measures.last!
+        #expect(flow.sounds(from: after.start, to: after.end).isEmpty) // silent: the learner chooses without a clock
     }
 
     @Test func emptyPlanEndsImmediately() {

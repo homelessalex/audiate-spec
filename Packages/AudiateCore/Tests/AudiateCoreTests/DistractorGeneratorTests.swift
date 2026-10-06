@@ -11,8 +11,8 @@ struct DistractorGeneratorTests {
         var rng = SeededRandomNumberGenerator(seed: 7)
         let distractors = DistractorGenerator.distractors(for: target, library: Fixtures.library, using: &rng)
         #expect(distractors.count == 3)
-        let lines = try distractors.map { try deriver.line(for: $0) }
-        #expect(Set(lines + [raw.syllables]).count == 4)
+        #expect(Set(distractors.map(\.shape) + [target.shape]).count == 4) // all sound different
+        for d in distractors { _ = try NotationLayout(pattern: d) }
         for d in distractors {
             try PatternValidator.validate(d, deriver: deriver)
             #expect(d.meter == target.meter)

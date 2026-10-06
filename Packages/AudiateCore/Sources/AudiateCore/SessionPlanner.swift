@@ -1,7 +1,7 @@
 import Foundation
 
 /// Builds today's session (docs/02-curriculum.md §5): review of due items, then new material at the
-/// ear frontier. Reading steps appear only for units whose SA level is unlocked (sound before sight).
+/// ear frontier. Notation appears from VA on (after the unit passed AO by ear); reading from SA.
 /// Every tap step is played pattern by pattern, each attempt with its own count-in; teaching repeats a
 /// pattern until it is correct. Warm-up and audiation drills arrive in M4.
 public struct SessionPlanner: Sendable {
@@ -113,7 +113,7 @@ public struct SessionPlanner: Sendable {
             steps += blocksByMeterAndLevel(shuffled.map { item($0, key.level) }).map { echo($0, mode: .evaluation) }
             if key.level == .verbal {
                 steps += Set(round.map(\.id)).sorted().compactMap { library.pattern(id: $0) }.compactMap {
-                    nameSyllables(item($0, .verbal), pattern: $0, using: &rng)
+                    nameNotation(item($0, .verbal), pattern: $0, using: &rng)
                 }
             }
             if readsUnit {
@@ -176,7 +176,7 @@ public struct SessionPlanner: Sendable {
         return .echo(EchoBlockSpec(
             items: items, meterID: meter.id, tempo: mode == .teaching ? TempoPolicy.teaching(for: meter) : .standard(for: meter),
             clickStage: mode == .teaching ? .a : .b, mode: mode,
-            showSyllables: mode == .teaching && level >= .verbal
+            showNotation: level >= .verbal
         ))
     }
 
@@ -187,14 +187,12 @@ public struct SessionPlanner: Sendable {
                                    clickStage: mode == .teaching ? .a : .b, mode: mode))
     }
 
-    private func nameSyllables(_ item: PlannedItem, pattern: Pattern, using rng: inout some RandomNumberGenerator) -> SessionStep? {
-        let deriver = SyllableDeriver()
-        guard let line = try? deriver.line(for: pattern) else { return nil }
-        let wrong = DistractorGenerator.distractors(for: pattern, library: library, using: &rng).compactMap { try? deriver.line(for: $0) }
+    private func nameNotation(_ item: PlannedItem, pattern: Pattern, using rng: inout some RandomNumberGenerator) -> SessionStep? {
+        let wrong = DistractorGenerator.distractors(for: pattern, library: library, using: &rng)
         guard !wrong.isEmpty else { return nil }
-        let options = ([line] + wrong).shuffled(using: &rng)
-        return .nameSyllables(NameSyllablesSpec(item: item, tempo: .standard(for: pattern.meter), options: options,
-                                                correctIndex: options.firstIndex(of: line)!, mode: .evaluation))
+        let options = ([pattern] + wrong).shuffled(using: &rng)
+        return .nameNotation(NameNotationSpec(item: item, tempo: .standard(for: pattern.meter), options: options,
+                                              correctIndex: options.firstIndex(of: pattern)!, mode: .evaluation))
     }
 
     // MARK: - Time estimate
@@ -213,7 +211,7 @@ public struct SessionPlanner: Sendable {
         switch step {
         case .echo(let s): return attempts(s.meterID, s.tempo, items: s.items.count, measuresPerAttempt: 2 + EchoPolicy.gapMeasures, mode: s.mode)
         case .read(let s): return attempts(s.meterID, s.tempo, items: s.items.count, measuresPerAttempt: 2, mode: s.mode)
-        case .nameSyllables: return MasteryPolicy.nameSyllablesSeconds
+        case .nameNotation: return MasteryPolicy.nameNotationSeconds
         }
     }
 }

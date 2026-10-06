@@ -46,15 +46,15 @@ struct SessionPlannerTests {
         let teaching = blocks.filter { $0.mode == .teaching }
         #expect(teaching.count == MasteryPolicy.maxNewPatternsPerSessionPerUnit)
         #expect(teaching.allSatisfy { $0.items.count == 1 }) // repeated until correct by the session runner
-        #expect(teaching.allSatisfy { $0.clickStage == .a && !$0.showSyllables })
+        #expect(teaching.allSatisfy { $0.clickStage == .a && !$0.showNotation })
         #expect(teaching.allSatisfy { $0.tempo.bpm == TempoPolicy.dupleBPM * TempoPolicy.teachingFactor })
         let evaluation = blocks.filter { $0.mode == .evaluation }
         #expect(!evaluation.isEmpty)
-        #expect(evaluation.allSatisfy { $0.clickStage == .b && !$0.showSyllables && $0.tempo.bpm == TempoPolicy.dupleBPM })
+        #expect(evaluation.allSatisfy { $0.clickStage == .b && !$0.showNotation && $0.tempo.bpm == TempoPolicy.dupleBPM })
         // only the two taught patterns are evaluated
         let taught = Set(teaching.map(\.items[0].patternID))
         #expect(Set(evaluation.flatMap(\.items).map(\.patternID)) == taught)
-        #expect(!p.steps.contains { if case .nameSyllables = $0 { true } else { false } }) // no E2 at AO
+        #expect(!p.steps.contains { if case .nameNotation = $0 { true } else { false } }) // no E2 at AO
     }
 
     @Test func blocksAreSameMeterAndAtLeastThree() {
@@ -74,7 +74,7 @@ struct SessionPlannerTests {
         #expect(p.estimatedSeconds <= planner.sessionSeconds + 60)
     }
 
-    @Test func verbalLevelShowsSyllablesInTeachingAndAddsNameTheSyllables() {
+    @Test func verbalLevelShowsNotationAndAddsWhichNotation() {
         var progress = LearnerProgress()
         let u1 = Fixtures.curriculum.patterns(of: Fixtures.curriculum.unit(id: "U1")!, in: Fixtures.library)
         for day in 0..<2 {
@@ -87,13 +87,13 @@ struct SessionPlannerTests {
         #expect(progress.passed.contains(LevelKey(unitID: "U1", level: .aural)))
         let p = plan(progress, day: 3) // AO items from day 1 are in box 2 → due on day 3
         #expect(p.frontier == LevelKey(unitID: "U1", level: .verbal))
-        #expect(echoes(p).filter { $0.mode == .teaching && $0.items[0].level == .verbal }.allSatisfy { $0.showSyllables })
-        let questions = p.steps.compactMap { if case .nameSyllables(let q) = $0 { q } else { nil } }
+        #expect(echoes(p).filter { $0.items[0].level == .verbal }.allSatisfy { $0.showNotation })
+        #expect(echoes(p).filter { $0.items[0].level == .aural }.allSatisfy { !$0.showNotation })
+        let questions = p.steps.compactMap { if case .nameNotation(let q) = $0 { q } else { nil } }
         #expect(!questions.isEmpty)
         for q in questions {
-            let line = try? SyllableDeriver().line(for: Fixtures.pattern(q.item.patternID))
-            #expect(q.options[q.correctIndex] == line)
-            #expect(Set(q.options).count == q.options.count)
+            #expect(q.options[q.correctIndex].shape == Fixtures.pattern(q.item.patternID).shape)
+            #expect(Set(q.options.map(\.shape)).count == q.options.count)
         }
         // AO items due for review come first, in evaluation mode
         let review = echoes(p).prefix { $0.items[0].level == .aural }

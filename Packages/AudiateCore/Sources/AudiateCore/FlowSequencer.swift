@@ -1,7 +1,8 @@
 /// The session as one uninterrupted pulse (docs/04-exercises.md §1). Every attempt is
 /// `| lead-in | prompt | hold | response |`; the measure right after a response is the next attempt's
 /// lead-in, during which the verdict is shown — the click never stops. A change of meter or tempo adds
-/// one count-in measure in the new tempo. E2 is `| lead-in | prompt | prompt | answer | answer |`.
+/// one count-in measure in the new tempo. E2 is `| lead-in | prompt | prompt |`, after which the pulse
+/// stops until the learner picks the notation (the stream is restarted from the next attempt).
 ///
 /// What follows an attempt (retry or next pattern) is decided when its outcome is reported. Until then
 /// only the clicks of the following measure are fixed (`decidedUntil`); a pickup of the next prompt is
@@ -13,7 +14,7 @@ public struct FlowSequencer: Sendable {
         case readWithModel
         /// Notation only, one look-ahead measure (reading, evaluation).
         case read
-        case nameSyllables
+        case nameNotation
     }
 
     /// step / item within the step / try (1-based).
@@ -37,8 +38,6 @@ public struct FlowSequencer: Sendable {
         case prompt
         case hold
         case response
-        /// E2: pick the syllables.
-        case answer
     }
 
     public struct Measure: Hashable, Sendable {
@@ -59,8 +58,8 @@ public struct FlowSequencer: Sendable {
         public let mode: PracticeMode
         public let tempo: Tempo
         public let clickStage: ClickStage
-        public let showSyllables: Bool
-        public let question: NameSyllablesSpec?
+        public let showNotation: Bool
+        public let question: NameNotationSpec?
         public let measureDuration: Double
         /// Start of the lead-in measure.
         public let start: Double
@@ -83,8 +82,6 @@ public struct FlowSequencer: Sendable {
     private let library: PatternLibrary
     private var sounds: [ScheduledSound] = []
 
-    /// E2 answer window, in measures after the two hearings.
-    public static let answerMeasures = 2
     /// Pickups are at most a third of a measure, so the first half of a lead-in never depends on the outcome.
     static let undecidedFraction = 0.5
 
@@ -167,7 +164,7 @@ public struct FlowSequencer: Sendable {
         switch step {
         case .echo(let s): s.items.count
         case .read(let s): s.items.count
-        case .nameSyllables: 1
+        case .nameNotation: 1
         }
     }
 
@@ -184,17 +181,17 @@ public struct FlowSequencer: Sendable {
         guard steps.indices.contains(position.step) else { return nil }
         let step = steps[position.step]
         let item: PlannedItem, kind: Kind, mode: PracticeMode, tempo: Tempo, stage: ClickStage
-        var showSyllables = false
-        var question: NameSyllablesSpec?
+        var showNotation = false
+        var question: NameNotationSpec?
         switch step {
         case .echo(let s):
             guard s.items.indices.contains(position.item) else { return nil }
-            (item, kind, mode, tempo, stage, showSyllables) = (s.items[position.item], .echo, s.mode, s.tempo, s.clickStage, s.showSyllables)
+            (item, kind, mode, tempo, stage, showNotation) = (s.items[position.item], .echo, s.mode, s.tempo, s.clickStage, s.showNotation)
         case .read(let s):
             guard s.items.indices.contains(position.item) else { return nil }
-            (item, kind, mode, tempo, stage) = (s.items[position.item], s.playsModel ? .readWithModel : .read, s.mode, s.tempo, s.clickStage)
-        case .nameSyllables(let q):
-            (item, kind, mode, tempo, stage, question) = (q.item, .nameSyllables, q.mode, q.tempo, .b, q)
+            (item, kind, mode, tempo, stage, showNotation) = (s.items[position.item], s.playsModel ? .readWithModel : .read, s.mode, s.tempo, s.clickStage, true)
+        case .nameNotation(let q):
+            (item, kind, mode, tempo, stage, question) = (q.item, .nameNotation, q.mode, q.tempo, .b, q)
         }
         guard let pattern = library.pattern(id: item.patternID) else { return nil }
 
@@ -204,15 +201,15 @@ public struct FlowSequencer: Sendable {
             case .echo: try Timeline.echoBlock(patterns: [pattern], tempo: tempo, clickStage: stage)
             case .readWithModel: try Timeline.echoBlock(patterns: [pattern], tempo: tempo, clickStage: stage, gapMeasures: 0)
             case .read: try Timeline.readBlock(patterns: [pattern], tempo: tempo, clickStage: stage)
-            case .nameSyllables: try Timeline.listenBlock(patterns: [pattern, pattern], tempo: tempo, clickStage: stage)
+            case .nameNotation: try Timeline.listenBlock(patterns: [pattern, pattern], tempo: tempo, clickStage: stage)
             }
         } catch {
             return nil
         }
         let measure = timeline.measureDuration
         // The block's own count-in clicks are replaced by the flow's lead-in; its pickup notes stay.
-        var sounds = timeline.sounds.filter { $0.time >= measure || $0.sound == .hiHat }.map { $0.shifted(by: start) }
-        var roles: [Role] = timeline.measureRoles.dropFirst().map {
+        let sounds = timeline.sounds.filter { $0.time >= measure || $0.sound == .hiHat }.map { $0.shifted(by: start) }
+        let roles: [Role] = timeline.measureRoles.dropFirst().map {
             switch $0 {
             case .countIn: .countIn
             case .prompt: .prompt
@@ -220,18 +217,9 @@ public struct FlowSequencer: Sendable {
             case .response: .response
             }
         }
-        if kind == .nameSyllables {
-            for k in 0..<Self.answerMeasures {
-                let measureStart = start + timeline.duration + Double(k) * measure
-                sounds += pattern.meter.macrobeatSpans.map {
-                    ScheduledSound(time: measureStart + tempo.seconds(forTicks: $0.startTick, in: pattern.meter), sound: .click(accented: true))
-                }
-                roles.append(.answer)
-            }
-        }
         let attempt = FlowAttempt(
             index: index, position: position, kind: kind, item: item, pattern: pattern, mode: mode, tempo: tempo,
-            clickStage: stage, showSyllables: showSyllables, question: question, measureDuration: measure,
+            clickStage: stage, showNotation: showNotation, question: question, measureDuration: measure,
             start: start, end: start + Double(1 + roles.count) * measure,
             prompt: timeline.prompts[0].shifted(by: start), response: timeline.responses.first?.shifted(by: start)
         )
@@ -250,9 +238,12 @@ public struct FlowSequencer: Sendable {
         }
         sounds += b.sounds
         attempts.append(attempt)
-        // The following measure keeps the pulse while the outcome is decided.
+        // The following measure keeps the pulse while the outcome is decided; after E2 the pulse stops
+        // for the choice, so it stays silent.
         measures.append(Measure(start: attempt.end, duration: measure, role: .leadIn, attemptIndex: nil))
-        sounds += Self.countInClicks(attempt.pattern.meter, tempo: attempt.tempo, at: attempt.end)
+        if attempt.kind != .nameNotation {
+            sounds += Self.countInClicks(attempt.pattern.meter, tempo: attempt.tempo, at: attempt.end)
+        }
         awaiting = attempt.index
     }
 

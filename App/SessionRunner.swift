@@ -5,12 +5,15 @@ import Observation
 
 /// Conducts a session as one uninterrupted pulse (FlowSequencer): attempts follow each other, each
 /// verdict shows during the next lead-in measure, and when the plan runs out the next one is planned.
-/// Esc pauses (the pulse stops); resuming starts the interrupted attempt again with a count-in.
+/// E2 ("which notation?") stops the pulse after the two hearings and waits for the choice; the flow then
+/// continues from the next attempt with a count-in. Esc pauses; resuming restarts the interrupted attempt.
 @MainActor
 @Observable
 final class SessionRunner {
     enum State: Equatable {
         case running
+        /// E2: the pulse has stopped, waiting for the learner to pick the notation.
+        case choosing
         case paused
         case finished
     }
@@ -20,8 +23,6 @@ final class SessionRunner {
         let reasons: [String]
         /// Reading only (from SA): notes vs. taps on the staff.
         let comparison: StaffRenderer.Comparison?
-        /// E2: the right syllables, shown after the answer.
-        let answer: String?
     }
 
     private(set) var state: State = .paused
@@ -69,8 +70,8 @@ final class SessionRunner {
 
     /// Esc: stop the pulse; the attempt in progress is dropped and starts again on resume.
     func pause() {
-        guard state == .running else { return }
-        let heard = heardTime ?? 0
+        guard state == .running || state == .choosing else { return }
+        let heard = state == .choosing ? .infinity : (heardTime ?? 0)
         stopAudio()
         // the attempt in progress (or about to start); an ungraded one is played again
         let current = flow.attempts.first { $0.end > heard }?.index ?? flow.awaiting
@@ -102,14 +103,26 @@ final class SessionRunner {
 
     /// Audio pulls sounds ~0.3 s ahead; anything past `decidedUntil` needs the pending outcome first.
     private func provide(from: Double, to: Double) -> [ScheduledSound]? {
-        if flow.awaiting != nil, to > flow.decidedUntil { gradeAwaiting() }
+        if let index = flow.awaiting, flow.attempts[index].question == nil, to > flow.decidedUntil { gradeAwaiting() }
         if let end = flow.endTime, from >= end { return nil }
         return flow.sounds(from: from, to: to)
     }
 
     private func gradeIfDue() {
-        guard let index = flow.awaiting, let heard = heardTime, heard >= flow.attempts[index].end else { return }
-        gradeAwaiting()
+        guard state == .running, let index = flow.awaiting, let heard = heardTime, heard >= flow.attempts[index].end else { return }
+        if flow.attempts[index].question != nil {
+            // E2: stop the pulse and let the learner choose without a clock
+            stopAudio()
+            state = .choosing
+        } else {
+            gradeAwaiting()
+        }
+    }
+
+    /// The E2 question waiting for a choice.
+    var pendingQuestion: (attempt: FlowSequencer.FlowAttempt, question: NameNotationSpec)? {
+        guard let index = flow.awaiting, let q = flow.attempts[index].question else { return nil }
+        return (flow.attempts[index], q)
     }
 
     // MARK: - Grading
@@ -119,11 +132,9 @@ final class SessionRunner {
         let attempt = flow.attempts[index]
         let passed: Bool
         if let question = attempt.question {
-            let choice = choices[index]
-            passed = choice == question.correctIndex
-            verdicts[index] = Verdict(passed: passed, reasons: passed ? [] : [choice == nil ? "No answer" : "Wrong syllables"],
-                                      comparison: nil, answer: question.options[question.correctIndex])
-            record(attempt, exercise: .nameSyllables, passed: passed, accuracy: passed ? 1 : 0)
+            passed = choices[index] == question.correctIndex
+            verdicts[index] = Verdict(passed: passed, reasons: [], comparison: nil)
+            record(attempt, exercise: .nameNotation, passed: passed, accuracy: passed ? 1 : 0)
         } else if let slot = attempt.response {
             let taps = recorder.taps.map { $0 - model.inputOffset }
             let grade = OnsetGrader.grade(expected: slot.expectedOnsets, taps: taps, responseStart: slot.start,
@@ -133,8 +144,7 @@ final class SessionRunner {
             verdicts[index] = Verdict(
                 passed: passed, reasons: grade.errors.map(Self.describe),
                 comparison: reading ? Self.comparison(grade, pattern: attempt.pattern, downbeat: slot.end - attempt.measureDuration,
-                                                      tempo: attempt.tempo) : nil,
-                answer: nil
+                                                      tempo: attempt.tempo) : nil
             )
             record(attempt, exercise: reading ? .read : .echo, passed: passed, accuracy: grade.accuracy)
         } else {
@@ -143,10 +153,28 @@ final class SessionRunner {
         flow.report(passed: passed, forAttempt: index) { [weak self] in self?.model.planSession()?.steps ?? [] }
     }
 
+    /// E2 choice: show it for a moment, then continue the flow from the next attempt.
     func choose(_ option: Int) {
-        guard let index = flow.awaiting, flow.attempts[index].question != nil, choices[index] == nil,
-              let heard = heardTime, heard >= flow.attempts[index].prompt.start else { return }
+        guard state == .choosing, let index = flow.awaiting, flow.attempts[index].question != nil, choices[index] == nil else { return }
         choices[index] = option
+        gradeAwaiting()
+        Task { [weak self] in
+            try? await Task.sleep(for: .seconds(MasteryPolicy.verdictSeconds))
+            self?.continueAfterChoice(index)
+        }
+    }
+
+    private func continueAfterChoice(_ index: Int) {
+        guard state == .choosing else { return }
+        guard flow.attempts.indices.contains(index + 1) else {
+            state = .finished
+            return
+        }
+        flow = FlowSequencer(steps: flow.steps, library: content.library, from: flow.attempts[index + 1].position)
+        verdicts = [:]
+        choices = [:]
+        state = .paused
+        start()
     }
 
     private func record(_ attempt: FlowSequencer.FlowAttempt, exercise: ExerciseKind, passed: Bool, accuracy: Double) {

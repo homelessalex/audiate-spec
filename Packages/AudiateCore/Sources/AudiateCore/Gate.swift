@@ -18,8 +18,8 @@ public enum Gate {
                 .flatMap(\.meters)
             return has(.verbal) && Set(meters).count >= 2
         case .symbolic:
-            // Sound before sight: no notation of a unit's patterns before this.
-            return has(.partialSynthesis)
+            // Reading unfamiliar notation of the unit's (familiar) patterns, right after notation association.
+            return has(.verbal)
         case .compositeSynthesis:
             return has(.symbolic)
         case .generalizationAural, .generalizationVerbal:
@@ -31,6 +31,11 @@ public enum Gate {
         case .improvisationSymbolic:
             return has(.generalizationSymbolic) && has(.improvisationAural)
         }
+    }
+
+    /// Sound before sight: a unit's notation appears only once the unit has passed AO by ear.
+    public static func canShowNotation(unitID: String, passed: Set<LevelKey>) -> Bool {
+        passed.contains(LevelKey(unitID: unitID, level: .aural))
     }
 
     public static func status(of key: LevelKey, curriculum: Curriculum, passed: Set<LevelKey>,

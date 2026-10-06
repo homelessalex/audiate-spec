@@ -1,7 +1,8 @@
 /// Exercise catalog ids (docs/04-exercises.md §1).
 public enum ExerciseKind: String, Codable, CaseIterable, Hashable, Sendable {
     case echo = "E1"
-    case nameSyllables = "E2"
+    /// Gordon's "name the syllables", here: pick the notation (VA = notation association).
+    case nameNotation = "E2"
     case whichMeter = "E3"
     case sameOrDifferent = "E4"
     case read = "E5"

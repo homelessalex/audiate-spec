@@ -1,5 +1,5 @@
-/// Wrong answers for "Name the syllables" (docs/04-exercises.md §4): same meter, one onset moved,
-/// added or removed; every distractor is a valid pattern whose syllable line differs from the target's.
+/// Wrong answers for E2 "which notation?" (docs/04-exercises.md §4): same meter, one onset moved,
+/// added or removed; every distractor is a valid pattern that sounds different from the target and the others.
 /// When that gives too few (a single long note, triplets), one macrobeat is swapped for another cell.
 public enum DistractorGenerator {
     public static func distractors(for pattern: Pattern, library: PatternLibrary, count: Int = 3,
@@ -26,12 +26,13 @@ public enum DistractorGenerator {
         }
         candidates += swaps.shuffled(using: &rng)
 
-        var lines: Set<String> = [(try? deriver.line(for: pattern)) ?? ""]
+        var shapes: Set<RhythmShape> = [pattern.shape]
         var result: [Pattern] = []
         for candidate in candidates where result.count < count {
             guard let p = candidate.pattern(from: pattern, index: result.count),
                   (try? PatternValidator.validate(p, deriver: deriver)) != nil,
-                  let line = try? deriver.line(for: p), lines.insert(line).inserted else { continue }
+                  (try? NotationLayout(pattern: p)) != nil,
+                  shapes.insert(p.shape).inserted else { continue }
             result.append(p)
         }
         return result

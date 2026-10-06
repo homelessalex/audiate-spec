@@ -43,7 +43,7 @@ struct MasteryAndReviewTests {
         func run(_ attempts: [Attempt]) -> Bool { MasteryEvaluator.isPassed(gv, patternIDs: [], attempts: attempts, calendar: calendar) }
         let make = { (day: Int, n: Int, acc: Double) in
             (0..<n).map { Attempt(date: Fixtures.day(day, hour: $0 % 24), unitID: "U1", level: .generalizationVerbal, patternID: nil,
-                                  exercise: .nameSyllables, mode: .evaluation, passed: acc > 0.5, accuracy: acc) }
+                                  exercise: .nameNotation, mode: .evaluation, passed: acc > 0.5, accuracy: acc) }
         }
         #expect(!run(make(0, 20, 1)))
         #expect(run(make(0, 8, 1) + make(1, 7, 1)))

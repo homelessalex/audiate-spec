@@ -2,6 +2,8 @@
 /// The theory track (TU) is separate; see `Gate.isTheoryUnlocked`.
 public enum SkillLevel: String, Codable, CaseIterable, Comparable, Sendable {
     case aural = "AO"
+    /// Gordon's verbal association (syllables). Here: notation association — the pattern's notation is
+    /// attached to the sound once the unit has passed AO (deviation, docs/01-methodology.md §7).
     case verbal = "VA"
     case partialSynthesis = "PS"
     case symbolic = "SA"

@@ -25,8 +25,8 @@ struct GateTests {
         ("U1:PS", "U1:AO U1:VA", false),                       // needs a second meter
         ("U1:PS", "U1:AO U1:VA U2:AO U2:VA", true),
         ("U3:PS", "U1:AO U1:VA U3:AO U3:VA", false),           // U1 and U3 are both duple
-        ("U1:SA", "U1:AO U1:VA U2:AO U2:VA", false),           // sound before sight: SA waits for PS
-        ("U1:SA", "U1:AO U1:VA U2:AO U2:VA U1:PS", true),
+        ("U1:SA", "U1:AO", false),                             // reading after notation association
+        ("U1:SA", "U1:AO U1:VA", true),
         ("U1:CS", "U1:SA", true),
         ("U1:GA", "U1:VA", false),
         ("U1:GA", "U1:VA U1:SA", true),
@@ -50,12 +50,11 @@ struct GateTests {
         #expect(Gate.status(of: keys("U1:VA").first!, curriculum: curriculum, passed: [], started: []) == .locked)
     }
 
-    /// Sound before sight: no unit's notation while only aural/verbal levels are passed.
-    @Test func noReadingBeforePartialSynthesis() {
-        let auralAndVerbal = Set(curriculum.units.flatMap { [LevelKey(unitID: $0.id, level: .aural), LevelKey(unitID: $0.id, level: .verbal)] })
-        for unit in curriculum.units {
-            #expect(!Gate.isUnlocked(LevelKey(unitID: unit.id, level: .symbolic), curriculum: curriculum, passed: auralAndVerbal), "\(unit.id)")
-        }
+    /// Sound before sight: a unit's notation only after it passed AO by ear.
+    @Test func notationOnlyAfterTheEarLevel() {
+        #expect(!Gate.canShowNotation(unitID: "U1", passed: []))
+        #expect(Gate.canShowNotation(unitID: "U1", passed: keys("U1:AO")))
+        #expect(!Gate.canShowNotation(unitID: "U2", passed: keys("U1:AO U1:VA")))
     }
 
     @Test func theoryTrackOpensAfterU4CompositeSynthesis() {

@@ -47,7 +47,7 @@ struct HomeView: View {
     static func levelName(_ level: SkillLevel) -> String {
         switch level {
         case .aural: "AO · echo by ear"
-        case .verbal: "VA · syllables"
+        case .verbal: "VA · notation"
         case .symbolic: "SA · reading"
         default: level.code
         }

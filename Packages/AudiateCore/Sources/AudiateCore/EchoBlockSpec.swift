@@ -5,6 +5,6 @@ public struct EchoBlockSpec: Hashable, Sendable {
     public let tempo: Tempo
     public let clickStage: ClickStage
     public let mode: PracticeMode
-    /// Syllables shown in sync with the prompt (VA teaching mode).
-    public let showSyllables: Bool
+    /// The pattern's notation is shown during the echo (VA: notation association).
+    public let showNotation: Bool
 }

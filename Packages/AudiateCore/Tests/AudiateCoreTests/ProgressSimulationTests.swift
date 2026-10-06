@@ -24,16 +24,20 @@ struct ProgressSimulationTests {
                     passedOn[key] = day
                 }
             }
+            // sound before sight: notation only for units that already passed AO by ear
+            let mayShowNotation = { (item: PlannedItem) in Gate.canShowNotation(unitID: item.unitID, passed: progress.passed) }
             for step in plan.steps {
                 switch step {
                 case .echo(let block):
                     #expect(block.items.allSatisfy { $0.level == .aural || $0.level == .verbal })
+                    if block.showNotation { #expect(block.items.allSatisfy(mayShowNotation), "day \(day)") }
                     block.items.forEach { record($0, .echo, block.mode) }
-                case .nameSyllables(let q):
-                    #expect(q.item.level == .verbal)
-                    record(q.item, .nameSyllables, q.mode)
+                case .nameNotation(let q):
+                    #expect(q.item.level == .verbal && mayShowNotation(q.item))
+                    record(q.item, .nameNotation, q.mode)
                 case .read(let block):
-                    Issue.record("day \(day): reading scheduled before SA is unlocked: \(block.items.map(\.patternID))")
+                    #expect(block.items.allSatisfy { $0.level == .symbolic && mayShowNotation($0) })
+                    block.items.forEach { record($0, .read, block.mode) }
                 }
             }
         }
@@ -45,6 +49,6 @@ struct ProgressSimulationTests {
         #expect(vaDay > aoDay)
         #expect(vaDay <= 7)
         #expect(Gate.isUnlocked(LevelKey(unitID: "U2", level: .aural), curriculum: curriculum, passed: progress.passed))
-        #expect(!Gate.isUnlocked(LevelKey(unitID: "U1", level: .symbolic), curriculum: curriculum, passed: progress.passed))
+        #expect(Gate.isUnlocked(LevelKey(unitID: "U1", level: .symbolic), curriculum: curriculum, passed: progress.passed))
     }
 }
