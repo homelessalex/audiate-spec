@@ -31,46 +31,65 @@ Acceptance:
 > docs/04 §2 in AudiateCore with the listed tests. Add a Debug window (Cmd-Shift-D) to play any
 > pattern and grade taps.*
 
-## M2 — First playable loop: U1–U2 at AO and VA
+## Status (2026-10-06)
 
-Scope: `curriculum.json`, `Gate`, `MasteryPolicy`, `LeitnerScheduler`, SwiftData persistence,
-`SessionRunner` state machine, Session screen with E1 (echo) and E2 (name the syllables),
-feedback without visuals (sound-before-sight), click stages A/B, Home with progress grid,
-synchronized syllable text for VA teaching mode (`Timeline.prompts[].cues`).
+| Milestone | State |
+|---|---|
+| M0 | done |
+| M1 | done (D-DV-03 passed on device; offline-render jitter test) |
+| M2 | done, reshaped by the learner's feedback (see below) |
+| M3 | done except visual review of reading/dictation on device for U1–U4 |
+| M4 | E10 done (warm-up, free practice); the rest open |
+| M5 | open |
+
+Deliberate changes since the original plan (each recorded in `01-methodology.md` §7 and the docs it touches):
+no voice (choked hi-hat), VA = notation association instead of syllables, a "hold it" measure before the
+response, the session as one uninterrupted pulse with a yes/no verdict per attempt and the error type,
+duple and triple units in parallel (groups), daily limits with free practice after the day's work, no
+cursor on the staff.
+
+## M2 — First playable loop: U1–U2 at AO and VA ✅
+
+Scope (as built): `curriculum.json` with unit groups, `Gate`, `MasteryPolicy`, `LeitnerScheduler`,
+SwiftData persistence, `FlowSequencer` + `SessionRunner` (one pulse per session, sessions chained,
+daily limits, free practice), E1 echo (by ear at AO, with notation at VA), E2 "which notation?",
+yes/no verdict with error type, Home with progress grid.
 
 Acceptance:
-- A new user can complete U1 AO → VA across multiple days (simulate dates in tests).
-- No notation is visible for a unit before it passed AO (gate + planner simulation test). From VA the
-  notation is attached to the sound (deviation, see 01 §7); reading (SA) follows VA.
+- A new user can complete U1 AO → VA across multiple days (simulation test).
+- No notation is visible for a unit before it passed AO (simulation test over all steps).
 
-> Prompt: *Implement M2 from docs/06. Curriculum and gates per docs/02 §1–4; exercises E1 and E2 per
-> docs/04. Mastery thresholds in one MasteryPolicy file. Add date injection for tests.*
+## M3 — Notation: PS, SA, CS ✅ (device review pending)
 
-## M3 — Notation: PS, SA, CS
-
-Scope: `RhythmStaffView` (Bravura, Canvas), E3, E5, E6 with palette, E7, timeline overlay feedback,
-click stage C.
+Scope (as built): `RhythmStaffView` (Bravura via CoreText), contact sheet (`-AudiateContactSheet`),
+E5 read (SA, CS series), E6 dictation with a cell palette, E3 which meter (PS), E7 meter from notation
+(CS), notes-vs-taps comparison for reading, click stage C for evaluation from VA on.
 
 Acceptance:
-- All 66 patterns render correctly (snapshot image per pattern, reviewed manually once).
-- Reading and dictation work for U1–U4.
+- All 66 patterns render correctly (contact sheet reviewed).
+- Reading and dictation work for U1–U4 — *to confirm on device*.
+- Simulation: U1 passes SA, PS and CS within two weeks.
 
-> Prompt: *Implement M3 from docs/06: NotationLayout → RhythmStaffView per docs/03 §3–4, exercises E3,
-> E5, E6, E7 per docs/04. Generate a PNG contact sheet of all patterns for visual review.*
+Known gaps: dictation of patterns with pickups, ties or notes across a macrobeat (palette has no tie /
+pickup slot yet); unit-level review items (PS, CS) are not scheduled for review.
 
 ## M4 — Inference: GA, GV, GS, IA, IS + drills
 
-Scope: E4, E8, E9, E10, E11, generator integration, tempo randomization, bridging, full
-`SessionPlanner` with warm-up and audiation drill.
+Done: E10 hold the pulse (`PulseGrader`, 2 → 4 → 8 → 16 silent measures, daily warm-up).
+
+Open: E4 same/different, E8 answer differently (improvisation grader), E9 compose and perform, generator
+integration for GA/GV/GS (unfamiliar patterns), tempo randomization within range, bridging in the
+planner (core scheduling exists), audiation drill at the end of a session.
 
 Acceptance:
-- Session planner tests green; a 12-minute session contains warm-up, review, new, drill.
+- Session planner tests green; a session contains warm-up, review, new, drill.
 - Improvisation grader accepts a valid different answer and rejects an exact echo.
 
 ## M5 — Polish
 
-Two-hand mode, grade-sustain option, onboarding (incl. how to pronounce the syllables), settings, U5–U12 content
-verified end-to-end, theory track (E12), app icon, sandboxing, notarized build.
+Two-hand mode, grade-sustain option (off: drum parts first; revisit for keyboards), onboarding (what
+audiation is, how the flow works, calibration), settings (session length), U5–U12 content verified
+end-to-end, theory track (E12), app icon, sandboxing, notarized build.
 
 ## Later (optional)
 

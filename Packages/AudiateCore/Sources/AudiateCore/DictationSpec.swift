@@ -7,4 +7,12 @@ public struct DictationSpec: Hashable, Sendable {
     /// Cells offered per macrobeat size (always includes the answer's).
     public let palette: [Cell]
     public let mode: PracticeMode
+
+    public init(item: PlannedItem, tempo: Tempo, answer: [Cell], palette: [Cell], mode: PracticeMode) {
+        self.item = item
+        self.tempo = tempo
+        self.answer = answer
+        self.palette = palette
+        self.mode = mode
+    }
 }

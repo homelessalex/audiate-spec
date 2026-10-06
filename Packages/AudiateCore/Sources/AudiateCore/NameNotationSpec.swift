@@ -7,4 +7,12 @@ public struct NameNotationSpec: Hashable, Sendable {
     public let options: [Pattern]
     public let correctIndex: Int
     public let mode: PracticeMode
+
+    public init(item: PlannedItem, tempo: Tempo, options: [Pattern], correctIndex: Int, mode: PracticeMode) {
+        self.item = item
+        self.tempo = tempo
+        self.options = options
+        self.correctIndex = correctIndex
+        self.mode = mode
+    }
 }

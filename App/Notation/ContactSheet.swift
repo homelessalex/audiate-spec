@@ -36,6 +36,11 @@ struct ContactSheet: View {
     }
 
     @MainActor
+    static func exportAnswers(library: PatternLibrary, to path: String) {
+        write(AnswerPreviewSheet(library: library), to: path)
+    }
+
+    @MainActor
     private static func write(_ view: some View, to path: String) {
         let renderer = ImageRenderer(content: view)
         renderer.scale = 2

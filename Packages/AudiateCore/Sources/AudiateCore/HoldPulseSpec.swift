@@ -5,4 +5,11 @@ public struct HoldPulseSpec: Hashable, Sendable {
     public let meterID: String
     public let tempo: Tempo
     public let silentMeasures: Int
+
+    public init(unitID: String, meterID: String, tempo: Tempo, silentMeasures: Int) {
+        self.unitID = unitID
+        self.meterID = meterID
+        self.tempo = tempo
+        self.silentMeasures = silentMeasures
+    }
 }

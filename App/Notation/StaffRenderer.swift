@@ -36,6 +36,7 @@ struct StaffRenderer {
     let layout: NotationLayout
     let pattern: AudiateCore.Pattern
     var space: CGFloat = 8
+    var showTimeSignature = true
     var beatGrid = false
     var syllables: [String]?
     /// Sounding position: draws a playhead, lights the current note and beat.
@@ -66,9 +67,11 @@ struct StaffRenderer {
         cg.setFillColor(colors.ink)
 
         cg.fill(CGRect(x: 0, y: staffY - 0.065 * sp, width: width, height: 0.13 * sp))
-        let ts = layout.timeSignature
-        drawNumber(ts.beats, at: CGPoint(x: layout.timeSignatureX, y: staffY - sp), font: font, cg: cg)
-        drawNumber(ts.beatUnit, at: CGPoint(x: layout.timeSignatureX, y: staffY + sp), font: font, cg: cg)
+        if showTimeSignature {
+            let ts = layout.timeSignature
+            drawNumber(ts.beats, at: CGPoint(x: layout.timeSignatureX, y: staffY - sp), font: font, cg: cg)
+            drawNumber(ts.beatUnit, at: CGPoint(x: layout.timeSignatureX, y: staffY + sp), font: font, cg: cg)
+        }
 
         if let currentTick, let lit = litItem(at: currentTick) {
             // soft band behind the note that sounds now

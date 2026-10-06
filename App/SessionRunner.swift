@@ -5,14 +5,15 @@ import Observation
 
 /// Conducts a session as one uninterrupted pulse (FlowSequencer): attempts follow each other, each
 /// verdict shows during the next lead-in measure, and when the plan runs out the next one is planned.
-/// E2 ("which notation?") stops the pulse after the two hearings and waits for the choice; the flow then
-/// continues from the next attempt with a count-in. Esc pauses; resuming restarts the interrupted attempt.
+/// Answer exercises (E2 which notation, E3 which meter, E6 dictation, E7 meter from notation) stop the
+/// pulse and wait without a clock; the flow then continues with a count-in. Esc pauses; resuming restarts
+/// the interrupted attempt.
 @MainActor
 @Observable
 final class SessionRunner {
     enum State: Equatable {
         case running
-        /// E2: the pulse has stopped, waiting for the learner to pick the notation.
+        /// The pulse has stopped, waiting for an answer.
         case choosing
         case paused
         case finished
@@ -25,13 +26,18 @@ final class SessionRunner {
         let comparison: StaffRenderer.Comparison?
     }
 
+    /// An answered question, kept on screen with its result until the flow resumes.
+    struct Answer {
+        let attempt: FlowSequencer.FlowAttempt
+        let choice: Int?
+        let written: [Cell?]?
+        let passed: Bool
+    }
+
     private(set) var state: State = .paused
     private(set) var flow: FlowSequencer
     private(set) var verdicts: [Int: Verdict] = [:]
-    /// E2 answers by attempt index.
-    private(set) var choices: [Int: Int] = [:]
-    /// The E2 just answered, kept on screen with its result until the flow resumes.
-    private(set) var lastAnswer: (question: NameNotationSpec, chosen: Int)?
+    private(set) var lastAnswer: Answer?
     private(set) var newlyPassed: [LevelKey] = []
     /// After the day's work: endless practice of taught patterns, not counted.
     private(set) var isFreePractice: Bool
@@ -49,6 +55,9 @@ final class SessionRunner {
         flow = FlowSequencer(steps: plan.steps, library: content.library)
     }
 
+    var heardTime: Double? { recorder.heardTime() }
+    var library: PatternLibrary { content.library }
+
     /// The next batch when the plan runs out: more of today's work, then (in free practice) more practice.
     private func moreSteps() -> [SessionStep] {
         if let next = model.planSession(), !next.isEmpty { return next.steps }
@@ -59,23 +68,22 @@ final class SessionRunner {
     func keepPracticing() {
         guard let plan = model.planFreePractice(), !plan.isEmpty else { return }
         isFreePractice = true
-        flow = FlowSequencer(steps: plan.steps, library: content.library)
-        verdicts = [:]
-        choices = [:]
-        state = .paused
-        start()
+        restart(FlowSequencer(steps: plan.steps, library: content.library))
     }
-
-    var heardTime: Double? { recorder.heardTime() }
 
     // MARK: - Running
 
     func start() {
         guard state != .running else { return }
+        // E7 has nothing to play: show it straight away
+        if let index = flow.awaiting, flow.attempts[index].kind.isSilent {
+            state = .choosing
+            return
+        }
         do {
             let clock = try content.player.stream(
                 provider: { [weak self] from, to in self?.provide(from: from, to: to) },
-                onFinish: { [weak self] in self?.finish() }
+                onFinish: { [weak self] in self?.streamEnded() }
             )
             recorder.start(clock: clock, player: content.player, tapSound: true)
             state = .running
@@ -93,18 +101,30 @@ final class SessionRunner {
     /// Esc: stop the pulse; the attempt in progress is dropped and starts again on resume.
     func pause() {
         guard state == .running || state == .choosing else { return }
+        if let answered = lastAnswer {
+            // the answer is done: pause before whatever comes next
+            stopAudio()
+            let index = answered.attempt.index
+            let next = flow.attempts.indices.contains(index + 1) ? flow.attempts[index + 1].position : flow.restartPosition
+            guard let next else { state = .finished; return }
+            flow = FlowSequencer(steps: flow.steps, library: content.library, from: next)
+            verdicts = [:]
+            lastAnswer = nil
+            state = .paused
+            return
+        }
         let heard = state == .choosing ? .infinity : (heardTime ?? 0)
         stopAudio()
         // the attempt in progress (or about to start); an ungraded one is played again
         let current = flow.attempts.first { $0.end > heard }?.index ?? flow.awaiting
         if let current, flow.attempts.indices.contains(current) {
             flow = FlowSequencer(steps: flow.steps, library: content.library, from: flow.attempts[current].position)
+            verdicts = [:]
+            lastAnswer = nil
+            state = .paused
         } else {
-            flow = FlowSequencer(steps: [], library: content.library)
+            state = .finished
         }
-        verdicts = [:]
-        choices = [:]
-        state = flow.endTime == 0 ? .finished : .paused
     }
 
     func end() {
@@ -112,9 +132,26 @@ final class SessionRunner {
         state = .finished
     }
 
-    private func finish() {
+    /// The stream ran out: either the plan is done, or a fresh-start attempt (E3, E7) follows.
+    private func streamEnded() {
         stopAudio()
-        state = .finished
+        if let position = flow.restartPosition {
+            restart(FlowSequencer(steps: flow.steps, library: content.library, from: position))
+        } else {
+            state = .finished
+        }
+    }
+
+    private func restart(_ next: FlowSequencer) {
+        flow = next
+        verdicts = [:]
+        lastAnswer = nil
+        state = .paused
+        if flow.endTime == 0, flow.awaiting == nil {
+            state = .finished
+        } else {
+            start()
+        }
     }
 
     private func stopAudio() {
@@ -125,15 +162,15 @@ final class SessionRunner {
 
     /// Audio pulls sounds ~0.3 s ahead; anything past `decidedUntil` needs the pending outcome first.
     private func provide(from: Double, to: Double) -> [ScheduledSound]? {
-        if let index = flow.awaiting, flow.attempts[index].question == nil, to > flow.decidedUntil { gradeAwaiting() }
+        if let index = flow.awaiting, !flow.attempts[index].kind.awaitsInput, to > flow.decidedUntil { gradeAwaiting() }
         if let end = flow.endTime, from >= end { return nil }
         return flow.sounds(from: from, to: to)
     }
 
     private func gradeIfDue() {
         guard state == .running, let index = flow.awaiting, let heard = heardTime, heard >= flow.attempts[index].end else { return }
-        if flow.attempts[index].question != nil {
-            // E2: stop the pulse and let the learner choose without a clock
+        if flow.attempts[index].kind.awaitsInput {
+            // stop the pulse and let the learner answer without a clock
             stopAudio()
             state = .choosing
         } else {
@@ -141,24 +178,25 @@ final class SessionRunner {
         }
     }
 
-    /// The E2 question waiting for a choice.
-    var pendingQuestion: (attempt: FlowSequencer.FlowAttempt, question: NameNotationSpec)? {
-        guard let index = flow.awaiting, let q = flow.attempts[index].question else { return nil }
-        return (flow.attempts[index], q)
+    /// The attempt waiting for an answer.
+    var pendingAnswer: FlowSequencer.FlowAttempt? {
+        guard state == .choosing, lastAnswer == nil, let index = flow.awaiting else { return nil }
+        return flow.attempts[index]
     }
 
-    // MARK: - Grading
+    // MARK: - Grading tap attempts
 
     private func gradeAwaiting() {
-        guard let index = flow.awaiting else { return }
+        guard let index = flow.awaiting, let slot = flow.attempts[index].response else { return }
         let attempt = flow.attempts[index]
+        let taps = recorder.taps.map { $0 - model.inputOffset }
         let passed: Bool
-        if let question = attempt.question {
-            passed = choices[index] == question.correctIndex
-            verdicts[index] = Verdict(passed: passed, reasons: [], comparison: nil)
-            record(attempt, exercise: .nameNotation, passed: passed, accuracy: passed ? 1 : 0)
-        } else if let slot = attempt.response {
-            let taps = recorder.taps.map { $0 - model.inputOffset }
+        if attempt.kind == .holdPulse {
+            let grade = PulseGrader.grade(beats: slot.expectedOnsets, taps: taps)
+            passed = grade.passed
+            verdicts[index] = Verdict(passed: passed, reasons: Self.describe(grade), comparison: nil)
+            record(attempt, exercise: .holdThePulse, patternID: nil, passed: passed, accuracy: passed ? 1 : 0)
+        } else {
             let grade = OnsetGrader.grade(expected: slot.expectedOnsets, taps: taps, responseStart: slot.start,
                                           responseEnd: slot.end, mode: attempt.clickStage.timingMode)
             passed = grade.passed
@@ -168,46 +206,66 @@ final class SessionRunner {
                 comparison: reading ? Self.comparison(grade, pattern: attempt.pattern, downbeat: slot.end - attempt.measureDuration,
                                                       tempo: attempt.tempo) : nil
             )
-            record(attempt, exercise: reading ? .read : .echo, passed: passed, accuracy: grade.accuracy)
-        } else {
-            passed = false
+            record(attempt, exercise: reading ? .read : .echo, patternID: attempt.pattern.id, passed: passed, accuracy: grade.accuracy)
         }
         flow.report(passed: passed, forAttempt: index) { [weak self] in self?.moreSteps() ?? [] }
     }
 
-    /// E2 choice: show it for a moment, then continue the flow from the next attempt.
+    // MARK: - Answers
+
+    /// E2, E3, E7: pick an option.
     func choose(_ option: Int) {
-        guard state == .choosing, let index = flow.awaiting, flow.attempts[index].question != nil, choices[index] == nil else { return }
-        choices[index] = option
-        if let question = flow.attempts[index].question { lastAnswer = (question, option) }
-        gradeAwaiting()
-        // a wrong answer stays longer so the right notation can be studied
-        let pause = option == flow.attempts[index].question?.correctIndex ? MasteryPolicy.verdictSeconds : Self.wrongAnswerSeconds
+        guard let attempt = pendingAnswer else { return }
+        let passed: Bool, exercise: ExerciseKind, patternID: String?
+        switch attempt.step {
+        case .nameNotation(let q): (passed, exercise, patternID) = (option == q.correctIndex, .nameNotation, attempt.pattern.id)
+        case .whichMeter(let w): (passed, exercise, patternID) = (option == w.correctIndex, .whichMeter, nil)
+        case .meterFromNotation(let m): (passed, exercise, patternID) = (option == m.correctIndex, .meterFromNotation, nil)
+        default: return
+        }
+        answer(attempt, Answer(attempt: attempt, choice: option, written: nil, passed: passed), exercise: exercise, patternID: patternID)
+    }
+
+    /// E6: the cells written, one per macrobeat.
+    func submit(dictation written: [Cell?]) {
+        guard let attempt = pendingAnswer, case .dictation(let d) = attempt.step else { return }
+        let passed = Dictation.firstDifference(answer: d.answer, written: written) == nil
+        answer(attempt, Answer(attempt: attempt, choice: nil, written: written, passed: passed), exercise: .write, patternID: attempt.pattern.id)
+    }
+
+    private func answer(_ attempt: FlowSequencer.FlowAttempt, _ result: Answer, exercise: ExerciseKind, patternID: String?) {
+        lastAnswer = result
+        record(attempt, exercise: exercise, patternID: patternID, passed: result.passed, accuracy: result.passed ? 1 : 0)
+        flow.report(passed: result.passed, forAttempt: attempt.index) { [weak self] in self?.moreSteps() ?? [] }
+        // a wrong answer stays longer so the right one can be studied; dictation waits for Return
+        guard attempt.kind != .dictation else { return }
+        let pause = result.passed ? MasteryPolicy.verdictSeconds : Self.wrongAnswerSeconds
         Task { [weak self] in
             try? await Task.sleep(for: .seconds(pause))
-            self?.continueAfterChoice(index)
+            self?.continueAfterAnswer()
         }
     }
 
-    private func continueAfterChoice(_ index: Int) {
-        guard state == .choosing else { return }
-        guard flow.attempts.indices.contains(index + 1) else {
+    /// After an answer: the next attempt starts a new stream with a count-in.
+    func continueAfterAnswer() {
+        guard state == .choosing, let answered = lastAnswer else { return }
+        let index = answered.attempt.index
+        if flow.attempts.indices.contains(index + 1) {
+            restart(FlowSequencer(steps: flow.steps, library: content.library, from: flow.attempts[index + 1].position))
+        } else if let position = flow.restartPosition {
+            restart(FlowSequencer(steps: flow.steps, library: content.library, from: position))
+        } else {
             state = .finished
-            return
         }
-        flow = FlowSequencer(steps: flow.steps, library: content.library, from: flow.attempts[index + 1].position)
-        verdicts = [:]
-        choices = [:]
-        lastAnswer = nil
-        state = .paused
-        start()
     }
 
-    private func record(_ attempt: FlowSequencer.FlowAttempt, exercise: ExerciseKind, passed: Bool, accuracy: Double) {
+    private func record(_ attempt: FlowSequencer.FlowAttempt, exercise: ExerciseKind, patternID: String?, passed: Bool, accuracy: Double) {
         newlyPassed += model.record(Attempt(date: model.now(), unitID: attempt.item.unitID, level: attempt.item.level,
-                                            patternID: attempt.pattern.id, exercise: exercise, mode: attempt.mode,
+                                            patternID: patternID, exercise: exercise, mode: attempt.mode,
                                             passed: passed, accuracy: accuracy))
     }
+
+    // MARK: - Wording
 
     static let wrongAnswerSeconds = 2.5
 
@@ -217,6 +275,23 @@ final class SessionRunner {
         case .extraTap: "Extra tap"
         case .timingOff: "Timing off"
         }
+    }
+
+    static func describe(_ grade: PulseGrade) -> [String] {
+        var lines: [String] = []
+        if grade.problems.contains(.lostCount) { lines.append("Lost count: \(grade.taps) taps for \(grade.beats) beats") }
+        if grade.problems.contains(.drifted) {
+            lines.append(String(format: "Ended %.0f %% of a beat %@", abs(grade.drift) * 100, grade.drift > 0 ? "late (slowed down)" : "early (rushed)"))
+        }
+        if grade.problems.contains(.uneven) { lines.append("Uneven beats") }
+        if grade.passed { lines.append(String(format: "Ended %+.0f %% of a beat", grade.drift * 100)) }
+        return lines
+    }
+
+    static func meterName(_ meter: Meter) -> String {
+        if meter.isUnusual { return "\(meter.timeSignature) · " + meter.macrobeats.map(String.init).joined(separator: "+") }
+        if meter.allowsThirds { return "Duple with triplets · \(meter.timeSignature)" }
+        return (meter.macrobeats.first == 3 ? "Triple · " : "Duple · ") + meter.timeSignature.description
     }
 
     /// "Pattern vs. you" in measure ticks, for reading (from SA).

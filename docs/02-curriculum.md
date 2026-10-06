@@ -103,10 +103,13 @@ The click is scaffolding. Its availability depends on the level:
 
 | Stage | Click | Used for |
 |---|---|---|
-| A | Macro + micro beats | `AO`, `VA` teaching mode |
-| B | Macrobeats only | `AO`, `VA` evaluation; `PS`; `SA` |
-| C | Count-in only (one measure), then silence | `CS`, `GA`, `GV`, `GS`, `IA`, `IS` |
-| D | Count-in, then silence, longer stretches | Pulse-hold drills, review of passed items |
+| A | Macro + micro beats | teaching mode (all levels) |
+| B | Macrobeats only | `AO` evaluation; free practice |
+| C | Count-in only (one measure), then silence | evaluation from `VA` on (`VA`, `SA`, `CS`, …); E3 |
+| D | Count-in, then silence, longer stretches | E10 hold-the-pulse (2 → 4 → 8 → 16 silent measures) |
+
+`ClickStage.forStep(level:mode:)` holds this table. Without the click the pulse light is hidden too.
+E10 runs once a day as the warm-up and opens every free-practice batch.
 
 Setting: "Always allow click" (on = learner may force stage B; such attempts do not count toward
 mastery of stage-C levels).

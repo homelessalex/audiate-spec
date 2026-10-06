@@ -8,4 +8,13 @@ public struct WhichMeterSpec: Hashable, Sendable {
     public let options: [String]
     public let correctIndex: Int
     public let tempo: Tempo
+
+    public init(unitID: String, level: SkillLevel, series: [Pattern], options: [String], correctIndex: Int, tempo: Tempo) {
+        self.unitID = unitID
+        self.level = level
+        self.series = series
+        self.options = options
+        self.correctIndex = correctIndex
+        self.tempo = tempo
+    }
 }

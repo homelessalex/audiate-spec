@@ -5,4 +5,11 @@ public struct MeterFromNotationSpec: Hashable, Sendable {
     /// Meter ids.
     public let options: [String]
     public let correctIndex: Int
+
+    public init(unitID: String, series: [Pattern], options: [String], correctIndex: Int) {
+        self.unitID = unitID
+        self.series = series
+        self.options = options
+        self.correctIndex = correctIndex
+    }
 }

@@ -19,7 +19,7 @@ struct SessionView: View {
             Group {
                 switch runner.state {
                 case .running: FlowView(runner: runner)
-                case .choosing: ChoiceView(runner: runner)
+                case .choosing: AnswerView(runner: runner)
                 case .paused: PausedView(runner: runner)
                 case .finished: SummaryView(runner: runner)
                 }
@@ -48,7 +48,12 @@ private struct FlowView: View {
                     Text(attempt.map(Self.title) ?? " ").font(.title3).foregroundStyle(.secondary)
                     Text(Self.label(measure?.role, attempt: attempt)).font(.system(size: 44, weight: .bold))
                     Text(attempt.map(Self.detail) ?? " ").foregroundStyle(.secondary)
-                    PulseView(on: Self.isOnMacrobeat(t, measure: measure, attempt: attempt))
+                    // with the click gone (stage C, E10 silence) the pulse light goes too: the learner keeps it
+                    if Self.showsPulse(measure?.role, attempt: attempt) {
+                        PulseView(on: Self.isOnMacrobeat(t, measure: measure, attempt: attempt))
+                    } else {
+                        PulseView(on: false).hidden()
+                    }
                     // verdict of the attempt that just ended, shown while the next count-in ticks
                     if let m = measure, m.role == .leadIn || m.role == .countIn,
                        let done = runner.flow.attempt(endingAt: m.start), let verdict = runner.verdicts[done.index] {
@@ -58,11 +63,15 @@ private struct FlowView: View {
                         RhythmStaffView(pattern: attempt.pattern, beatGrid: true)
                     } else if let attempt, let q = attempt.question {
                         NotationOptions(question: q, chosen: nil, enabled: false) { _ in }
+                    } else if let attempt, attempt.kind == .dictation, measure?.role == .prompt {
+                        Text("Listen — then write it, one beat at a time.").font(.title3).foregroundStyle(.secondary)
+                    } else if let attempt, attempt.kind == .whichMeter, measure?.role == .prompt {
+                        Text("Listen — which meter is it in?").font(.title3).foregroundStyle(.secondary)
                     }
                 }
                 .frame(minHeight: 360)
-                // nothing to tap in "which notation?": the pad shows only for tap attempts
-                if attempt?.question == nil {
+                // the pad shows only for tap attempts
+                if let attempt, [.echo, .read, .readWithModel, .holdPulse].contains(attempt.kind) {
                     TapPad(recorder: runner.recorder)
                         .frame(maxWidth: 520)
                 }
@@ -77,6 +86,10 @@ private struct FlowView: View {
         case .readWithModel: "See how it looks"
         case .read: "Read"
         case .nameNotation: "Which notation?"
+        case .holdPulse: "Hold the pulse"
+        case .dictation: "Dictation"
+        case .whichMeter: "Which meter?"
+        case .meterFromNotation: "Meter from notation"
         }
     }
 
@@ -87,16 +100,24 @@ private struct FlowView: View {
         case .prompt: attempt?.kind == .read ? "Look ahead" : "Listen"
         case .hold: "Hold it"
         case .response: attempt?.kind == .echo ? "Your turn" : "Read"
+        case .withClick: "Tap the beat"
+        case .silent: "Keep the beat"
         case nil: " "
         }
     }
 
     static func detail(_ a: FlowSequencer.FlowAttempt) -> String {
-        var s = "\(a.item.unitID) \(a.item.level.code)"
+        var s = a.kind == .holdPulse ? "\(a.item.unitID) warm-up" : "\(a.item.unitID) \(a.item.level.code)"
         if a.mode == .teaching { s += " · try \(a.position.attempt) of \(MasteryPolicy.maxTeachingAttempts)" }
         if a.mode == .practice { s += " · free practice" }
         s += " · \(Int(a.tempo.bpm.rounded())) \(a.pattern.meter.isUnusual ? "eighths/min" : "BPM")"
         return s
+    }
+
+    static func showsPulse(_ role: FlowSequencer.Role?, attempt: FlowSequencer.FlowAttempt?) -> Bool {
+        guard let role, let attempt else { return true }
+        if [.countIn, .leadIn, .withClick].contains(role) { return true }
+        return attempt.clickStage != .c && attempt.clickStage != .d && role != .silent
     }
 
     static func isOnMacrobeat(_ t: Double, measure: FlowSequencer.Measure?, attempt: FlowSequencer.FlowAttempt?) -> Bool {
@@ -128,34 +149,7 @@ private struct VerdictBadge: View {
     }
 }
 
-/// E2 after the two hearings: the pulse has stopped; pick with a click or keys 1–4, no time limit.
-private struct ChoiceView: View {
-    let runner: SessionRunner
-
-    var body: some View {
-        VStack(spacing: 18) {
-            if let answer = runner.lastAnswer {
-                // the answer stays on screen, the right notation highlighted, until the flow resumes
-                let right = answer.chosen == answer.question.correctIndex
-                HStack(spacing: 12) {
-                    Image(systemName: right ? "checkmark.circle.fill" : "xmark.circle.fill")
-                        .font(.system(size: 44))
-                        .foregroundStyle(right ? .green : .red)
-                    Text(right ? "Yes" : "No — this one").font(.title.bold())
-                }
-                NotationOptions(question: answer.question, chosen: answer.chosen, enabled: false) { _ in }
-            } else {
-                Text("Which notation did you hear?").font(.title.bold())
-                if let pending = runner.pendingQuestion {
-                    NotationOptions(question: pending.question, chosen: nil, enabled: true) { runner.choose($0) }
-                }
-                Text("Click or press 1–4. Esc to pause.").font(.caption).foregroundStyle(.secondary)
-            }
-        }
-    }
-}
-
-private struct NotationOptions: View {
+struct NotationOptions: View {
     let question: NameNotationSpec
     let chosen: Int?
     let enabled: Bool

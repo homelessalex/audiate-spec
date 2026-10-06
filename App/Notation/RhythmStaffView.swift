@@ -6,6 +6,7 @@ import SwiftUI
 struct RhythmStaffView: View {
     let pattern: AudiateCore.Pattern
     var zoom: CGFloat = 2
+    var showTimeSignature = true
     var beatGrid = false
     var syllables: [String]?
     var currentTick: Double?
@@ -15,7 +16,8 @@ struct RhythmStaffView: View {
 
     var body: some View {
         if let layout = try? NotationLayout(pattern: pattern) {
-            let renderer = StaffRenderer(layout: layout, pattern: pattern, beatGrid: beatGrid, syllables: syllables,
+            let renderer = StaffRenderer(layout: layout, pattern: pattern, showTimeSignature: showTimeSignature,
+                                         beatGrid: beatGrid, syllables: syllables,
                                          currentTick: currentTick, liveTaps: liveTaps, comparison: comparison)
             let colors = StaffRenderer.Colors(
                 ink: colorScheme == .dark ? CGColor(gray: 0.95, alpha: 1) : CGColor(gray: 0.05, alpha: 1),
