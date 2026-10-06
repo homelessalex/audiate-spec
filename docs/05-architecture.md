@@ -55,7 +55,8 @@ Audiate/
 ## 4. Input and timing
 
 - Capture keys with a local `NSEvent.addLocalMonitorForEvents(matching: [.keyDown, .keyUp])`
-  while an exercise is active; consume Space/F/J so they don't trigger UI.
+  while an exercise is active; consume the tap keys so they don't trigger UI. Tap keys are a `KeyMap`
+  set in Settings (default rhythm Space/J, pulse F); 1–9, Return, Esc, arrows and Delete are reserved.
 - Ignore `event.isARepeat`.
 - `NSEvent.timestamp` is seconds since system boot (same timebase as `ProcessInfo.systemUptime`).
   Convert to host time / block time via the `BlockClock`.

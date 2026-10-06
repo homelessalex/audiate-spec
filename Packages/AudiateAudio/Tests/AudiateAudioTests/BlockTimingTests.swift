@@ -133,3 +133,18 @@ struct StreamRenderingTests {
         #expect(streamed.dropFirst(whole.count).allSatisfy { $0 == 0 })
     }
 }
+
+@Suite("Key map")
+struct KeyMapTests {
+    @Test func rolesAndReservedKeys() {
+        let map = KeyMap.standard
+        #expect(map.role(for: 49) == .rhythm)   // Space
+        #expect(map.role(for: 38) == .rhythm)   // J
+        #expect(map.role(for: 3) == .pulse)     // F
+        #expect(map.role(for: 0) == nil)        // A
+        #expect(!KeyMap.isAllowed(36) && !KeyMap.isAllowed(53) && !KeyMap.isAllowed(18)) // Return, Esc, 1
+        #expect(KeyMap.isAllowed(0))
+        let custom = KeyMap(rhythm: [KeyBinding(keyCode: 0, label: "A")], pulse: [KeyBinding(keyCode: 1, label: "S")])
+        #expect(custom.role(for: 0) == .rhythm && custom.role(for: 1) == .pulse && custom.role(for: 49) == nil)
+    }
+}

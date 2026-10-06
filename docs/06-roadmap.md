@@ -70,6 +70,8 @@ and note anything odd:
 - [ ] **GV**: which notation, unfamiliar patterns. **GS**: read and write unfamiliar patterns.
 - [ ] **IA Answer differently**: answer with a *different* rhythm; snapped to the grid; an echo is rejected.
 - [ ] **IS Compose**: write your own pattern with cells, then perform it from the notation.
+- [ ] **Keys** (Settings → Keys): own rhythm/pulse keys; reserved keys refused.
+- [ ] **Accuracy bar** after every tap attempt: Σ|error|, full on a miss or extra tap.
 
 ## M2 — First playable loop: U1–U2 at AO and VA ✅
 

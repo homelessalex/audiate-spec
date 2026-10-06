@@ -10,9 +10,9 @@ import Observation
 final class TapRecorder {
     private(set) var isRunning = false
     private(set) var tapCount = 0
-    /// Rhythm taps so far (Space, J, pad), in block time with output latency removed (input offset not yet applied).
+    /// Rhythm taps so far (rhythm keys, pad), in block time with output latency removed (input offset not yet applied).
     private(set) var taps: [Double] = []
-    /// Left-hand macrobeat taps (F) in two-hand mode, same time base.
+    /// Left-hand macrobeat taps (pulse keys) in two-hand mode, same time base.
     private(set) var pulseTaps: [Double] = []
     private let monitor = KeyTapMonitor()
     private var clock: BlockClock?
@@ -21,7 +21,7 @@ final class TapRecorder {
     private weak var player: BlockPlayer?
 
     /// Starts listening against `clock` (the audio is already scheduled by the caller).
-    func start(clock: BlockClock, player: BlockPlayer, tapSound: Bool) {
+    func start(clock: BlockClock, player: BlockPlayer, tapSound: Bool, keyMap: KeyMap = .standard) {
         stop()
         taps = []
         pulseTaps = []
@@ -31,18 +31,19 @@ final class TapRecorder {
         self.player = player
         self.clock = clock
         isRunning = true
-        monitor.start { [weak self] event in self?.tap(event) }
+        monitor.start(keyMap: keyMap) { [weak self] event in self?.tap(event) }
     }
 
     /// Plays a fixed timeline and records until it ends (debug player, calibration).
-    func run(_ timeline: Timeline, player: BlockPlayer, tapSound: Bool, onFinish: @escaping @MainActor ([Double]) -> Void) throws {
+    func run(_ timeline: Timeline, player: BlockPlayer, tapSound: Bool, keyMap: KeyMap = .standard,
+             onFinish: @escaping @MainActor ([Double]) -> Void) throws {
         stop()
         let clock = try player.play(timeline) { [weak self] in
             guard let self else { return }
             self.stop()
             onFinish(self.taps)
         }
-        start(clock: clock, player: player, tapSound: tapSound)
+        start(clock: clock, player: player, tapSound: tapSound, keyMap: keyMap)
     }
 
     /// Block time of what is being heard right now (for display only, never for grading).
@@ -55,7 +56,7 @@ final class TapRecorder {
         guard isRunning, let clock, event.isDown else { return }
         if tapSound { player?.playTap() }
         let time = clock.blockTime(forUptime: event.timestamp) - latency
-        if event.key == .f {
+        if event.key == .pulse {
             pulseTaps.append(time)
         } else {
             taps.append(time)

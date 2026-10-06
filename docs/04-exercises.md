@@ -53,6 +53,9 @@ The pulse never stops inside a block:
 
 ### Feedback (sound before sight)
 
+- Right after each attempt an **accuracy bar** (`AccuracyScore`): Σ|tap − note| over all notes, on a scale
+  ending where every note sits at the edge of its tolerance; a missed note or an extra tap fills it. One
+  number, not a picture of the rhythm, so it is shown at every level.
 - Right after each attempt: **yes / no**, and on "no" the kind of mistake (`AttemptError`):
   missed a beat · extra tap (e.g. on a rest) · timing off (all notes hit, but too far off on average or
   the tempo drifted). No notation, grid, timing strip or counts before the unit reaches `SA`.

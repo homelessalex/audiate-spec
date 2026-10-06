@@ -94,7 +94,7 @@ struct DebugView: View {
                                                   tempo: Tempo(bpm: bpm), clickStage: stage)
             let compensation = LatencyCompensation(outputLatency: 0, inputOffset: context.inputOffset(for: model.outputDevice))
             let mode = stage.timingMode
-            try recorder.run(timeline, player: player, tapSound: tapSound) { rawTaps in
+            try recorder.run(timeline, player: player, tapSound: tapSound, keyMap: model.settings.keyMap) { rawTaps in
                 let taps = rawTaps.map(compensation.blockTime(forRawBlockTime:))
                 report = timeline.responses.enumerated().map { i, slot in
                     let grade = OnsetGrader.grade(expected: slot.expectedOnsets, taps: taps,

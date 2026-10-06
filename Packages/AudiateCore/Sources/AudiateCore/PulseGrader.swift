@@ -3,7 +3,7 @@ public enum PulseGrader {
     /// `beats`: the expected macrobeat times in the silence; `taps`: all taps (latency-compensated).
     public static func grade(beats: [Double], taps: [Double]) -> PulseGrade {
         guard let first = beats.first, let last = beats.last, beats.count >= 2 else {
-            return PulseGrade(drift: 0, jitter: 0, taps: 0, beats: beats.count, problems: [.lostCount])
+            return PulseGrade(drift: 0, jitter: 0, taps: 0, beats: beats.count, totalError: 0, problems: [.lostCount])
         }
         let intervals = zip(beats, beats.dropFirst()).map { $1 - $0 }
         let mean = intervals.reduce(0, +) / Double(intervals.count)
@@ -11,7 +11,7 @@ public enum PulseGrader {
         let inside = OnsetGrader.debounce(taps.sorted()).filter { window.contains($0) }
 
         guard let lastTap = inside.last else {
-            return PulseGrade(drift: 0, jitter: 0, taps: 0, beats: beats.count, problems: [.lostCount])
+            return PulseGrade(drift: 0, jitter: 0, taps: 0, beats: beats.count, totalError: 0, problems: [.lostCount])
         }
         let drift = (lastTap - last) / mean
         // taps are taken in order as the beats they stand for; ratios compare each interval with its beat
@@ -28,7 +28,9 @@ public enum PulseGrader {
         if inside.count != beats.count { problems.append(.lostCount) }
         if abs(drift) > PulsePolicy.maxDrift { problems.append(.drifted) }
         if jitter > PulsePolicy.maxJitter { problems.append(.uneven) }
-        return PulseGrade(drift: drift, jitter: jitter, taps: inside.count, beats: beats.count, problems: problems)
+        var total = 0.0
+        for i in 0..<n { total += abs(inside[i] - beats[i]) }
+        return PulseGrade(drift: drift, jitter: jitter, taps: inside.count, beats: beats.count, totalError: total, problems: problems)
     }
 
     static func standardDeviation(_ xs: [Double]) -> Double {

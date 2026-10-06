@@ -75,7 +75,7 @@ private struct FlowView: View {
                     TapPad(recorder: runner.recorder)
                         .frame(maxWidth: 520)
                     if runner.twoHandMode, attempt.kind != .holdPulse {
-                        Text("Left hand F: every beat, all the time · Right hand J / Space / pad: the rhythm")
+                        Text("Left hand \(runner.keyMap.pulseLabels): every beat, all the time · Right hand \(runner.keyMap.rhythmLabels) / pad: the rhythm")
                             .font(.callout).foregroundStyle(.secondary)
                     }
                 }
@@ -150,6 +150,7 @@ private struct VerdictBadge: View {
                 Text(verdict.passed ? "Yes" : "No").font(.system(size: 36, weight: .bold))
             }
             ForEach(verdict.reasons, id: \.self) { Text($0).font(.title3) }
+            if let score = verdict.score { AccuracyBar(score: score) }
             if let comparison = verdict.comparison {
                 RhythmStaffView(pattern: pattern, zoom: 1.6, beatGrid: true, comparison: comparison)
             }
@@ -193,6 +194,31 @@ struct NotationOptions: View {
             }
         }
         .frame(maxWidth: 700)
+    }
+}
+
+/// Σ|error| as a bar: empty = every note dead on, full = at the edge of tolerance on every note,
+/// or a missed note / extra tap.
+struct AccuracyBar: View {
+    let score: AccuracyScore
+
+    var body: some View {
+        VStack(spacing: 4) {
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Color.secondary.opacity(0.18))
+                    Capsule()
+                        .fill(LinearGradient(colors: [.green, .yellow, .orange, .red], startPoint: .leading, endPoint: .trailing))
+                        .mask(alignment: .leading) {
+                            Rectangle().frame(width: max(6, geo.size.width * score.fraction))
+                        }
+                }
+            }
+            .frame(width: 260, height: 12)
+            Text(score.isMax ? "Off the scale — a missed note or an extra tap"
+                             : String(format: "Total error %.0f ms (scale ends at %.0f ms)", score.totalError * 1000, score.maximum * 1000))
+                .font(.caption).foregroundStyle(.secondary)
+        }
     }
 }
 

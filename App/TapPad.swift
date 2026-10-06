@@ -11,7 +11,7 @@ struct TapPad: View {
                 .fill(recorder.isRunning ? Color.accentColor.opacity(0.15) : Color.secondary.opacity(0.08))
             RoundedRectangle(cornerRadius: 12)
                 .strokeBorder(Color.secondary.opacity(0.4), style: StrokeStyle(lineWidth: 1, dash: [6, 4]))
-            Text(recorder.isRunning ? "Click here to tap (\(recorder.tapCount))" : "Tap pad: click here or press Space")
+            Text(recorder.isRunning ? "Click here to tap (\(recorder.tapCount))" : "Tap pad: click here or press your tap key")
                 .foregroundStyle(.secondary)
             TapPadRepresentable { recorder.tap($0) }
         }

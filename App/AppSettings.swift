@@ -1,3 +1,4 @@
+import AudiateAudio
 import Foundation
 import Observation
 
@@ -22,6 +23,11 @@ final class AppSettings {
         didSet { defaults.set(tapSound, forKey: "tapSound") }
     }
 
+    /// Which keys tap the rhythm and the pulse.
+    var keyMap: KeyMap {
+        didSet { defaults.set(try? JSONEncoder().encode(keyMap), forKey: "keyMap") }
+    }
+
     var didShowIntroduction: Bool {
         didSet { defaults.set(didShowIntroduction, forKey: "didShowIntroduction") }
     }
@@ -32,5 +38,6 @@ final class AppSettings {
         twoHandMode = defaults.bool(forKey: "twoHandMode")
         tapSound = defaults.object(forKey: "tapSound") as? Bool ?? true
         didShowIntroduction = defaults.bool(forKey: "didShowIntroduction")
+        keyMap = defaults.data(forKey: "keyMap").flatMap { try? JSONDecoder().decode(KeyMap.self, from: $0) } ?? .standard
     }
 }

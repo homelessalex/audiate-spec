@@ -14,6 +14,8 @@ public struct PulseGrade: Hashable, Sendable {
     public let jitter: Double
     public let taps: Int
     public let beats: Int
+    /// Σ|tap − beat| with taps taken in order as the beats they stand for, seconds.
+    public let totalError: Double
     public let problems: [Problem]
 
     public var passed: Bool { problems.isEmpty }

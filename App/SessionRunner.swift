@@ -24,6 +24,8 @@ final class SessionRunner {
         let reasons: [String]
         /// Reading only (from SA): notes vs. taps on the staff.
         let comparison: StaffRenderer.Comparison?
+        /// Σ|error| on a scale (no picture of the rhythm, so shown at every level).
+        var score: AccuracyScore? = nil
     }
 
     /// An answered question, kept on screen with its result until the flow resumes.
@@ -57,6 +59,7 @@ final class SessionRunner {
 
     var heardTime: Double? { recorder.heardTime() }
     var twoHandMode: Bool { model.settings.twoHandMode }
+    var keyMap: KeyMap { model.settings.keyMap }
     var library: PatternLibrary { content.library }
 
     /// The next batch when the plan runs out: more of today's work, then (in free practice) more practice.
@@ -86,7 +89,7 @@ final class SessionRunner {
                 provider: { [weak self] from, to in self?.provide(from: from, to: to) },
                 onFinish: { [weak self] in self?.streamEnded() }
             )
-            recorder.start(clock: clock, player: content.player, tapSound: model.settings.tapSound)
+            recorder.start(clock: clock, player: content.player, tapSound: model.settings.tapSound, keyMap: model.settings.keyMap)
             state = .running
             ticker = Task { [weak self] in
                 while !Task.isCancelled {
@@ -202,7 +205,7 @@ final class SessionRunner {
             // either hand may keep the beat here
             let grade = PulseGrader.grade(beats: slot.expectedOnsets, taps: taps + recorder.pulseTaps.map { $0 - model.inputOffset })
             passed = grade.passed
-            verdicts[index] = Verdict(passed: passed, reasons: Self.describe(grade), comparison: nil)
+            verdicts[index] = Verdict(passed: passed, reasons: Self.describe(grade), comparison: nil, score: AccuracyScore(grade))
             record(attempt, exercise: .holdThePulse, patternID: nil, passed: passed, accuracy: passed ? 1 : 0)
         } else {
             let mode = attempt.clickStage.timingMode
@@ -220,7 +223,8 @@ final class SessionRunner {
             verdicts[index] = Verdict(
                 passed: passed, reasons: reasons,
                 comparison: reading ? Self.comparison(grade, pattern: attempt.pattern, downbeat: slot.end - attempt.measureDuration,
-                                                      tempo: attempt.tempo) : nil
+                                                      tempo: attempt.tempo) : nil,
+                score: twoHands.map(AccuracyScore.init) ?? AccuracyScore(grade)
             )
             var exercise: ExerciseKind = reading ? .read : .echo
             if case .echo(let spec) = attempt.step { exercise = spec.exercise }

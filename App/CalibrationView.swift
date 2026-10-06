@@ -60,7 +60,7 @@ struct CalibrationView: View {
             responses: [], measureDuration: 4 * CalibrationPolicy.beat, duration: Double(clicks.count) * CalibrationPolicy.beat
         )
         do {
-            try recorder.run(timeline, player: player, tapSound: false) { taps in
+            try recorder.run(timeline, player: player, tapSound: false, keyMap: model.settings.keyMap) { taps in
                 let r = CalibrationAnalyzer.analyze(clickTimes: clicks, taps: taps)
                 result = r
                 if r.isAccepted, let median = r.medianOffset, let uid = device?.uid {
