@@ -73,7 +73,7 @@ final class AppModel {
 
     func planSession() -> SessionPlan? {
         guard let content else { return nil }
-        let planner = SessionPlanner(curriculum: content.curriculum, library: content.library)
+        let planner = SessionPlanner(curriculum: content.curriculum, library: content.library, calendar: calendar)
         var rng = SystemRandomNumberGenerator()
         return planner.plan(progress, date: now(), using: &rng)
     }

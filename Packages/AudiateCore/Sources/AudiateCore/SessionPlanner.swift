@@ -8,18 +8,20 @@ public struct SessionPlanner: Sendable {
     public let curriculum: Curriculum
     public let library: PatternLibrary
     public var sessionSeconds: Double
+    /// Defines "today" for the daily limits.
+    public var calendar: Calendar
 
     /// Levels that have exercises so far.
     public static let implementedLevels: Set<SkillLevel> = [.aural, .verbal, .symbolic]
     /// The ear levels that move the frontier from unit to unit.
     static let earLevels: [SkillLevel] = [.aural, .verbal]
-    /// Evaluations of one pattern per exercise in one session; more adds little before the next day.
-    public static let maxEvaluationsPerPattern = 4
 
-    public init(curriculum: Curriculum, library: PatternLibrary, sessionSeconds: Double = MasteryPolicy.sessionSeconds) {
+    public init(curriculum: Curriculum, library: PatternLibrary, sessionSeconds: Double = MasteryPolicy.sessionSeconds,
+                calendar: Calendar = .current) {
         self.curriculum = curriculum
         self.library = library
         self.sessionSeconds = sessionSeconds
+        self.calendar = calendar
     }
 
     /// Lowest unpassed, unlocked ear level of the earliest unit that has one.
@@ -35,15 +37,16 @@ public struct SessionPlanner: Sendable {
         return nil
     }
 
+    /// Today's next session. Daily limits make it empty once the day's work is done, which ends the flow.
     public func plan(_ progress: LearnerProgress, date: Date, using rng: inout some RandomNumberGenerator) -> SessionPlan {
         let frontier = frontier(progress)
         var steps = review(progress, date: date, excluding: frontier)
         var taughtNow: Set<String> = []
         if let frontier {
-            steps += newMaterial(frontier, progress: progress, budget: sessionSeconds - seconds(steps),
+            steps += newMaterial(frontier, progress: progress, date: date, budget: sessionSeconds - seconds(steps),
                                  taughtNow: &taughtNow, using: &rng)
         }
-        steps += otherReading(progress, frontier: frontier, budget: sessionSeconds - seconds(steps), using: &rng)
+        steps += otherReading(progress, frontier: frontier, date: date, budget: sessionSeconds - seconds(steps), using: &rng)
         return SessionPlan(steps: steps, frontier: frontier, estimatedSeconds: seconds(steps))
     }
 
@@ -72,15 +75,22 @@ public struct SessionPlanner: Sendable {
 
     // MARK: - New material
 
-    private func newMaterial(_ key: LevelKey, progress: LearnerProgress, budget: Double, taughtNow: inout Set<String>,
+    private func newMaterial(_ key: LevelKey, progress: LearnerProgress, date: Date, budget: Double, taughtNow: inout Set<String>,
                              using rng: inout some RandomNumberGenerator) -> [SessionStep] {
         guard let unit = curriculum.unit(id: key.unitID) else { return [] }
         let patterns = curriculum.patterns(of: unit, in: library)
         let introduced = patterns.filter { progress.isIntroduced(patternID: $0.id, level: key.level) }
-        let fresh = patterns.filter { !introduced.contains($0) }.prefix(MasteryPolicy.maxNewPatternsPerSessionPerUnit)
+        let startedToday = { (p: Pattern) in progress.teachingStarted(onDayOf: date, patternID: p.id, level: key.level, calendar: calendar) }
+        let newSlots = max(0, MasteryPolicy.maxNewPatternsPerDayPerUnit - introduced.filter(startedToday).count)
+        // a pattern whose teaching was interrupted today comes first
+        let fresh = patterns.filter { !introduced.contains($0) }.sorted { startedToday($0) && !startedToday($1) }.prefix(newSlots)
         let readsUnit = isReading(unit, progress)
         func item(_ p: Pattern, _ level: SkillLevel) -> PlannedItem {
             PlannedItem(patternID: p.id, unitID: unit.id, level: level, purpose: .new)
+        }
+        func left(_ p: Pattern, _ level: SkillLevel, _ exercise: ExerciseKind) -> Int {
+            max(0, MasteryPolicy.maxEvaluationsPerPatternPerDay
+                - progress.evaluationsOnDay(of: date, patternID: p.id, level: level, exercise: exercise, calendar: calendar))
         }
 
         var steps: [SessionStep] = []
@@ -95,41 +105,45 @@ public struct SessionPlanner: Sendable {
         }
 
         let pool = introduced + fresh
-        var remaining = Dictionary(uniqueKeysWithValues: pool.map { ($0.id, Self.maxEvaluationsPerPattern) })
+        var echoes = Dictionary(uniqueKeysWithValues: pool.map { ($0.id, left($0, key.level, .echo)) })
+        var questions = Dictionary(uniqueKeysWithValues: pool.map { ($0.id, key.level == .verbal ? left($0, .verbal, .nameNotation) : 0) })
+        var reads = Dictionary(uniqueKeysWithValues: pool.map { ($0.id, readsUnit ? left($0, .symbolic, .read) : 0) })
         while seconds(steps) < budget {
-            let available = pool.filter { remaining[$0.id, default: 0] > 0 }.shuffled(using: &rng)
-            guard !available.isEmpty else { break }
+            let available = pool.filter { echoes[$0.id]! > 0 }.shuffled(using: &rng)
             var round: [Pattern] = []
-            for p in available.sorted(by: { remaining[$0.id]! > remaining[$1.id]! }) {
+            for p in available.sorted(by: { echoes[$0.id]! > echoes[$1.id]! }) {
                 round.append(p)
-                remaining[p.id]! -= 1
+                echoes[p.id]! -= 1
             }
-            while round.count < MasteryPolicy.evaluationBlockSize.lowerBound,
-                  let p = available.first(where: { remaining[$0.id]! > 0 }) {
+            while !round.isEmpty, round.count < MasteryPolicy.evaluationBlockSize.lowerBound,
+                  let p = available.first(where: { echoes[$0.id]! > 0 }) {
                 round.append(p)
-                remaining[p.id]! -= 1
+                echoes[p.id]! -= 1
             }
-            let shuffled = round.shuffled(using: &rng)
-            steps += blocksByMeterAndLevel(shuffled.map { item($0, key.level) }).map { echo($0, mode: .evaluation) }
-            if key.level == .verbal {
-                steps += Set(round.map(\.id)).sorted().compactMap { library.pattern(id: $0) }.compactMap {
-                    nameNotation(item($0, .verbal), pattern: $0, using: &rng)
-                }
+            var added = blocksByMeterAndLevel(round.shuffled(using: &rng).map { item($0, key.level) }).map { echo($0, mode: .evaluation) }
+            for p in pool.shuffled(using: &rng) where questions[p.id]! > 0 {
+                questions[p.id]! -= 1
+                if let q = nameNotation(item(p, .verbal), pattern: p, using: &rng) { added.append(q) }
             }
-            if readsUnit {
-                let readable = shuffled.filter { progress.hasHeard(patternID: $0.id) || taughtNow.contains($0.id) }
-                steps += blocksByMeterAndLevel(readable.map { item($0, .symbolic) }).map { read($0, mode: .evaluation) }
-            }
+            let readable = pool.filter { reads[$0.id]! > 0 && (progress.hasHeard(patternID: $0.id) || taughtNow.contains($0.id)) }
+            readable.forEach { reads[$0.id]! -= 1 }
+            added += blocksByMeterAndLevel(readable.shuffled(using: &rng).map { item($0, .symbolic) }).map { read($0, mode: .evaluation) }
+            guard !added.isEmpty else { break }
+            steps += added
         }
         return steps
     }
 
     /// Reading for earlier units whose ear levels are done but whose reading isn't passed yet.
-    private func otherReading(_ progress: LearnerProgress, frontier: LevelKey?, budget: Double,
+    private func otherReading(_ progress: LearnerProgress, frontier: LevelKey?, date: Date, budget: Double,
                               using rng: inout some RandomNumberGenerator) -> [SessionStep] {
         let items = curriculum.units.filter { $0.id != frontier?.unitID && isReading($0, progress) }.flatMap { unit in
             curriculum.patterns(of: unit, in: library)
                 .filter { progress.hasHeard(patternID: $0.id) }
+                .filter {
+                    progress.evaluationsOnDay(of: date, patternID: $0.id, level: .symbolic, exercise: .read, calendar: calendar)
+                        < MasteryPolicy.maxEvaluationsPerPatternPerDay
+                }
                 .map { PlannedItem(patternID: $0.id, unitID: unit.id, level: .symbolic, purpose: .new) }
         }
         var steps: [SessionStep] = []

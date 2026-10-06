@@ -30,6 +30,21 @@ public struct LearnerProgress: Codable, Hashable, Sendable {
         return teaching.contains(where: \.passed) || teaching.count >= MasteryPolicy.maxTeachingAttempts
     }
 
+    /// Evaluation attempts at `level` with `exercise` on the calendar day of `date`.
+    public func evaluationsOnDay(of date: Date, patternID: String, level: SkillLevel, exercise: ExerciseKind,
+                                 calendar: Calendar) -> Int {
+        attempts.filter {
+            $0.mode == .evaluation && $0.patternID == patternID && $0.level == level && $0.exercise == exercise
+                && calendar.isDate($0.date, inSameDayAs: date)
+        }.count
+    }
+
+    /// Whether the pattern's teaching at `level` started on the calendar day of `date`.
+    public func teachingStarted(onDayOf date: Date, patternID: String, level: SkillLevel, calendar: Calendar) -> Bool {
+        let first = attempts.first { $0.patternID == patternID && $0.level == level && $0.mode == .teaching }
+        return first.map { calendar.isDate($0.date, inSameDayAs: date) } ?? false
+    }
+
     /// The pattern has been taught by ear.
     public func hasHeard(patternID: String) -> Bool {
         isIntroduced(patternID: patternID, level: .aural)

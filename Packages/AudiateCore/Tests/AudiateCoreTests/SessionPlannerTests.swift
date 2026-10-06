@@ -4,7 +4,7 @@ import Testing
 
 @Suite("SessionPlanner")
 struct SessionPlannerTests {
-    let planner = SessionPlanner(curriculum: Fixtures.curriculum, library: Fixtures.library)
+    let planner = SessionPlanner(curriculum: Fixtures.curriculum, library: Fixtures.library, calendar: Fixtures.calendar)
     let calendar = Fixtures.calendar
 
     func plan(_ progress: LearnerProgress, day: Int, seed: UInt64 = 1) -> SessionPlan {
@@ -18,6 +18,37 @@ struct SessionPlannerTests {
 
     func reads(_ plan: SessionPlan) -> [ReadBlockSpec] {
         plan.steps.compactMap { if case .read(let r) = $0 { r } else { nil } }
+    }
+
+    /// Sessions chain into one flow: replanning on the same day must run dry, not loop forever.
+    @Test func sameDayReplanningRunsDry() {
+        var progress = LearnerProgress()
+        var rng = SeededRandomNumberGenerator(seed: 5)
+        var sessions = 0
+        while sessions < 20 {
+            let p = planner.plan(progress, date: Fixtures.day(0), using: &rng)
+            if p.isEmpty { break }
+            sessions += 1
+            for step in p.steps {
+                let (items, exercise, mode): ([PlannedItem], ExerciseKind, PracticeMode) = switch step {
+                case .echo(let b): (b.items, .echo, b.mode)
+                case .read(let b): (b.items, .read, b.mode)
+                case .nameNotation(let q): ([q.item], .nameNotation, q.mode)
+                }
+                for item in items {
+                    progress.record(Attempt(date: Fixtures.day(0), unitID: item.unitID, level: item.level, patternID: item.patternID,
+                                            exercise: exercise, mode: mode, passed: true, accuracy: 1),
+                                    curriculum: Fixtures.curriculum, library: Fixtures.library, calendar: calendar)
+                }
+            }
+        }
+        #expect(sessions < 20)
+        // two new patterns a day, each evaluated at most four times
+        let evaluated = Dictionary(grouping: progress.attempts.filter { $0.mode == .evaluation }, by: { $0.patternID! }).mapValues(\.count)
+        #expect(evaluated.count == MasteryPolicy.maxNewPatternsPerDayPerUnit)
+        #expect(evaluated.values.allSatisfy { $0 <= MasteryPolicy.maxEvaluationsPerPatternPerDay + MasteryPolicy.minBlockSize })
+        // and the next day there is work again
+        #expect(!planner.plan(progress, date: Fixtures.day(1), using: &rng).isEmpty)
     }
 
     @Test func noReadingWhileOnlyEarLevelsAreOpen() {
@@ -44,7 +75,7 @@ struct SessionPlannerTests {
         #expect(p.frontier == LevelKey(unitID: "U1", level: .aural))
         let blocks = echoes(p)
         let teaching = blocks.filter { $0.mode == .teaching }
-        #expect(teaching.count == MasteryPolicy.maxNewPatternsPerSessionPerUnit)
+        #expect(teaching.count == MasteryPolicy.maxNewPatternsPerDayPerUnit)
         #expect(teaching.allSatisfy { $0.items.count == 1 }) // repeated until correct by the session runner
         #expect(teaching.allSatisfy { $0.clickStage == .a && !$0.showNotation })
         #expect(teaching.allSatisfy { $0.tempo.bpm == TempoPolicy.dupleBPM * TempoPolicy.teachingFactor })
@@ -70,7 +101,7 @@ struct SessionPlannerTests {
     @Test func evaluationsPerPatternAreCapped() {
         let p = plan(LearnerProgress(), day: 0)
         let counts = Dictionary(grouping: echoes(p).filter { $0.mode == .evaluation }.flatMap(\.items), by: \.patternID).mapValues(\.count)
-        #expect(counts.values.allSatisfy { $0 <= SessionPlanner.maxEvaluationsPerPattern + MasteryPolicy.minBlockSize })
+        #expect(counts.values.allSatisfy { $0 <= MasteryPolicy.maxEvaluationsPerPatternPerDay + MasteryPolicy.minBlockSize })
         #expect(p.estimatedSeconds <= planner.sessionSeconds + 60)
     }
 

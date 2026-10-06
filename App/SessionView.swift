@@ -218,10 +218,10 @@ private struct SummaryView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            Text("Session complete").font(.largeTitle.bold())
-            if runner.newlyPassed.isEmpty {
-                Text("Keep going — mastery needs passes on at least two different days.").foregroundStyle(.secondary)
-            } else {
+            Text(model.planSession()?.isEmpty != false ? "That's all for today" : "Session ended").font(.largeTitle.bold())
+            Text("A level counts once every pattern has been passed on two different days, so new material opens up tomorrow.")
+                .multilineTextAlignment(.center).foregroundStyle(.secondary).frame(maxWidth: 460)
+            if !runner.newlyPassed.isEmpty {
                 ForEach(runner.newlyPassed, id: \.self) { key in
                     Label("Passed \(key.unitID) \(HomeView.levelName(key.level))", systemImage: "star.fill").foregroundStyle(.green)
                 }

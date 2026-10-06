@@ -87,7 +87,9 @@ Default length 12 min (setting: 5–30). The session planner fills slots in this
 
 Rules:
 - Group items by meter in blocks of ≥ 3, re-establishing meter (count-in) at each block change.
-- Never more than 2 new patterns introduced per session per unit (teaching mode).
+- Never more than 2 new patterns introduced per day per unit (teaching mode), and at most 4 evaluations
+  of a pattern per exercise per day (`MasteryPolicy`). Sessions chain into one flow, so these limits are
+  per calendar day; once the day's work is done the next plan is empty and the flow ends.
 - Teaching mode for a pattern: echoed with support (click stage A, syllables at VA) until it is correct,
   at most `MasteryPolicy.maxTeachingAttempts` (4) tries → then it enters the evaluation pool.
 - Steps and sessions run as one continuous flow (`docs/04-exercises.md` §1): the verdict of each attempt

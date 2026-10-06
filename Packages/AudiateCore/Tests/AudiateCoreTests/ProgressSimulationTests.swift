@@ -7,7 +7,7 @@ import Testing
 struct ProgressSimulationTests {
     @Test func perfectLearnerCompletesU1AuralThenVerbalOverSeveralDays() {
         let curriculum = Fixtures.curriculum, library = Fixtures.library, calendar = Fixtures.calendar
-        let planner = SessionPlanner(curriculum: curriculum, library: library)
+        let planner = SessionPlanner(curriculum: curriculum, library: library, calendar: calendar)
         var progress = LearnerProgress()
         var rng = SeededRandomNumberGenerator(seed: 3)
         var passedOn: [LevelKey: Int] = [:]

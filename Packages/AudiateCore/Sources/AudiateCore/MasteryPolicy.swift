@@ -24,7 +24,11 @@ public enum MasteryPolicy {
     public static let maxTeachingAttempts = 4
     /// Rough time the yes/no verdict stays on screen after each attempt.
     public static let verdictSeconds = 1.2
-    public static let maxNewPatternsPerSessionPerUnit = 2
+    /// Per calendar day (sessions chain into one flow, so the day is the unit).
+    public static let maxNewPatternsPerDayPerUnit = 2
+    /// Evaluations of one pattern per exercise per day; more adds little before the next day,
+    /// and mastery needs passes on two different days anyway.
+    public static let maxEvaluationsPerPatternPerDay = 4
     public static let evaluationBlockSize = 4...6
     public static let minBlockSize = 3
     /// Rough time per step outside the audio (reading feedback, pressing Return).
