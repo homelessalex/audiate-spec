@@ -71,7 +71,7 @@ private struct FlowView: View {
                 }
                 .frame(minHeight: 360)
                 // the pad shows only for tap attempts
-                if let attempt, [.echo, .read, .readWithModel, .holdPulse].contains(attempt.kind) {
+                if let attempt, [.echo, .read, .readWithModel, .holdPulse, .answerDifferently].contains(attempt.kind) {
                     TapPad(recorder: runner.recorder)
                         .frame(maxWidth: 520)
                     if runner.twoHandMode, attempt.kind != .holdPulse {
@@ -95,6 +95,9 @@ private struct FlowView: View {
         case .dictation: "Dictation"
         case .whichMeter: "Which meter?"
         case .meterFromNotation: "Meter from notation"
+        case .sameOrDifferent: "Same or different?"
+        case .answerDifferently: "Answer differently"
+        case .compose: "Compose"
         }
     }
 
@@ -104,7 +107,7 @@ private struct FlowView: View {
         case .leadIn: attempt == nil ? "…" : "Get ready"
         case .prompt: attempt?.kind == .read ? "Look ahead" : "Listen"
         case .hold: "Hold it"
-        case .response: attempt?.kind == .echo ? "Your turn" : "Read"
+        case .response: attempt?.kind == .answerDifferently ? "Something different" : (attempt?.kind == .echo ? "Your turn" : "Read")
         case .withClick: "Tap the beat"
         case .silent: "Keep the beat"
         case nil: " "

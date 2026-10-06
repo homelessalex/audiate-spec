@@ -36,11 +36,17 @@ struct AnswerView: View {
             }
             MeterOptions(meters: m.options.compactMap { runner.library.meters[$0] }, correct: m.correctIndex, chosen: choice,
                          enabled: enabled) { runner.choose($0) }
+        case .sameOrDifferent(let d):
+            SameDifferentOptions(isSame: d.isSame, chosen: choice, enabled: enabled) { runner.choose($0) }
+        case .compose(let c):
+            if let meter = runner.library.meters[c.meterID] {
+                CellComposer(palette: c.palette, meter: meter, action: "Perform it") { runner.submit(composition: $0.compactMap { $0 }) }
+            }
         case .dictation(let d):
             if let written {
                 DictationResult(spec: d, pattern: attempt.pattern, written: written) { runner.continueAfterAnswer() }
             } else {
-                DictationInput(spec: d, meter: attempt.pattern.meter) { runner.submit(dictation: $0) }
+                CellComposer(palette: d.palette, meter: attempt.pattern.meter, action: "Check") { runner.submit(dictation: $0) }
             }
         default:
             EmptyView()
@@ -53,13 +59,15 @@ struct AnswerView: View {
         case .whichMeter: "Which meter was it?"
         case .meterFromNotation: "Which meter are these in?"
         case .dictation: "Write what you heard"
+        case .sameOrDifferent: "Same or different?"
+        case .compose: "Write your own pattern"
         default: ""
         }
     }
 
     static func hint(_ a: FlowSequencer.FlowAttempt) -> String {
         switch a.kind {
-        case .dictation: "One cell per beat: 1–9 pick, ← → move, ⌫ clear, Return check. Esc to pause."
+        case .dictation, .compose: "One cell per beat: 1–9 pick, ← → move, ⌫ clear, Return when done. Esc to pause."
         default: "Click or press a number. Esc to pause."
         }
     }
@@ -110,6 +118,38 @@ private struct MeterOptions: View {
     }
 }
 
+private struct SameDifferentOptions: View {
+    let isSame: Bool
+    let chosen: Int?
+    let enabled: Bool
+    let choose: (Int) -> Void
+
+    var body: some View {
+        HStack(spacing: 14) {
+            ForEach(0..<2, id: \.self) { i in
+                let right = (i == 0) == isSame
+                Button {
+                    choose(i)
+                } label: {
+                    HStack {
+                        Text("\(i + 1)").foregroundStyle(.secondary)
+                        Text(i == 0 ? "Same" : "Different").font(.title3)
+                        if let chosen, right || i == chosen {
+                            Image(systemName: right ? "checkmark.circle.fill" : "xmark.circle.fill")
+                                .foregroundStyle(right ? .green : .red)
+                        }
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                }
+                .controlSize(.large)
+                .keyboardShortcut(KeyEquivalent(Character("\(i + 1)")), modifiers: [])
+                .disabled(!enabled || chosen != nil)
+            }
+        }
+    }
+}
+
 /// One cell as a tiny staff (no time signature).
 private struct CellTile: View {
     let cell: Cell
@@ -125,16 +165,18 @@ private struct CellTile: View {
     }
 }
 
-private struct DictationInput: View {
-    let spec: DictationSpec
+/// One cell per macrobeat from a palette (E6 dictation, E9 composing).
+private struct CellComposer: View {
+    let palette: [Cell]
     let meter: Meter
+    let action: String
     let submit: ([Cell?]) -> Void
     @State private var slots: [Cell?] = []
     @State private var current = 0
     @FocusState private var focused: Bool
 
     var body: some View {
-        let palette = spec.palette.filter { $0.macrobeatSize == meter.macrobeats[safe: current] }
+        let palette = self.palette.filter { $0.macrobeatSize == meter.macrobeats[safe: current] }
         VStack(spacing: 20) {
             HStack(spacing: 10) {
                 ForEach(meter.macrobeats.indices, id: \.self) { i in
@@ -166,7 +208,7 @@ private struct DictationInput: View {
                 }
             }
             .frame(maxWidth: 720)
-            Button("Check") { submit(slots) }
+            Button(action) { submit(slots) }
                 .controlSize(.large)
                 .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)
@@ -239,7 +281,7 @@ struct AnswerPreviewSheet: View {
         let series = ["T-MM-02", "T-MM-04", "T-MM-01", "T-MM-03"].compactMap { library.pattern(id: $0) }
         VStack(alignment: .leading, spacing: 28) {
             Text("Dictation input").font(.headline)
-            DictationInput(spec: spec, meter: target.meter) { _ in }
+            CellComposer(palette: spec.palette, meter: target.meter, action: "Check") { _ in }
             Text("Dictation result (beat 2 wrong)").font(.headline)
             DictationResult(spec: spec, pattern: target, written: [answer[0], answer[0]]) {}
             Text("Meter from notation").font(.headline)

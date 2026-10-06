@@ -39,7 +39,7 @@ Acceptance:
 | M1 | done (D-DV-03 passed on device; offline-render jitter test) |
 | M2 | done, reshaped by the learner's feedback (see below) |
 | M3 | done except visual review of reading/dictation on device for U1–U4 |
-| M4 | E10 and the audiation drill (E11) done; the rest open |
+| M4 | done (device review pending) |
 | M5 | two-hand mode, settings, introduction done; the rest open |
 
 Deliberate changes since the original plan (each recorded in `01-methodology.md` §7 and the docs it touches):
@@ -66,6 +66,10 @@ and note anything odd:
 - [ ] **Audiate the gap** (end of the first session each day): two silent measures, no click, then echo.
 - [ ] **Two hands** (Settings ⌘,): F on every beat, J/Space/pad the rhythm; the verdict names the hand.
 - [ ] **Settings and introduction**: session length, tap sound, reset progress; Help → Show Introduction.
+- [ ] **GA** (after a unit's VA and SA): echo of unfamiliar patterns at varied tempos; **Same or different?**
+- [ ] **GV**: which notation, unfamiliar patterns. **GS**: read and write unfamiliar patterns.
+- [ ] **IA Answer differently**: answer with a *different* rhythm; snapped to the grid; an echo is rejected.
+- [ ] **IS Compose**: write your own pattern with cells, then perform it from the notation.
 
 ## M2 — First playable loop: U1–U2 at AO and VA ✅
 
@@ -97,9 +101,13 @@ pickup slot yet); unit-level review items (PS, CS) are not scheduled for review.
 Done: E10 hold the pulse (`PulseGrader`, 2 → 4 → 8 → 16 silent measures, daily warm-up); audiation drill
 closing the first session of the day (E11: familiar patterns, two silent measures without click, practice).
 
-Open: E4 same/different, E8 answer differently (improvisation grader), E9 compose and perform, generator
-integration for GA/GV/GS (unfamiliar patterns), tempo randomization within range, bridging in the
-planner (core scheduling exists), audiation drill at the end of a session.
+Done as well: generated (unfamiliar) patterns for GA/GV/GS from the content of every unit past VA, tempo
+drawn from the meter's range per step, E4 same/different, E8 answer differently (`ImprovGrader`), E9
+compose then perform; inference levels mastered per unit (15 attempts on 2 days, 80 %).
+
+Open: bridging after two misses is scheduled in the core but only for familiar-pattern items; check it
+once symbolic levels are in use. Generalization in U1 alone has no unfamiliar patterns (macro/micro
+cells give only the four library patterns) — it starts once U3's divisions are known.
 
 Acceptance:
 - Session planner tests green; a session contains warm-up, review, new, drill.

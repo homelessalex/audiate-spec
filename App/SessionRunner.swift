@@ -192,7 +192,13 @@ final class SessionRunner {
         let attempt = flow.attempts[index]
         let taps = recorder.taps.map { $0 - model.inputOffset }
         let passed: Bool
-        if attempt.kind == .holdPulse {
+        if case .answerDifferently(let spec) = attempt.step {
+            let grade = ImprovGrader.grade(taps: taps, prompt: spec.prompt, downbeat: slot.end - attempt.measureDuration,
+                                           tempo: attempt.tempo, unlocked: spec.unlocked)
+            passed = grade.passed
+            verdicts[index] = Verdict(passed: passed, reasons: grade.problems.map(Self.describe), comparison: nil)
+            record(attempt, exercise: .answerDifferently, patternID: nil, passed: passed, accuracy: passed ? 1 : 0)
+        } else if attempt.kind == .holdPulse {
             // either hand may keep the beat here
             let grade = PulseGrader.grade(beats: slot.expectedOnsets, taps: taps + recorder.pulseTaps.map { $0 - model.inputOffset })
             passed = grade.passed
@@ -218,7 +224,8 @@ final class SessionRunner {
             )
             var exercise: ExerciseKind = reading ? .read : .echo
             if case .echo(let spec) = attempt.step { exercise = spec.exercise }
-            record(attempt, exercise: exercise, patternID: attempt.pattern.id, passed: passed,
+            if attempt.item.level == .improvisationSymbolic { exercise = .composeAndPerform }
+            record(attempt, exercise: exercise, patternID: Self.patternID(attempt), passed: passed,
                    accuracy: twoHands?.accuracy ?? grade.accuracy)
         }
         flow.report(passed: passed, forAttempt: index) { [weak self] in self?.moreSteps() ?? [] }
@@ -231,7 +238,8 @@ final class SessionRunner {
         guard let attempt = pendingAnswer else { return }
         let passed: Bool, exercise: ExerciseKind, patternID: String?
         switch attempt.step {
-        case .nameNotation(let q): (passed, exercise, patternID) = (option == q.correctIndex, .nameNotation, attempt.pattern.id)
+        case .nameNotation(let q): (passed, exercise, patternID) = (option == q.correctIndex, .nameNotation, Self.patternID(attempt))
+        case .sameOrDifferent(let d): (passed, exercise, patternID) = ((option == 0) == d.isSame, .sameOrDifferent, nil)
         case .whichMeter(let w): (passed, exercise, patternID) = (option == w.correctIndex, .whichMeter, nil)
         case .meterFromNotation(let m): (passed, exercise, patternID) = (option == m.correctIndex, .meterFromNotation, nil)
         default: return
@@ -243,7 +251,27 @@ final class SessionRunner {
     func submit(dictation written: [Cell?]) {
         guard let attempt = pendingAnswer, case .dictation(let d) = attempt.step else { return }
         let passed = Dictation.firstDifference(answer: d.answer, written: written) == nil
-        answer(attempt, Answer(attempt: attempt, choice: nil, written: written, passed: passed), exercise: .write, patternID: attempt.pattern.id)
+        answer(attempt, Answer(attempt: attempt, choice: nil, written: written, passed: passed), exercise: .write,
+               patternID: Self.patternID(attempt))
+    }
+
+    /// E9: the learner's own pattern; next they perform it from the notation (graded as E9).
+    func submit(composition cells: [Cell]) {
+        guard let attempt = pendingAnswer, case .compose(let spec) = attempt.step,
+              let meter = content.library.meters[spec.meterID],
+              let composed = Dictation.pattern(from: cells, meter: meter, id: "composed") else { return }
+        let perform = SessionStep.read(ReadBlockSpec(
+            items: [PlannedItem(generated: composed, unitID: spec.unitID, level: .improvisationSymbolic)],
+            meterID: meter.id, tempo: spec.tempo, clickStage: .c, mode: .evaluation))
+        var steps = flow.steps
+        let at = attempt.position.step + 1
+        steps.insert(perform, at: min(at, steps.count))
+        restart(FlowSequencer(steps: steps, library: content.library, from: .init(step: at, item: 0, attempt: 1)))
+    }
+
+    /// Library patterns are graded per pattern; generated ones per unit (nil).
+    private static func patternID(_ attempt: FlowSequencer.FlowAttempt) -> String? {
+        attempt.item.generated == nil ? attempt.pattern.id : nil
     }
 
     private func answer(_ attempt: FlowSequencer.FlowAttempt, _ result: Answer, exercise: ExerciseKind, patternID: String?) {
@@ -287,6 +315,15 @@ final class SessionRunner {
         case .missedBeat: "Missed a beat"
         case .extraTap: "Extra tap"
         case .timingOff: "Timing off"
+        }
+    }
+
+    static func describe(_ problem: ImprovGrade.Problem) -> String {
+        switch problem {
+        case .sameAsPrompt: "That was the same pattern — answer with a different one"
+        case .offGrid: "Off the grid"
+        case .tooFew: "Too few notes"
+        case .tempoDrift: "Tempo drifted"
         }
     }
 

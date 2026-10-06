@@ -10,12 +10,12 @@ Tap exercises share the onset grader (§2).
 | E1 | Echo | AO, VA, GA | Pattern played on hi-hat. AO: by ear only. VA: its notation in view (beat grid, cursor) | Tap it back after the hold measure | Onset grader |
 | E2 | Which notation? | VA, GV | Pattern played twice on hi-hat, the 4 notations in view | Pick the notation (keys 1–4); the pulse stops, no time limit | Exact choice |
 | E3 | Which meter? | PS, GA | Series of 4 patterns, one meter; fresh count-in with macrobeats only, duple and triple at one macrobeat tempo (66) so neither gives the meter away; no click during the series | Choose meter (pulse stopped, no time limit) | Exact choice |
-| E4 | Same or different | GA | Two patterns, same meter | Same / Different | Exact choice |
+| E4 | Same or different | GA | Two unfamiliar patterns, same meter (different = one onset changed), no click | Same / Different (pulse stopped) | Exact choice |
 | E5 | Read | SA (one familiar), CS (series of 4), GS (unfamiliar) | Notation. SA teaching: notation shown while the pattern plays, then read back. SA evaluation: notation only, a silent look-ahead measure before each pattern | Tap (and chant aloud) after count-in | Onset grader |
 | E6 | Write (dictation) | SA, CS, GS | Pattern played twice on hi-hat | One cell per macrobeat from the palette (pulse stopped, no time limit); patterns with a pickup, tie or note across a macrobeat are not dictated yet | Structural match |
 | E7 | Meter from notation | CS | Series of 4 notated patterns, time signature and beat grid hidden (silent) | Choose meter | Exact choice |
-| E8 | Answer differently | IA | Pattern on hi-hat | Tap a *different* pattern in the same meter | Improvisation grader |
-| E9 | Compose and perform | IS | Empty measure(s) | Build with palette, then perform it (E5) | E5 grader on own pattern |
+| E8 | Answer differently | IA | Unfamiliar pattern on hi-hat, hold measure, no click | Tap a *different* pattern in the same meter | Improvisation grader |
+| E9 | Compose and perform | IS | Empty measure | Build with the cell palette (pulse stopped), then read it in the flow (stage C) | Onset grader on own pattern |
 | E10 | Hold the pulse | warm-up, free practice | Count-in + 1 measure with click, then silence (2 → 4 → 8 → 16 measures); the click returns at the end | Tap macrobeats through the silence | Pulse grader (never counted toward mastery) |
 | E11 | Audiate the gap | drills (after VA) | Pattern, then one **silent** measure | Tap the pattern in the third measure | Onset grader |
 | E12 | Theory | TU | Rhythm heard / notation shown | Pick equivalent notation in another time signature; name values | Exact choice |
