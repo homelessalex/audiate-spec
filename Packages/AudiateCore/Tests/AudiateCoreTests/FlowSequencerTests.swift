@@ -53,8 +53,8 @@ struct FlowSequencerTests {
     }
 
     @Test func evaluationBlockFlowsWithOneMeasureBetweenAttempts() {
-        let flow = run([echo(["D-MM-01", "D-MM-02", "D-MM-03"], mode: .evaluation)], outcomes: { _ in false })
-        #expect(flow.attempts.map(\.pattern.id) == ["D-MM-01", "D-MM-02", "D-MM-03"]) // no retries in evaluation
+        let flow = run([echo(["D-MM-01", "D-MM-02", "D-MM-03"], mode: .evaluation)], outcomes: { _ in true })
+        #expect(flow.attempts.map(\.pattern.id) == ["D-MM-01", "D-MM-02", "D-MM-03"])
         #expect(flow.measures.map(\.role) == [.countIn, .countIn, .prompt, .hold, .response,
                                               .leadIn, .prompt, .hold, .response,
                                               .leadIn, .prompt, .hold, .response, .leadIn])
@@ -69,6 +69,26 @@ struct FlowSequencerTests {
         let neverSucceeds = run([echo(["D-MM-01"], mode: .teaching)], outcomes: { _ in false })
         #expect(neverSucceeds.attempts.count == MasteryPolicy.maxTeachingAttempts)
         expectContinuousPulse(succeedsOnThird)
+    }
+
+    @Test func missesAreCorrectedRightAwayButOnlyTheFirstTryCounts() {
+        // D-MM-01 right on the third try, D-MM-02 never
+        let flow = run([echo(["D-MM-01", "D-MM-02"], mode: .evaluation)],
+                       outcomes: { $0.pattern.id == "D-MM-01" && $0.position.attempt == 3 })
+        #expect(flow.attempts.map(\.pattern.id) == ["D-MM-01", "D-MM-01", "D-MM-01"]
+                + Array(repeating: "D-MM-02", count: MasteryPolicy.maxCorrectionAttempts))
+        #expect(flow.attempts.filter { $0.mode == .evaluation }.map(\.pattern.id) == ["D-MM-01", "D-MM-02"])
+        #expect(flow.attempts.filter(\.isCorrection).allSatisfy { $0.mode == .practice })
+        expectContinuousPulse(flow)
+    }
+
+    @Test func choiceQuestionsDoNotRepeat() {
+        let options = ["D-MM-02", "D-MM-01", "D-MM-03", "D-MM-04"].map(Fixtures.pattern)
+        let q = NameNotationSpec(item: item("D-MM-02", level: .verbal), tempo: Tempo(bpm: 80), options: options,
+                                 correctIndex: 0, mode: .evaluation)
+        var flow = FlowSequencer(steps: [.nameNotation(q), echo(["D-MM-01"], mode: .evaluation)], library: library)
+        flow.report(passed: false, forAttempt: 0)
+        #expect(flow.restartPosition == .init(step: 1, item: 0, attempt: 1))
     }
 
     @Test func newTempoGetsItsOwnCountIn() {

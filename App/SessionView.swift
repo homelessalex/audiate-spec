@@ -85,7 +85,8 @@ private struct FlowView: View {
     }
 
     static func title(_ a: FlowSequencer.FlowAttempt) -> String {
-        switch a.kind {
+        if a.isCorrection { return "Fix it — same pattern again" }
+        return switch a.kind {
         case .echo:
             if case .echo(let s) = a.step, s.isAudiationDrill { "Audiate the gap" } else { a.mode == .teaching ? "New pattern" : "Echo" }
         case .readWithModel: "See how it looks"
@@ -117,6 +118,7 @@ private struct FlowView: View {
     static func detail(_ a: FlowSequencer.FlowAttempt) -> String {
         var s = a.kind == .holdPulse ? "\(a.item.unitID) warm-up" : "\(a.item.unitID) \(a.item.level.code)"
         if a.mode == .teaching { s += " · try \(a.position.attempt) of \(MasteryPolicy.maxTeachingAttempts)" }
+        if a.isCorrection { s += " · try \(a.position.attempt) of \(MasteryPolicy.maxCorrectionAttempts), not graded" }
         if a.mode == .practice { s += " · free practice" }
         s += " · \(Int(a.tempo.bpm.rounded())) \(a.pattern.meter.isUnusual ? "eighths/min" : "BPM")"
         return s

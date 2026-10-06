@@ -31,6 +31,9 @@ public enum MasteryPolicy {
     /// Teaching mode repeats a pattern until it is performed correctly, at most this many times;
     /// after that the pattern counts as introduced anyway and comes back in evaluation.
     public static let maxTeachingAttempts = 4
+    /// After a miss outside teaching, the same pattern again right away until it is right, at most this
+    /// many tries in all. Only the first try is graded; the corrections are practice.
+    public static let maxCorrectionAttempts = 5
     /// Rough time the yes/no verdict stays on screen after each attempt.
     public static let verdictSeconds = 1.2
     /// Per calendar day (sessions chain into one flow, so the day is the unit).

@@ -93,6 +93,16 @@ public struct FlowSequencer: Sendable {
         /// Tap attempts (E10: the beats of the silent stretch).
         public let response: ResponseSlot?
 
+        /// A repeat after a miss outside teaching (not graded).
+        public var isCorrection: Bool {
+            guard position.attempt > 1 else { return false }
+            switch step {
+            case .echo(let s): return s.mode != .teaching
+            case .read(let s): return s.mode != .teaching
+            default: return true
+            }
+        }
+
         public var question: NameNotationSpec? {
             if case .nameNotation(let q) = step { q } else { nil }
         }
@@ -195,14 +205,23 @@ public struct FlowSequencer: Sendable {
     private func nextPosition(after p: Position, passed: Bool) -> Position? {
         guard steps.indices.contains(p.step) else { return nil }
         let step = steps[p.step]
-        var teaching = false
-        if case .echo(let s) = step { teaching = s.mode == .teaching }
-        if case .read(let s) = step { teaching = s.mode == .teaching }
-        if teaching, !passed, p.attempt < MasteryPolicy.maxTeachingAttempts {
+        if !passed, p.attempt < Self.maxTries(step) {
             return Position(step: p.step, item: p.item, attempt: p.attempt + 1)
         }
         if p.item + 1 < Self.itemCount(step) { return Position(step: p.step, item: p.item + 1, attempt: 1) }
         return steps.indices.contains(p.step + 1) ? Position(step: p.step + 1, item: 0, attempt: 1) : nil
+    }
+
+    /// Tap exercises repeat a missed pattern right away: teaching until it is right (it is being learned),
+    /// otherwise as corrections after the graded first try. Choice questions don't repeat — the answer
+    /// has been shown — and neither does the pulse drill, which adapts its length instead.
+    static func maxTries(_ step: SessionStep) -> Int {
+        switch step {
+        case .echo(let s): s.mode == .teaching ? MasteryPolicy.maxTeachingAttempts : MasteryPolicy.maxCorrectionAttempts
+        case .read(let s): s.mode == .teaching ? MasteryPolicy.maxTeachingAttempts : MasteryPolicy.maxCorrectionAttempts
+        case .answerDifferently: MasteryPolicy.maxCorrectionAttempts
+        default: 1
+        }
     }
 
     private static func itemCount(_ step: SessionStep) -> Int {
@@ -291,8 +310,10 @@ public struct FlowSequencer: Sendable {
             case .response: .response
             }
         }
+        // corrections after a graded try are practice: only the first try counts toward mastery
+        let effectiveMode: PracticeMode = mode == .evaluation && position.attempt > 1 ? .practice : mode
         let attempt = FlowAttempt(
-            index: index, position: position, step: step, kind: kind, item: item, pattern: pattern, mode: mode, tempo: tempo,
+            index: index, position: position, step: step, kind: kind, item: item, pattern: pattern, mode: effectiveMode, tempo: tempo,
             clickStage: stage, showNotation: showNotation, measureDuration: measure,
             start: start, end: start + Double(1 + roles.count) * measure,
             prompt: timeline.prompts[0].shifted(by: start), response: timeline.responses.first?.shifted(by: start)

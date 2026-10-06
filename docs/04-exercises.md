@@ -33,7 +33,10 @@ The pulse never stops inside a block:
 - A change of tempo (e.g. teaching → evaluation) adds one count-in measure in the new tempo; a change of
   meter, and the start of a session, get two (`EchoPolicy.newMeterCountInMeasures`) to settle in.
 - One pattern per attempt. Teaching: the same pattern again until correct (max
-  `MasteryPolicy.maxTeachingAttempts`). Evaluation: one attempt per pattern.
+  `MasteryPolicy.maxTeachingAttempts`). Evaluation: the first try is graded; after a miss the same
+  pattern comes again right away as a correction ("Fix it", practice, not graded) until it is right,
+  at most `MasteryPolicy.maxCorrectionAttempts` tries in all. Applies to tap exercises (echo, reading,
+  answer differently); choice questions and the pulse drill don't repeat.
 - E2 in the flow: `| lead-in | prompt | prompt |`, then the pulse stops until the notation is picked
   (keys 1–4, no time limit); the flow resumes with a count-in.
 - When the plan runs out the next session is planned and appended; the flow stops only when there is
