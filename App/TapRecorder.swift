@@ -10,8 +10,10 @@ import Observation
 final class TapRecorder {
     private(set) var isRunning = false
     private(set) var tapCount = 0
-    /// Taps so far, in block time with output latency removed (input offset not yet applied).
+    /// Rhythm taps so far (Space, J, pad), in block time with output latency removed (input offset not yet applied).
     private(set) var taps: [Double] = []
+    /// Left-hand macrobeat taps (F) in two-hand mode, same time base.
+    private(set) var pulseTaps: [Double] = []
     private let monitor = KeyTapMonitor()
     private var clock: BlockClock?
     private var latency = 0.0
@@ -22,6 +24,7 @@ final class TapRecorder {
     func start(clock: BlockClock, player: BlockPlayer, tapSound: Bool) {
         stop()
         taps = []
+        pulseTaps = []
         tapCount = 0
         latency = player.outputLatency
         self.tapSound = tapSound
@@ -49,10 +52,15 @@ final class TapRecorder {
 
     /// Key or pad press; ignored when not running.
     func tap(_ event: TapEvent) {
-        guard isRunning, let clock, event.isDown, event.key != .f else { return }
+        guard isRunning, let clock, event.isDown else { return }
         if tapSound { player?.playTap() }
-        taps.append(clock.blockTime(forUptime: event.timestamp) - latency)
-        tapCount += 1
+        let time = clock.blockTime(forUptime: event.timestamp) - latency
+        if event.key == .f {
+            pulseTaps.append(time)
+        } else {
+            taps.append(time)
+            tapCount += 1
+        }
     }
 
     func stop() {

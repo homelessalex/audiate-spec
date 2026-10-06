@@ -56,6 +56,7 @@ final class SessionRunner {
     }
 
     var heardTime: Double? { recorder.heardTime() }
+    var twoHandMode: Bool { model.settings.twoHandMode }
     var library: PatternLibrary { content.library }
 
     /// The next batch when the plan runs out: more of today's work, then (in free practice) more practice.
@@ -85,7 +86,7 @@ final class SessionRunner {
                 provider: { [weak self] from, to in self?.provide(from: from, to: to) },
                 onFinish: { [weak self] in self?.streamEnded() }
             )
-            recorder.start(clock: clock, player: content.player, tapSound: true)
+            recorder.start(clock: clock, player: content.player, tapSound: model.settings.tapSound)
             state = .running
             ticker = Task { [weak self] in
                 while !Task.isCancelled {
@@ -192,21 +193,33 @@ final class SessionRunner {
         let taps = recorder.taps.map { $0 - model.inputOffset }
         let passed: Bool
         if attempt.kind == .holdPulse {
-            let grade = PulseGrader.grade(beats: slot.expectedOnsets, taps: taps)
+            // either hand may keep the beat here
+            let grade = PulseGrader.grade(beats: slot.expectedOnsets, taps: taps + recorder.pulseTaps.map { $0 - model.inputOffset })
             passed = grade.passed
             verdicts[index] = Verdict(passed: passed, reasons: Self.describe(grade), comparison: nil)
             record(attempt, exercise: .holdThePulse, patternID: nil, passed: passed, accuracy: passed ? 1 : 0)
         } else {
-            let grade = OnsetGrader.grade(expected: slot.expectedOnsets, taps: taps, responseStart: slot.start,
-                                          responseEnd: slot.end, mode: attempt.clickStage.timingMode)
-            passed = grade.passed
+            let mode = attempt.clickStage.timingMode
+            let twoHands = model.settings.twoHandMode
+                ? TwoHandGrade.grade(slot: slot, rhythmTaps: taps, pulseTaps: recorder.pulseTaps.map { $0 - model.inputOffset }, mode: mode)
+                : nil
+            let grade = twoHands?.rhythm ?? OnsetGrader.grade(expected: slot.expectedOnsets, taps: taps, responseStart: slot.start,
+                                                              responseEnd: slot.end, mode: mode)
+            passed = twoHands?.passed ?? grade.passed
+            var reasons = grade.errors.map(Self.describe)
+            if let twoHands {
+                reasons = reasons.map { "Right hand: " + $0.lowercased() } + twoHands.pulse.errors.map { "Left hand: " + Self.describe($0).lowercased() }
+            }
             let reading = attempt.kind == .read || attempt.kind == .readWithModel
             verdicts[index] = Verdict(
-                passed: passed, reasons: grade.errors.map(Self.describe),
+                passed: passed, reasons: reasons,
                 comparison: reading ? Self.comparison(grade, pattern: attempt.pattern, downbeat: slot.end - attempt.measureDuration,
                                                       tempo: attempt.tempo) : nil
             )
-            record(attempt, exercise: reading ? .read : .echo, patternID: attempt.pattern.id, passed: passed, accuracy: grade.accuracy)
+            var exercise: ExerciseKind = reading ? .read : .echo
+            if case .echo(let spec) = attempt.step { exercise = spec.exercise }
+            record(attempt, exercise: exercise, patternID: attempt.pattern.id, passed: passed,
+                   accuracy: twoHands?.accuracy ?? grade.accuracy)
         }
         flow.report(passed: passed, forAttempt: index) { [weak self] in self?.moreSteps() ?? [] }
     }

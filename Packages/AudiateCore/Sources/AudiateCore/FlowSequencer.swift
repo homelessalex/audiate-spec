@@ -215,10 +215,12 @@ public struct FlowSequencer: Sendable {
         let item: PlannedItem, kind: Kind, mode: PracticeMode, tempo: Tempo, stage: ClickStage
         var showNotation = false
         var series: [Pattern] = []
+        var gap = EchoPolicy.gapMeasures
         switch step {
         case .echo(let s):
             guard s.items.indices.contains(position.item) else { return nil }
             (item, kind, mode, tempo, stage, showNotation) = (s.items[position.item], .echo, s.mode, s.tempo, s.clickStage, s.showNotation)
+            gap = s.gapMeasures
         case .read(let s):
             guard s.items.indices.contains(position.item) else { return nil }
             (item, kind, mode, tempo, stage, showNotation) = (s.items[position.item], s.playsModel ? .readWithModel : .read, s.mode, s.tempo, s.clickStage, true)
@@ -248,7 +250,7 @@ public struct FlowSequencer: Sendable {
         let timeline: Timeline
         do {
             timeline = switch kind {
-            case .echo: try Timeline.echoBlock(patterns: [pattern], tempo: tempo, clickStage: stage)
+            case .echo: try Timeline.echoBlock(patterns: [pattern], tempo: tempo, clickStage: stage, gapMeasures: gap)
             case .readWithModel: try Timeline.echoBlock(patterns: [pattern], tempo: tempo, clickStage: stage, gapMeasures: 0)
             case .read: try Timeline.readBlock(patterns: [pattern], tempo: tempo, clickStage: stage)
             case .whichMeter: try Timeline.listenBlock(patterns: series, tempo: tempo, clickStage: stage)

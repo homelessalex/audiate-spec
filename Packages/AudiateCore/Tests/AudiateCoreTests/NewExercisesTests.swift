@@ -147,3 +147,44 @@ struct MeterIdentificationTests {
         #expect(next.silentMeasures == 4)
     }
 }
+
+@Suite("Two hands and the audiation drill")
+struct TwoHandsAndDrillTests {
+    @Test func bothHandsMustPass() throws {
+        let p = Fixtures.pattern("D-MM-02") // 12 12 24
+        let t = try Timeline.echoBlock(patterns: [p], tempo: Tempo(bpm: 80), clickStage: .b)
+        let slot = try #require(t.responses.first)
+        #expect(slot.macrobeatTimes.count == 2)
+        let good = TwoHandGrade.grade(slot: slot, rhythmTaps: slot.expectedOnsets, pulseTaps: slot.macrobeatTimes, mode: .absolute)
+        #expect(good.passed && good.accuracy == 1)
+        let lostPulse = TwoHandGrade.grade(slot: slot, rhythmTaps: slot.expectedOnsets, pulseTaps: [slot.macrobeatTimes[0]], mode: .absolute)
+        #expect(lostPulse.rhythm.passed && !lostPulse.pulse.passed && !lostPulse.passed)
+        #expect(lostPulse.pulse.errors == [.missedBeat])
+    }
+
+    @Test func drillClosesTheFirstSessionOfTheDay() {
+        let planner = SessionPlanner(curriculum: Fixtures.curriculum, library: Fixtures.library, calendar: Fixtures.calendar)
+        var progress = LearnerProgress()
+        var rng = SeededRandomNumberGenerator(seed: 4)
+        // nothing heard yet → no drill on the very first day's first plan
+        let first = planner.plan(progress, date: Fixtures.day(0), using: &rng)
+        func drills(_ p: SessionPlan) -> [EchoBlockSpec] {
+            p.steps.compactMap { if case .echo(let e) = $0, e.isAudiationDrill { e } else { nil } }
+        }
+        #expect(drills(first).isEmpty)
+        for step in first.steps {
+            for a in StepAttempts.perfect(step, at: Fixtures.day(0)) {
+                progress.record(a, curriculum: Fixtures.curriculum, library: Fixtures.library, calendar: Fixtures.calendar)
+            }
+        }
+        let next = planner.plan(progress, date: Fixtures.day(1), using: &rng)
+        let drill = try? #require(drills(next).first)
+        #expect(drill?.clickStage == .c && drill?.mode == .practice && drill?.gapMeasures == MasteryPolicy.drillGapMeasures)
+        if case .echo(let last) = next.steps.last { #expect(last.isAudiationDrill) } else { Issue.record("drill not last") }
+        // and only once a day
+        for a in StepAttempts.perfect(next.steps.last!, at: Fixtures.day(1)) {
+            progress.record(a, curriculum: Fixtures.curriculum, library: Fixtures.library, calendar: Fixtures.calendar)
+        }
+        #expect(drills(planner.plan(progress, date: Fixtures.day(1), using: &rng)).isEmpty)
+    }
+}

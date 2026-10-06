@@ -20,6 +20,11 @@ public enum MasteryPolicy {
     public static let reviewIntervalsDays = [1, 2, 4, 8, 16, 32]
     public static let failsBeforeBridge = 2
 
+    // Audiation drill (once a day, end of the first session): familiar patterns with a longer
+    // silent gap and no click, practice only.
+    public static let drillGapMeasures = 2
+    public static let drillPatterns = 2
+
     // Session
     public static let sessionSeconds = 12.0 * 60
     public static let reviewShare = 0.40

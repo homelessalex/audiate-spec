@@ -53,7 +53,25 @@ public struct SessionPlanner: Sendable {
         steps += otherReading(progress, frontiers: Set(frontiers.map(\.unitID)), date: date,
                               budget: sessionSeconds - seconds(steps), using: &rng)
         steps += unitLevels(progress, date: date, using: &rng)
+        if steps.contains(where: { if case .holdPulse = $0 { false } else { true } }) {
+            steps += audiationDrill(progress, date: date, using: &rng)
+        }
         return SessionPlan(steps: steps, frontiers: frontiers, estimatedSeconds: seconds(steps))
+    }
+
+    /// Once a day, closing the first session: familiar patterns, then two silent measures with no click
+    /// before the echo — the pattern has to be held in audiation (E11). Practice, never counted.
+    private func audiationDrill(_ progress: LearnerProgress, date: Date, using rng: inout some RandomNumberGenerator) -> [SessionStep] {
+        let doneToday = progress.attempts.contains { $0.mode == .practice && $0.exercise == .audiateTheGap
+            && calendar.isDate($0.date, inSameDayAs: date) }
+        let heard = curriculum.units.flatMap { unit in
+            curriculum.patterns(of: unit, in: library).filter { progress.hasHeard(patternID: $0.id) }.map { (unit, $0) }
+        }
+        guard !doneToday, let pick = heard.randomElement(using: &rng) else { return [] }
+        let sameMeter = heard.filter { $0.1.meter == pick.1.meter }.shuffled(using: &rng).prefix(MasteryPolicy.drillPatterns)
+        let items = sameMeter.map { PlannedItem(patternID: $0.1.id, unitID: $0.0.id, level: .aural, purpose: .review) }
+        return [.echo(EchoBlockSpec(items: Array(items), meterID: pick.1.meter.id, tempo: .standard(for: pick.1.meter),
+                                    clickStage: .c, mode: .practice, showNotation: false, gapMeasures: MasteryPolicy.drillGapMeasures))]
     }
 
     // MARK: - Pulse
@@ -330,7 +348,7 @@ public struct SessionPlanner: Sendable {
             return Double(items) * attempt * (mode == .teaching ? 2 : 1) + MasteryPolicy.stepOverheadSeconds
         }
         switch step {
-        case .echo(let s): return attempts(s.meterID, s.tempo, items: s.items.count, measuresPerAttempt: 2 + EchoPolicy.gapMeasures, mode: s.mode)
+        case .echo(let s): return attempts(s.meterID, s.tempo, items: s.items.count, measuresPerAttempt: 2 + s.gapMeasures, mode: s.mode)
         case .read(let s): return attempts(s.meterID, s.tempo, items: s.items.count, measuresPerAttempt: 2, mode: s.mode)
         case .nameNotation, .dictation, .whichMeter, .meterFromNotation: return MasteryPolicy.nameNotationSeconds
         case .holdPulse(let h):

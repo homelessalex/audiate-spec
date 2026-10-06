@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		050CF60584D9DB39265C4179 /* TapPad.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15445B34628C4AB38844B93B /* TapPad.swift */; };
+		07CFCD577A248F554E592CE1 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0F028217B2A6F7A5F63AD1 /* SettingsView.swift */; };
 		0C4086979F573ED2B2F23465 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0203DD6E0965C8E5832F1DDD /* AppModel.swift */; };
 		14E8E814FD216B1822B652D8 /* SessionAnswerViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = D1407BCEC73D1DA699A5DA24 /* SessionAnswerViews.swift */; };
 		24C7006F01B062DED0A64CE2 /* StaffRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3C83EF5D55A1476EE21CFE1 /* StaffRenderer.swift */; };
@@ -28,8 +29,10 @@
 		9E7EE7F1E7B2A40158A91CEB /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9DB5C5C731493C759005976 /* HomeView.swift */; };
 		A20091982DC8785391FB0351 /* CalibrationProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CD3E3C7EE900193F6867A7A /* CalibrationProfile.swift */; };
 		A233CB8E4BD275A14556F9A6 /* Bravura-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = E91C602768B36BACA793D2BE /* Bravura-OFL.txt */; };
+		A8692604FD883FDC1A2852E1 /* IntroductionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49ED05E627CBF896DDEE3586 /* IntroductionView.swift */; };
 		A880C630781D214FD6E99507 /* AudiateAudio in Frameworks */ = {isa = PBXBuildFile; productRef = 7F702AAA037C5C92807B3AF2 /* AudiateAudio */; };
 		AFED90FEB869DB11076C602C /* cells.json in Resources */ = {isa = PBXBuildFile; fileRef = D2F09D813ABABCF8CA6DA67A /* cells.json */; };
+		BA9C30AE52A3044A1253BD8B /* AppSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = F68B7F3E5D5B5DACFFE28095 /* AppSettings.swift */; };
 		C0D52326665696959FF54275 /* ContactSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = DEC156D964B0B471C377E474 /* ContactSheet.swift */; };
 		C8269945AE719123FADDA70A /* AudiateApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF61B91A0330217BD89CB123 /* AudiateApp.swift */; };
 		CB95E96340D6760F45AD5FEC /* AudiateCore in Frameworks */ = {isa = PBXBuildFile; productRef = 3570690D4D083C8BEAEE348A /* AudiateCore */; };
@@ -45,8 +48,10 @@
 		2CD3E3C7EE900193F6867A7A /* CalibrationProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalibrationProfile.swift; sourceTree = "<group>"; };
 		2EDF7F40ED6BACA28E7F2D1F /* Bravura.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = Bravura.otf; sourceTree = "<group>"; };
 		45CD7BC307976DB31E1B093A /* Samples */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Samples; path = Resources/Samples; sourceTree = SOURCE_ROOT; };
+		49ED05E627CBF896DDEE3586 /* IntroductionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroductionView.swift; sourceTree = "<group>"; };
 		4A2D4AAFD4C11EC9D4ECD285 /* DebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugView.swift; sourceTree = "<group>"; };
 		5020732F3F674C801B5DD526 /* RhythmStaffView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RhythmStaffView.swift; sourceTree = "<group>"; };
+		5E0F028217B2A6F7A5F63AD1 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		6289B5839C7B208F216025AA /* ProgressStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressStore.swift; sourceTree = "<group>"; };
 		7097C89EF6D7B350D95BE497 /* SessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionView.swift; sourceTree = "<group>"; };
 		719A1E2A59F186F3352953A6 /* ProgressRecords.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressRecords.swift; sourceTree = "<group>"; };
@@ -67,6 +72,7 @@
 		DEC156D964B0B471C377E474 /* ContactSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactSheet.swift; sourceTree = "<group>"; };
 		E91C602768B36BACA793D2BE /* Bravura-OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Bravura-OFL.txt"; sourceTree = "<group>"; };
 		F276DE369E7A7841377A1449 /* SMuFL.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SMuFL.swift; sourceTree = "<group>"; };
+		F68B7F3E5D5B5DACFFE28095 /* AppSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppSettings.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,17 +112,20 @@
 			isa = PBXGroup;
 			children = (
 				0203DD6E0965C8E5832F1DDD /* AppModel.swift */,
+				F68B7F3E5D5B5DACFFE28095 /* AppSettings.swift */,
 				AF61B91A0330217BD89CB123 /* AudiateApp.swift */,
 				2CD3E3C7EE900193F6867A7A /* CalibrationProfile.swift */,
 				802F0890C6D0D2673D8BE66A /* CalibrationView.swift */,
 				85EFB2E5BE5CF7C868E09F68 /* ContentView.swift */,
 				4A2D4AAFD4C11EC9D4ECD285 /* DebugView.swift */,
 				C9DB5C5C731493C759005976 /* HomeView.swift */,
+				49ED05E627CBF896DDEE3586 /* IntroductionView.swift */,
 				719A1E2A59F186F3352953A6 /* ProgressRecords.swift */,
 				6289B5839C7B208F216025AA /* ProgressStore.swift */,
 				D1407BCEC73D1DA699A5DA24 /* SessionAnswerViews.swift */,
 				B616A46CCB97B3E277389A3B /* SessionRunner.swift */,
 				7097C89EF6D7B350D95BE497 /* SessionView.swift */,
+				5E0F028217B2A6F7A5F63AD1 /* SettingsView.swift */,
 				15445B34628C4AB38844B93B /* TapPad.swift */,
 				96E02CC93B8433E77734A286 /* TapRecorder.swift */,
 				7E822DD943D591D74ADE3472 /* WindowID.swift */,
@@ -246,6 +255,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				0C4086979F573ED2B2F23465 /* AppModel.swift in Sources */,
+				BA9C30AE52A3044A1253BD8B /* AppSettings.swift in Sources */,
 				C8269945AE719123FADDA70A /* AudiateApp.swift in Sources */,
 				A20091982DC8785391FB0351 /* CalibrationProfile.swift in Sources */,
 				60CBB7CFF22B25EA09503E75 /* CalibrationView.swift in Sources */,
@@ -254,6 +264,7 @@
 				FF4D9A683935F035B194B243 /* DebugView.swift in Sources */,
 				71473068F3F6685AFC676A1E /* FeedbackSheet.swift in Sources */,
 				9E7EE7F1E7B2A40158A91CEB /* HomeView.swift in Sources */,
+				A8692604FD883FDC1A2852E1 /* IntroductionView.swift in Sources */,
 				58A4A8A5F709A5C493FB7025 /* ProgressRecords.swift in Sources */,
 				2D8DED5CC1000EE71CA5810C /* ProgressStore.swift in Sources */,
 				5E6F2BF7A6762217BEB2FECA /* RhythmStaffView.swift in Sources */,
@@ -261,6 +272,7 @@
 				14E8E814FD216B1822B652D8 /* SessionAnswerViews.swift in Sources */,
 				4814920E6F08F88565CA490D /* SessionRunner.swift in Sources */,
 				31A1FF0DFF2B68E1B39AD2F2 /* SessionView.swift in Sources */,
+				07CFCD577A248F554E592CE1 /* SettingsView.swift in Sources */,
 				24C7006F01B062DED0A64CE2 /* StaffRenderer.swift in Sources */,
 				050CF60584D9DB39265C4179 /* TapPad.swift in Sources */,
 				7621434118C6237776A5C493 /* TapRecorder.swift in Sources */,

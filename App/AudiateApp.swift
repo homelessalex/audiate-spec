@@ -13,6 +13,11 @@ struct AudiateApp: App {
                 .frame(minWidth: 720, minHeight: 560)
         }
         .modelContainer(model.container)
+        .commands {
+            CommandGroup(replacing: .help) {
+                Button("Show Introduction") { model.settings.didShowIntroduction = false }
+            }
+        }
 
         Window("Calibration", id: WindowID.calibration) {
             CalibrationView()
@@ -20,6 +25,12 @@ struct AudiateApp: App {
         }
         .modelContainer(model.container)
         .windowResizability(.contentSize)
+
+        Settings {
+            SettingsView()
+                .environment(model)
+        }
+        .modelContainer(model.container)
 
         Window("Debug Player", id: WindowID.debug) {
             DebugView()

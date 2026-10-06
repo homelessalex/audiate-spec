@@ -74,6 +74,10 @@ private struct FlowView: View {
                 if let attempt, [.echo, .read, .readWithModel, .holdPulse].contains(attempt.kind) {
                     TapPad(recorder: runner.recorder)
                         .frame(maxWidth: 520)
+                    if runner.twoHandMode, attempt.kind != .holdPulse {
+                        Text("Left hand F: every beat, all the time · Right hand J / Space / pad: the rhythm")
+                            .font(.callout).foregroundStyle(.secondary)
+                    }
                 }
             }
             Text("Esc to pause").font(.caption).foregroundStyle(.secondary)
@@ -82,7 +86,8 @@ private struct FlowView: View {
 
     static func title(_ a: FlowSequencer.FlowAttempt) -> String {
         switch a.kind {
-        case .echo: a.mode == .teaching ? "New pattern" : "Echo"
+        case .echo:
+            if case .echo(let s) = a.step, s.isAudiationDrill { "Audiate the gap" } else { a.mode == .teaching ? "New pattern" : "Echo" }
         case .readWithModel: "See how it looks"
         case .read: "Read"
         case .nameNotation: "Which notation?"

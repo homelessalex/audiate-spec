@@ -39,8 +39,8 @@ Acceptance:
 | M1 | done (D-DV-03 passed on device; offline-render jitter test) |
 | M2 | done, reshaped by the learner's feedback (see below) |
 | M3 | done except visual review of reading/dictation on device for U1–U4 |
-| M4 | E10 done (warm-up, free practice); the rest open |
-| M5 | open |
+| M4 | E10 and the audiation drill (E11) done; the rest open |
+| M5 | two-hand mode, settings, introduction done; the rest open |
 
 Deliberate changes since the original plan (each recorded in `01-methodology.md` §7 and the docs it touches):
 no voice (choked hi-hat), VA = notation association instead of syllables, a "hold it" measure before the
@@ -63,6 +63,9 @@ and note anything odd:
 - [ ] **E3 Which meter?** (PS, after U1 and U2 VA): count-in gives only the macrobeat; duple and triple at 66.
 - [ ] **E7 Meter from notation** + series reading (CS): no time signature, no beat grid.
 - [ ] **Free practice** after the day's work, and the flow ending with "That's all for today".
+- [ ] **Audiate the gap** (end of the first session each day): two silent measures, no click, then echo.
+- [ ] **Two hands** (Settings ⌘,): F on every beat, J/Space/pad the rhythm; the verdict names the hand.
+- [ ] **Settings and introduction**: session length, tap sound, reset progress; Help → Show Introduction.
 
 ## M2 — First playable loop: U1–U2 at AO and VA ✅
 
@@ -91,7 +94,8 @@ pickup slot yet); unit-level review items (PS, CS) are not scheduled for review.
 
 ## M4 — Inference: GA, GV, GS, IA, IS + drills
 
-Done: E10 hold the pulse (`PulseGrader`, 2 → 4 → 8 → 16 silent measures, daily warm-up).
+Done: E10 hold the pulse (`PulseGrader`, 2 → 4 → 8 → 16 silent measures, daily warm-up); audiation drill
+closing the first session of the day (E11: familiar patterns, two silent measures without click, practice).
 
 Open: E4 same/different, E8 answer differently (improvisation grader), E9 compose and perform, generator
 integration for GA/GV/GS (unfamiliar patterns), tempo randomization within range, bridging in the
@@ -103,8 +107,10 @@ Acceptance:
 
 ## M5 — Polish
 
-Two-hand mode, grade-sustain option (off: drum parts first; revisit for keyboards), onboarding (what
-audiation is, how the flow works, calibration), settings (session length), U5–U12 content verified
+Done: two-hand mode (`TwoHandGrade`, F = macrobeats), settings (session length, two hands, tap sound,
+calibration, reset), introduction on first launch (Help → Show Introduction).
+
+Open: grade-sustain option (off: drum parts first; revisit for keyboards), U5–U12 content verified
 end-to-end, theory track (E12), app icon, sandboxing, notarized build.
 
 ## Later (optional)

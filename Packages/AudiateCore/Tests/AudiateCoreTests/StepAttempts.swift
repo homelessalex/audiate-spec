@@ -8,7 +8,7 @@ enum StepAttempts {
             Attempt(date: date, unitID: unitID, level: level, patternID: patternID, exercise: exercise, mode: mode, passed: true, accuracy: 1)
         }
         switch step {
-        case .echo(let b): return b.items.map { attempt($0.unitID, $0.level, $0.patternID, .echo, b.mode) }
+        case .echo(let b): return b.items.map { attempt($0.unitID, $0.level, $0.patternID, b.exercise, b.mode) }
         case .read(let b): return b.items.map { attempt($0.unitID, $0.level, $0.patternID, .read, b.mode) }
         case .nameNotation(let q): return [attempt(q.item.unitID, q.item.level, q.item.patternID, .nameNotation, q.mode)]
         case .dictation(let d): return [attempt(d.item.unitID, d.item.level, d.item.patternID, .write, d.mode)]

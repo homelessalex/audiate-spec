@@ -18,6 +18,7 @@ final class AppModel {
     let loadError: String?
     let container: ModelContainer
     let calendar = Calendar.current
+    let settings = AppSettings()
     private(set) var progress = LearnerProgress()
     var session: SessionRunner?
 
@@ -77,7 +78,8 @@ final class AppModel {
 
     func planSession() -> SessionPlan? {
         guard let content else { return nil }
-        let planner = SessionPlanner(curriculum: content.curriculum, library: content.library, calendar: calendar)
+        let planner = SessionPlanner(curriculum: content.curriculum, library: content.library,
+                                     sessionSeconds: Double(settings.sessionMinutes) * 60, calendar: calendar)
         var rng = SystemRandomNumberGenerator()
         return planner.plan(progress, date: now(), using: &rng)
     }
@@ -94,6 +96,17 @@ final class AppModel {
     func startSession(freePractice: Bool = false) {
         guard let content, let plan = freePractice ? planFreePractice() : planSession(), !plan.isEmpty else { return }
         session = SessionRunner(plan: plan, content: content, model: self, freePractice: freePractice)
+    }
+
+    /// Deletes every attempt, review item and passed level (calibration is kept).
+    func resetProgress() {
+        endSession()
+        let context = container.mainContext
+        try? context.delete(model: AttemptRecord.self)
+        try? context.delete(model: ItemStateRecord.self)
+        try? context.delete(model: LevelPassRecord.self)
+        try? context.save()
+        progress = LearnerProgress()
     }
 
     func endSession() {
