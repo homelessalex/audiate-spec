@@ -61,9 +61,12 @@ private struct FlowView: View {
                     }
                 }
                 .frame(minHeight: 360)
+                // nothing to tap in "which notation?": the pad shows only for tap attempts
+                if attempt?.question == nil {
+                    TapPad(recorder: runner.recorder)
+                        .frame(maxWidth: 520)
+                }
             }
-            TapPad(recorder: runner.recorder)
-                .frame(maxWidth: 520)
             Text("Esc to pause").font(.caption).foregroundStyle(.secondary)
         }
     }
