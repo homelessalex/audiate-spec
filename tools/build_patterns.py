@@ -127,7 +127,7 @@ CELLS = {
         ("24", "macro_micro"), ("12 12", "macro_micro"),
         ("6 6 12", "division"), ("12 6 6", "division"), ("6 6 6 6", "division"),
         ("18 6", "elongation"), ("6 12 6", "elongation"),
-        ("r12 12", "rest"), ("12 r12", "rest"), ("r24", "rest"),
+        ("r12 12", "rest"), ("12 r12", "rest"), ("r24", "rest"), ("6 6 r12", "rest"),
         ("8 8 8", "combined"),
     ],
     "3": [
@@ -135,7 +135,7 @@ CELLS = {
         ("24 12", "elongation"), ("12 24", "elongation"),
         ("6 6 12 12", "division"), ("12 6 6 12", "division"), ("12 12 6 6", "division"),
         ("6 6 6 6 6 6", "division"), ("18 6 12", "elongation"),
-        ("r12 12 12", "rest"), ("24 r12", "rest"), ("12 r12 12", "rest"),
+        ("r12 12 12", "rest"), ("24 r12", "rest"), ("12 r12 12", "rest"), ("r36", "rest"),
     ],
 }
 

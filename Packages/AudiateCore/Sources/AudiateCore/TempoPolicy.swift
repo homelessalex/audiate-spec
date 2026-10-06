@@ -8,6 +8,9 @@ public enum TempoPolicy {
     public static let unusualEighthBPM = 200.0
     public static let unusualEighthRange = 168.0...232.0
 
+    /// E3: duple and triple series at one macrobeat tempo (inside both ranges), so tempo doesn't reveal the meter.
+    public static let meterIdentificationBPM = 66.0
+
     /// Teaching mode plays this much slower than the standard tempo (docs/01-methodology.md §5).
     /// Constant within a step: the session is one uninterrupted pulse.
     public static let teachingFactor = 0.85

@@ -44,6 +44,10 @@
     "minContent": "rest"
    },
    {
+    "tokens": "6 6 r12",
+    "minContent": "rest"
+   },
+   {
     "tokens": "8 8 8",
     "minContent": "combined"
    }
@@ -95,6 +99,10 @@
    },
    {
     "tokens": "12 r12 12",
+    "minContent": "rest"
+   },
+   {
+    "tokens": "r36",
     "minContent": "rest"
    }
   ]

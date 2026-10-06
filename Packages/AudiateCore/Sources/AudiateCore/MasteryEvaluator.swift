@@ -6,11 +6,13 @@ public enum MasteryEvaluator {
     /// and the rolling accuracy of recent evaluation attempts is high enough.
     public static func isPassed(_ key: LevelKey, patternIDs: [String], attempts: [Attempt], calendar: Calendar) -> Bool {
         let evaluations = attempts.filter { $0.levelKey == key && $0.mode == .evaluation }.sorted { $0.date < $1.date }
-        if key.level.isInference {
+        if key.level.isUnitLevel {
             let days = Set(evaluations.map { calendar.startOfDay(for: $0.date) })
-            return evaluations.count >= MasteryPolicy.inferenceAttempts
+            let needed = key.level.isInference ? MasteryPolicy.inferenceAttempts : MasteryPolicy.unitLevelAttempts
+            let accuracy = key.level.isInference ? MasteryPolicy.inferenceRollingAccuracy : MasteryPolicy.unitLevelRollingAccuracy
+            return evaluations.count >= needed
                 && days.count >= MasteryPolicy.inferenceDistinctDays
-                && rollingAccuracy(evaluations, window: MasteryPolicy.inferenceAttempts) >= MasteryPolicy.inferenceRollingAccuracy
+                && rollingAccuracy(evaluations, window: needed) >= accuracy
         }
         guard !patternIDs.isEmpty else { return false }
         for id in patternIDs {

@@ -11,8 +11,12 @@ public struct SessionPlanner: Sendable {
     /// Defines "today" for the daily limits.
     public var calendar: Calendar
 
-    /// Levels that have exercises so far.
+    /// Levels whose items are reviewed (familiar-pattern levels with exercises).
     public static let implementedLevels: Set<SkillLevel> = [.aural, .verbal, .symbolic]
+    /// Unit-level attempts (E3, E7, CS series) per unit per exercise per day.
+    public static let maxUnitAttemptsPerDay = 4
+    /// Patterns in an E3/E7/CS series.
+    public static let seriesLength = 4
     /// The ear levels that move the frontier from unit to unit.
     static let earLevels: [SkillLevel] = [.aural, .verbal]
 
@@ -39,7 +43,8 @@ public struct SessionPlanner: Sendable {
     /// Today's next session. Daily limits make it empty once the day's work is done, which ends the flow.
     public func plan(_ progress: LearnerProgress, date: Date, using rng: inout some RandomNumberGenerator) -> SessionPlan {
         let frontiers = frontiers(progress)
-        var steps = review(progress, date: date, excluding: Set(frontiers))
+        var steps = warmUp(progress, date: date)
+        steps += review(progress, date: date, excluding: Set(frontiers))
         var taughtNow: Set<String> = []
         for (k, frontier) in frontiers.enumerated() {
             let share = (sessionSeconds - seconds(steps)) / Double(frontiers.count - k)
@@ -47,7 +52,90 @@ public struct SessionPlanner: Sendable {
         }
         steps += otherReading(progress, frontiers: Set(frontiers.map(\.unitID)), date: date,
                               budget: sessionSeconds - seconds(steps), using: &rng)
+        steps += unitLevels(progress, date: date, using: &rng)
         return SessionPlan(steps: steps, frontiers: frontiers, estimatedSeconds: seconds(steps))
+    }
+
+    // MARK: - Pulse
+
+    /// E10 once a day before anything else.
+    private func warmUp(_ progress: LearnerProgress, date: Date) -> [SessionStep] {
+        let doneToday = progress.attempts.contains { $0.exercise == .holdThePulse && calendar.isDate($0.date, inSameDayAs: date) }
+        guard !doneToday, let step = holdPulse(progress) else { return [] }
+        return [step]
+    }
+
+    /// E10 in the meter of the earliest open unit, at the length its history has earned.
+    private func holdPulse(_ progress: LearnerProgress) -> SessionStep? {
+        let unit = frontiers(progress).first.flatMap { curriculum.unit(id: $0.unitID) } ?? curriculum.units.first
+        guard let unit, let meterID = unit.meters.first, let meter = library.meters[meterID] else { return nil }
+        return .holdPulse(HoldPulseSpec(unitID: unit.id, meterID: meterID, tempo: .standard(for: meter),
+                                        silentMeasures: PulsePolicy.silentMeasures(after: progress.pulseHistory)))
+    }
+
+    // MARK: - PS, SA writing, CS
+
+    /// Per unit with the level open: E3 "which meter?" (PS), E6 dictation (SA), E7 and series reading (CS).
+    private func unitLevels(_ progress: LearnerProgress, date: Date, using rng: inout some RandomNumberGenerator) -> [SessionStep] {
+        var steps: [SessionStep] = []
+        let knownMeters = curriculum.units.filter { progress.passed.contains(LevelKey(unitID: $0.id, level: .verbal)) }.flatMap(\.meters)
+        let meterOptions = knownMeters.reduce(into: [String]()) { if !$0.contains($1) { $0.append($1) } }
+        let contents: Set<ContentKind> = Set(curriculum.units
+            .filter { progress.passed.contains(LevelKey(unitID: $0.id, level: .verbal)) }
+            .flatMap { curriculum.patterns(of: $0, in: library).map(\.content) }).union([.macroMicro])
+
+        for unit in curriculum.units {
+            func open(_ level: SkillLevel) -> Bool {
+                let key = LevelKey(unitID: unit.id, level: level)
+                return !progress.passed.contains(key) && Gate.isUnlocked(key, curriculum: curriculum, passed: progress.passed)
+            }
+            func left(_ level: SkillLevel, _ exercise: ExerciseKind, cap: Int = Self.maxUnitAttemptsPerDay) -> Bool {
+                progress.unitEvaluationsOnDay(of: date, unitID: unit.id, level: level, exercise: exercise, calendar: calendar) < cap
+            }
+            let patterns = curriculum.patterns(of: unit, in: library)
+
+            if open(.symbolic) {
+                for p in patterns.shuffled(using: &rng) where progress.hasHeard(patternID: p.id) {
+                    guard progress.evaluationsOnDay(of: date, patternID: p.id, level: .symbolic, exercise: .write, calendar: calendar)
+                            < MasteryPolicy.maxEvaluationsPerPatternPerDay,
+                          let answer = Dictation.cells(for: p, in: library) else { continue }
+                    steps.append(.dictation(DictationSpec(
+                        item: PlannedItem(patternID: p.id, unitID: unit.id, level: .symbolic, purpose: .new),
+                        tempo: .standard(for: p.meter), answer: answer,
+                        palette: Dictation.palette(for: p.meter, contents: contents, answer: answer, library: library),
+                        mode: .evaluation)))
+                }
+            }
+            if open(.partialSynthesis), left(.partialSynthesis, .whichMeter), meterOptions.count >= 2,
+               let series = series(unit, patterns, using: &rng) {
+                let meter = series[0].meter
+                let tempo = meter.isUnusual ? Tempo.standard(for: meter) : Tempo(bpm: TempoPolicy.meterIdentificationBPM)
+                let options = meterOptions.shuffled(using: &rng)
+                steps.append(.whichMeter(WhichMeterSpec(unitID: unit.id, level: .partialSynthesis, series: series, options: options,
+                                                        correctIndex: options.firstIndex(of: meter.id)!, tempo: tempo)))
+            }
+            if open(.compositeSynthesis) {
+                if left(.compositeSynthesis, .meterFromNotation), meterOptions.count >= 2, let series = series(unit, patterns, using: &rng) {
+                    let options = meterOptions.shuffled(using: &rng)
+                    steps.append(.meterFromNotation(MeterFromNotationSpec(unitID: unit.id, series: series, options: options,
+                                                                          correctIndex: options.firstIndex(of: series[0].meter.id)!)))
+                }
+                if left(.compositeSynthesis, .read, cap: Self.maxUnitAttemptsPerDay * Self.seriesLength),
+                   let series = series(unit, patterns, using: &rng) {
+                    steps.append(read(series.map { PlannedItem(patternID: $0.id, unitID: unit.id, level: .compositeSynthesis, purpose: .new) },
+                                      mode: .evaluation))
+                }
+            }
+        }
+        return steps
+    }
+
+    /// Four patterns of one of the unit's meters (repeats allowed when the unit has fewer).
+    private func series(_ unit: CurriculumUnit, _ patterns: [Pattern], using rng: inout some RandomNumberGenerator) -> [Pattern]? {
+        guard let meterID = unit.meters.randomElement(using: &rng) else { return nil }
+        let inMeter = patterns.filter { $0.meter.id == meterID }
+        guard !inMeter.isEmpty else { return nil }
+        return (0..<Self.seriesLength).map { _ in inMeter.randomElement(using: &rng)! }
     }
 
     /// Practice after the day's work: every pattern already taught, at the unit's current stage
@@ -62,7 +150,9 @@ public struct SessionPlanner: Sendable {
                 if reading { reads.append(PlannedItem(patternID: p.id, unitID: unit.id, level: .symbolic, purpose: .review)) }
             }
         }
-        let steps = blocksByMeterAndLevel(echoes.shuffled(using: &rng)).map { echo($0, mode: .practice) }
+        guard !echoes.isEmpty else { return SessionPlan(steps: [], frontiers: [], estimatedSeconds: 0) }
+        let steps = [holdPulse(progress)].compactMap { $0 }
+            + blocksByMeterAndLevel(echoes.shuffled(using: &rng)).map { echo($0, mode: .practice) }
             + blocksByMeterAndLevel(reads.shuffled(using: &rng)).map { read($0, mode: .practice) }
         return SessionPlan(steps: steps, frontiers: [], estimatedSeconds: seconds(steps))
     }
@@ -206,7 +296,7 @@ public struct SessionPlanner: Sendable {
         let level = items[0].level
         return .echo(EchoBlockSpec(
             items: items, meterID: meter.id, tempo: mode == .teaching ? TempoPolicy.teaching(for: meter) : .standard(for: meter),
-            clickStage: mode == .teaching ? .a : .b, mode: mode,
+            clickStage: .forStep(level: level, mode: mode), mode: mode,
             showNotation: level >= .verbal
         ))
     }
@@ -215,7 +305,7 @@ public struct SessionPlanner: Sendable {
         let meter = library.pattern(id: items[0].patternID)!.meter
         return .read(ReadBlockSpec(items: items, meterID: meter.id,
                                    tempo: mode == .teaching ? TempoPolicy.teaching(for: meter) : .standard(for: meter),
-                                   clickStage: mode == .teaching ? .a : .b, mode: mode))
+                                   clickStage: .forStep(level: items[0].level, mode: mode), mode: mode))
     }
 
     private func nameNotation(_ item: PlannedItem, pattern: Pattern, using rng: inout some RandomNumberGenerator) -> SessionStep? {
@@ -242,7 +332,11 @@ public struct SessionPlanner: Sendable {
         switch step {
         case .echo(let s): return attempts(s.meterID, s.tempo, items: s.items.count, measuresPerAttempt: 2 + EchoPolicy.gapMeasures, mode: s.mode)
         case .read(let s): return attempts(s.meterID, s.tempo, items: s.items.count, measuresPerAttempt: 2, mode: s.mode)
-        case .nameNotation: return MasteryPolicy.nameNotationSeconds
+        case .nameNotation, .dictation, .whichMeter, .meterFromNotation: return MasteryPolicy.nameNotationSeconds
+        case .holdPulse(let h):
+            guard let meter = library.meters[h.meterID] else { return 0 }
+            return Double(1 + PulsePolicy.clickedMeasures + h.silentMeasures) * h.tempo.seconds(forTicks: meter.measureTicks, in: meter)
+                + MasteryPolicy.stepOverheadSeconds
         }
     }
 }

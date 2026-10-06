@@ -23,6 +23,9 @@ public enum SkillLevel: String, Codable, CaseIterable, Comparable, Sendable {
     /// Inference levels use generated (unfamiliar) patterns and are tracked per unit, not per pattern.
     public var isInference: Bool { self >= .generalizationAural }
 
+    /// Tracked per unit rather than per pattern: meter identification (PS, CS) and the inference levels.
+    public var isUnitLevel: Bool { isInference || self == .partialSynthesis || self == .compositeSynthesis }
+
     /// Levels that use notation.
     public var isSymbolic: Bool {
         [.symbolic, .compositeSynthesis, .generalizationSymbolic, .improvisationSymbolic].contains(self)

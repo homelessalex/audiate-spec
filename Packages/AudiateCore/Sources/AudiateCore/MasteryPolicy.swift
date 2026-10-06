@@ -12,6 +12,10 @@ public enum MasteryPolicy {
     public static let inferenceDistinctDays = 2
     public static let inferenceRollingAccuracy = 0.80
 
+    // Unit-level familiar levels (PS, CS: meter identification and series)
+    public static let unitLevelAttempts = 8
+    public static let unitLevelRollingAccuracy = 0.80
+
     // Review (Leitner)
     public static let reviewIntervalsDays = [1, 2, 4, 8, 16, 32]
     public static let failsBeforeBridge = 2

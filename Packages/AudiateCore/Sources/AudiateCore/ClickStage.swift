@@ -14,4 +14,15 @@ public enum ClickStage: String, Codable, CaseIterable, Hashable, Sendable {
 
     /// With no click after the count-in the learner's tempo may drift, so grading is relative.
     public var timingMode: TimingMode { clicksAfterCountIn ? .absolute : .relative }
+
+    /// Click scaffold by level and mode (docs/02-curriculum.md §6): teaching A; evaluation of AO B;
+    /// evaluation from the notation levels on C (count-in only — the learner keeps the pulse);
+    /// free practice B.
+    public static func forStep(level: SkillLevel, mode: PracticeMode) -> ClickStage {
+        switch mode {
+        case .teaching: .a
+        case .practice: .b
+        case .evaluation: level >= .verbal ? .c : .b
+        }
+    }
 }

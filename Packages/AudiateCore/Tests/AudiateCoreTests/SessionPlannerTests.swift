@@ -30,21 +30,15 @@ struct SessionPlannerTests {
             if p.isEmpty { break }
             sessions += 1
             for step in p.steps {
-                let (items, exercise, mode): ([PlannedItem], ExerciseKind, PracticeMode) = switch step {
-                case .echo(let b): (b.items, .echo, b.mode)
-                case .read(let b): (b.items, .read, b.mode)
-                case .nameNotation(let q): ([q.item], .nameNotation, q.mode)
-                }
-                for item in items {
-                    progress.record(Attempt(date: Fixtures.day(0), unitID: item.unitID, level: item.level, patternID: item.patternID,
-                                            exercise: exercise, mode: mode, passed: true, accuracy: 1),
-                                    curriculum: Fixtures.curriculum, library: Fixtures.library, calendar: calendar)
+                for attempt in StepAttempts.perfect(step, at: Fixtures.day(0)) {
+                    progress.record(attempt, curriculum: Fixtures.curriculum, library: Fixtures.library, calendar: calendar)
                 }
             }
         }
         #expect(sessions < 20)
         // up to four new patterns a day per unit (U1 and U2 in parallel), each evaluated at most four times
-        let evaluated = Dictionary(grouping: progress.attempts.filter { $0.mode == .evaluation }, by: { $0.patternID! }).mapValues(\.count)
+        let evaluated = Dictionary(grouping: progress.attempts.filter { $0.mode == .evaluation && $0.patternID != nil },
+                                   by: { $0.patternID! }).mapValues(\.count)
         #expect(evaluated.count == 2 * MasteryPolicy.maxNewPatternsPerDayPerUnit)
         #expect(evaluated.values.allSatisfy { $0 <= MasteryPolicy.maxEvaluationsPerPatternPerDay + MasteryPolicy.minBlockSize })
         // and the next day there is work again
