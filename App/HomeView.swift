@@ -16,6 +16,7 @@ struct HomeView: View {
                 HStack(alignment: .firstTextBaseline) {
                     Text("Audiate").font(.largeTitle.bold())
                     Spacer()
+                    Button("Pulse trainer") { model.openPulseTrainer() }
                     Button("Calibrate…") { openWindow(id: WindowID.calibration) }
                     if model.dayOffset != 0 { Text("Day offset +\(model.dayOffset)").foregroundStyle(.orange) }
                 }

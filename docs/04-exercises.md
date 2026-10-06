@@ -132,7 +132,17 @@ slot; `P` toggles a pickup slot (if upbeat unlocked). Play button auditions the 
 4. Pulse held: relative-mode `a` within ±8 %.
 Pass = all four. Show the quantized result (from `SA` on as notation; before that as syllables only).
 
-## 6. Pulse grader (E10)
+## 6. Pulse trainer and pulse grader (E10)
+
+**Pulse trainer** (Home → Pulse trainer, `PulseTrainer`): an endless stream
+`| click 2 | silence N | click 2 | silence N | …` — or, in random-dropout mode, the click vanishing for
+1…n measures at unpredictable places. The returning click is the feedback by ear; while it plays the
+screen shows where the last silence ended (needle early ↔ late, % of a beat and ms), the tempo the taps
+implied (sped up / slowed down / steady) and evenness. Steady (|drift| < 5 % of a beat, even, right
+count) → longer silences (2, 4, 6, 8, 12, 16 measures); |drift| > 15 % or a lost count → shorter.
+The learner taps beats, beats + halves/thirds, or the fine grid. After stopping: a chart of the drift
+per silence and the tendency (rushing / slowing). Practice only; the results also set the length of the
+daily warm-up.
 
 Expected = macrobeat times continuing the count-in tempo. Silent stretch length grows with
 successive passes: 2 → 4 → 8 → 16 measures.

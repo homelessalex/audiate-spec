@@ -71,6 +71,8 @@ and note anything odd:
 - [ ] **IA Answer differently**: answer with a *different* rhythm; snapped to the grid; an echo is rejected.
 - [ ] **IS Compose**: write your own pattern with cells, then perform it from the notation.
 - [ ] **Keys** (Settings → Keys): own rhythm/pulse keys; reserved keys refused.
+- [ ] **Pulse trainer** (Home): click/silence cycles, drift needle and tempo after each silence, adaptive
+      silences, random-dropout mode, beat/half/fine grid, chart at the end.
 - [ ] **Accuracy bar** after every tap attempt: mean |error| with the pass tick, full on a miss or extra tap.
 
 ## M2 — First playable loop: U1–U2 at AO and VA ✅

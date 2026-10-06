@@ -9,6 +9,8 @@ struct ContentView: View {
                 Text("Failed to load resources: \(error)").foregroundStyle(.red).padding()
             } else if let session = model.session {
                 SessionView(runner: session)
+            } else if let trainer = model.pulseTrainer {
+                PulseTrainerView(runner: trainer)
             } else {
                 HomeView()
             }

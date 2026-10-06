@@ -272,6 +272,13 @@ private extension Array {
 struct AnswerPreviewSheet: View {
     let library: PatternLibrary
 
+    static func sampleDrift(_ library: PatternLibrary) -> PulseTrainer.Result {
+        var t = PulseTrainer(settings: .init(meter: library.meters["usual_duple"]!, tempo: Tempo(bpm: 80),
+                                             subdivision: .macrobeats, mode: .blocks))
+        let beats = t.cycles[0].beats
+        return t.report(taps: beats.enumerated().map { beats[0] + Double($0.offset) * 0.75 * 1.03 })!
+    }
+
     var body: some View {
         let target = library.pattern(id: "D-MM-03")!
         let answer = Dictation.cells(for: target, in: library)!
@@ -289,6 +296,8 @@ struct AnswerPreviewSheet: View {
                 ForEach(series.indices, id: \.self) { RhythmStaffView(pattern: series[$0], zoom: 1.5, showTimeSignature: false) }
             }
             MeterOptions(meters: ["usual_duple", "usual_triple"].compactMap { library.meters[$0] }, correct: 1, chosen: 0, enabled: false) { _ in }
+            Text("Pulse trainer: after a silence (late, slowed down)").font(.headline)
+            DriftCard(result: Self.sampleDrift(library), clickBPM: 80)
         }
         .padding(24)
         .frame(width: 820)

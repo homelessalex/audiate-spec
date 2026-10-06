@@ -21,6 +21,7 @@ final class AppModel {
     let settings = AppSettings()
     private(set) var progress = LearnerProgress()
     var session: SessionRunner?
+    var pulseTrainer: PulseTrainerRunner?
 
     /// Date injection: launch with `-AudiateDayOffset N` to pretend it's N days later.
     let dayOffset = UserDefaults.standard.integer(forKey: "AudiateDayOffset")
@@ -108,6 +109,13 @@ final class AppModel {
         try? context.save()
         progress = LearnerProgress()
     }
+
+    func openPulseTrainer() {
+        guard let content else { return }
+        pulseTrainer = PulseTrainerRunner(content: content, model: self)
+    }
+
+    func closePulseTrainer() { pulseTrainer = nil }
 
     func endSession() {
         session?.end()
