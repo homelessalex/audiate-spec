@@ -140,11 +140,14 @@ final class SessionRunner {
     private func streamEnded() {
         stopAudio()
         if let position = flow.restartPosition {
-            restart(FlowSequencer(steps: flow.steps, library: content.library, from: position))
+            restart(FlowSequencer(steps: flow.steps, library: content.library, from: position, previousMeter: lastMeter))
         } else {
             state = .finished
         }
     }
+
+    /// The meter just heard: a restart in the same meter needs only the short count-in.
+    private var lastMeter: Meter? { flow.attempts.last?.pattern.meter }
 
     private func restart(_ next: FlowSequencer) {
         flow = next
@@ -270,7 +273,7 @@ final class SessionRunner {
         var steps = flow.steps
         let at = attempt.position.step + 1
         steps.insert(perform, at: min(at, steps.count))
-        restart(FlowSequencer(steps: steps, library: content.library, from: .init(step: at, item: 0, attempt: 1)))
+        restart(FlowSequencer(steps: steps, library: content.library, from: .init(step: at, item: 0, attempt: 1), previousMeter: meter))
     }
 
     /// Library patterns are graded per pattern; generated ones per unit (nil).
@@ -296,9 +299,10 @@ final class SessionRunner {
         guard state == .choosing, let answered = lastAnswer else { return }
         let index = answered.attempt.index
         if flow.attempts.indices.contains(index + 1) {
-            restart(FlowSequencer(steps: flow.steps, library: content.library, from: flow.attempts[index + 1].position))
+            restart(FlowSequencer(steps: flow.steps, library: content.library, from: flow.attempts[index + 1].position,
+                                  previousMeter: lastMeter))
         } else if let position = flow.restartPosition {
-            restart(FlowSequencer(steps: flow.steps, library: content.library, from: position))
+            restart(FlowSequencer(steps: flow.steps, library: content.library, from: position, previousMeter: lastMeter))
         } else {
             state = .finished
         }

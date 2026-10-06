@@ -115,14 +115,19 @@ public struct FlowSequencer: Sendable {
     /// Pickups are at most a third of a measure, so the first half of a lead-in never depends on the outcome.
     static let undecidedFraction = 0.5
 
-    public init(steps: [SessionStep], library: PatternLibrary, from position: Position = Position(step: 0, item: 0, attempt: 1)) {
+    /// `previousMeter`: the meter the learner was just in (a stream restarted after an answer); nil at the
+    /// start of a session. A different meter gets the longer count-in.
+    public init(steps: [SessionStep], library: PatternLibrary, from position: Position = Position(step: 0, item: 0, attempt: 1),
+                previousMeter: Meter? = nil) {
         self.steps = steps
         self.library = library
-        if let first = build(at: position, start: 0, index: 0) {
-            commit(first, leadInIsCommitted: false)
-        } else {
+        guard let first = build(at: position, start: 0, index: 0) else {
             endTime = 0
+            return
         }
+        let extra = first.attempt.pattern.meter == previousMeter ? 0 : EchoPolicy.newMeterCountInMeasures - 1
+        commit(extra > 0 ? build(at: position, start: Double(extra) * first.attempt.measureDuration, index: 0) ?? first : first,
+               leadInIsCommitted: false, extraCountIns: extra)
     }
 
     // MARK: - Reading the stream
@@ -178,9 +183,12 @@ public struct FlowSequencer: Sendable {
         if candidate.attempt.pattern.meter == done.pattern.meter, candidate.attempt.tempo == done.tempo {
             measures[measures.count - 1] = Measure(start: leadIn.start, duration: leadIn.duration, role: .leadIn, attemptIndex: index + 1)
             commit(candidate, leadInIsCommitted: true)
-        } else if let moved = build(at: position, start: leadIn.end, index: index + 1) {
-            // new meter or tempo: the lead-in stays a verdict measure, then a count-in in the new tempo
-            commit(moved, leadInIsCommitted: false)
+        } else if let probe = build(at: position, start: leadIn.end, index: index + 1) {
+            // new meter or tempo: the lead-in stays a verdict measure, then a count-in in the new tempo —
+            // longer when the meter itself changes
+            let extra = probe.attempt.pattern.meter == done.pattern.meter ? 0 : EchoPolicy.newMeterCountInMeasures - 1
+            let moved = extra == 0 ? probe : build(at: position, start: leadIn.end + Double(extra) * probe.attempt.measureDuration, index: index + 1)
+            if let moved { commit(moved, leadInIsCommitted: false, extraCountIns: extra) }
         }
     }
 
@@ -340,7 +348,7 @@ public struct FlowSequencer: Sendable {
         return Built(attempt: attempt, roles: roles, sounds: sounds)
     }
 
-    private mutating func commit(_ b: Built, leadInIsCommitted: Bool) {
+    private mutating func commit(_ b: Built, leadInIsCommitted: Bool, extraCountIns: Int = 0) {
         let attempt = b.attempt
         attempts.append(attempt)
         awaiting = attempt.index
@@ -351,10 +359,13 @@ public struct FlowSequencer: Sendable {
         }
         let measure = attempt.measureDuration
         if !leadInIsCommitted {
-            measures.append(Measure(start: attempt.start, duration: measure, role: .countIn, attemptIndex: attempt.index))
-            // E3's count-in gives the macrobeat only, so the microbeats don't reveal the meter
-            sounds += Self.countInClicks(attempt.pattern.meter, tempo: attempt.tempo, at: attempt.start,
-                                         microbeats: attempt.kind != .whichMeter)
+            for k in stride(from: extraCountIns, through: 0, by: -1) {
+                let start = attempt.start - Double(k) * measure
+                measures.append(Measure(start: start, duration: measure, role: .countIn, attemptIndex: attempt.index))
+                // E3's count-in gives the macrobeat only, so the microbeats don't reveal the meter
+                sounds += Self.countInClicks(attempt.pattern.meter, tempo: attempt.tempo, at: start,
+                                             microbeats: attempt.kind != .whichMeter)
+            }
         }
         for (k, role) in b.roles.enumerated() {
             measures.append(Measure(start: attempt.start + Double(k + 1) * measure, duration: measure, role: role, attemptIndex: attempt.index))

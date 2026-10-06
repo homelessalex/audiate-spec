@@ -16,7 +16,7 @@ Tap exercises share the onset grader (§2).
 | E7 | Meter from notation | CS | Series of 4 notated patterns, time signature and beat grid hidden (silent) | Choose meter | Exact choice |
 | E8 | Answer differently | IA | Unfamiliar pattern on hi-hat, hold measure, no click | Tap a *different* pattern in the same meter | Improvisation grader |
 | E9 | Compose and perform | IS | Empty measure | Build with the cell palette (pulse stopped), then read it in the flow (stage C) | Onset grader on own pattern |
-| E10 | Hold the pulse | warm-up, free practice | Count-in + 1 measure with click, then silence (2 → 4 → 8 → 16 measures); the click returns at the end | Tap macrobeats through the silence | Pulse grader (never counted toward mastery) |
+| E10 | Hold the pulse | warm-up, free practice | Count-in + 2 measures with click, then silence (2 → 4 → 8 → 16 measures); the click returns at the end | Tap macrobeats through the silence | Pulse grader (never counted toward mastery) |
 | E11 | Audiate the gap | drills (after VA) | Pattern, then one **silent** measure | Tap the pattern in the third measure | Onset grader |
 | E12 | Theory | TU | Rhythm heard / notation shown | Pick equivalent notation in another time signature; name values | Exact choice |
 
@@ -30,7 +30,8 @@ The pulse never stops inside a block:
 
 - The whole session is one uninterrupted pulse (`FlowSequencer`). The lead-in after a response is the
   next attempt's count-in; the yes/no verdict of the attempt just finished is shown during it.
-- A change of meter or tempo (e.g. teaching → evaluation) adds one count-in measure in the new tempo.
+- A change of tempo (e.g. teaching → evaluation) adds one count-in measure in the new tempo; a change of
+  meter, and the start of a session, get two (`EchoPolicy.newMeterCountInMeasures`) to settle in.
 - One pattern per attempt. Teaching: the same pattern again until correct (max
   `MasteryPolicy.maxTeachingAttempts`). Evaluation: one attempt per pattern.
 - E2 in the flow: `| lead-in | prompt | prompt |`, then the pulse stops until the notation is picked

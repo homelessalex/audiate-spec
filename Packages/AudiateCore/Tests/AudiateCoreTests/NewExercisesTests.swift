@@ -36,11 +36,11 @@ struct HoldPulseTests {
     @Test func flowLayoutClickThenSilence() {
         let spec = HoldPulseSpec(unitID: "U1", meterID: "usual_duple", tempo: Tempo(bpm: 80), silentMeasures: 2)
         let flow = FlowSequencer(steps: [.holdPulse(spec)], library: Fixtures.library)
-        #expect(flow.measures.map(\.role) == [.countIn, .withClick, .silent, .silent, .leadIn])
+        #expect(flow.measures.map(\.role) == [.countIn, .countIn, .withClick, .withClick, .silent, .silent, .leadIn])
         let a = flow.attempts[0]
-        #expect(a.response?.expectedOnsets == [3.0, 3.75, 4.5, 5.25])
-        #expect(flow.sounds(from: 3.0, to: 6.0).isEmpty)            // silence
-        #expect(!flow.sounds(from: 6.0, to: 6.01).isEmpty)          // the click returns: you hear your drift
+        #expect(a.response?.expectedOnsets == [6.0, 6.75, 7.5, 8.25])
+        #expect(flow.sounds(from: 6.0, to: 9.0).isEmpty)            // silence
+        #expect(!flow.sounds(from: 9.0, to: 9.01).isEmpty)          // the click returns: you hear your drift
     }
 }
 
@@ -95,13 +95,13 @@ struct MeterIdentificationTests {
         let spec = WhichMeterSpec(unitID: "U2", level: .partialSynthesis, series: series, options: ["usual_duple", "usual_triple"],
                                   correctIndex: 1, tempo: Tempo(bpm: TempoPolicy.meterIdentificationBPM))
         let flow = FlowSequencer(steps: [.whichMeter(spec)], library: library)
-        #expect(flow.measures.map(\.role) == [.countIn, .prompt, .prompt, .prompt, .prompt, .leadIn])
-        let countIn = flow.measures[0]
-        let clicks = flow.sounds(from: countIn.start, to: countIn.end)
+        #expect(flow.measures.map(\.role) == [.countIn, .countIn, .prompt, .prompt, .prompt, .prompt, .leadIn])
+        let countIn = flow.measures[0], seriesMeasure = flow.measures[2]
+        let clicks = flow.sounds(from: countIn.start, to: seriesMeasure.start)
         #expect(clicks.allSatisfy { $0.sound == .click(accented: true) })   // no microbeats: they would give 6/8 away
-        #expect(clicks.count == 2)
+        #expect(clicks.count == 4)
         // stage C: no clicks while the series plays
-        #expect(!flow.sounds(from: countIn.end, to: flow.attempts[0].end).contains { $0.sound != .hiHat })
+        #expect(!flow.sounds(from: seriesMeasure.start, to: flow.attempts[0].end).contains { $0.sound != .hiHat })
     }
 
     @Test func freshStartAndSilentKinds() {

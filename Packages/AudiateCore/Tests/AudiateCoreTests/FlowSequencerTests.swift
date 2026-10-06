@@ -42,19 +42,20 @@ struct FlowSequencerTests {
 
     @Test func attemptLayoutAndVerdictLeadIn() {
         let flow = FlowSequencer(steps: [echo(["D-MM-01"], mode: .evaluation)], library: library)
-        #expect(flow.measures.map(\.role) == [.countIn, .prompt, .hold, .response, .leadIn])
+        // a session starts with the longer count-in (a new meter for the ear)
+        #expect(flow.measures.map(\.role) == [.countIn, .countIn, .prompt, .hold, .response, .leadIn])
         #expect(flow.awaiting == 0)
         let a = flow.attempts[0]
-        #expect(a.response?.start == 4.5)                       // 80 BPM: 1.5 s per measure
-        #expect(a.end == 6.0)
-        #expect(flow.decidedUntil == 6.0 + 0.75)                // half of the lead-in is final
-        #expect(flow.attempt(endingAt: 6.0)?.index == 0)
+        #expect(a.response?.start == 6.0)                       // 80 BPM: 1.5 s per measure
+        #expect(a.end == 7.5)
+        #expect(flow.decidedUntil == 7.5 + 0.75)                // half of the lead-in is final
+        #expect(flow.attempt(endingAt: 7.5)?.index == 0)
     }
 
     @Test func evaluationBlockFlowsWithOneMeasureBetweenAttempts() {
         let flow = run([echo(["D-MM-01", "D-MM-02", "D-MM-03"], mode: .evaluation)], outcomes: { _ in false })
         #expect(flow.attempts.map(\.pattern.id) == ["D-MM-01", "D-MM-02", "D-MM-03"]) // no retries in evaluation
-        #expect(flow.measures.map(\.role) == [.countIn, .prompt, .hold, .response,
+        #expect(flow.measures.map(\.role) == [.countIn, .countIn, .prompt, .hold, .response,
                                               .leadIn, .prompt, .hold, .response,
                                               .leadIn, .prompt, .hold, .response, .leadIn])
         #expect(flow.endTime == flow.measures.last?.end)
@@ -75,8 +76,9 @@ struct FlowSequencerTests {
         let flow = run([echo(["D-MM-01"], mode: .teaching), echo(["D-MM-01", "D-MM-02", "D-MM-03"], mode: .evaluation)],
                        outcomes: { _ in true })
         let roles = flow.measures.map(\.role)
-        #expect(Array(roles.prefix(7)) == [.countIn, .prompt, .hold, .response, .leadIn, .countIn, .prompt])
-        #expect(flow.measures[4].duration > flow.measures[5].duration)
+        // same meter, new tempo: one count-in in the new tempo
+        #expect(Array(roles.prefix(8)) == [.countIn, .countIn, .prompt, .hold, .response, .leadIn, .countIn, .prompt])
+        #expect(flow.measures[5].duration > flow.measures[6].duration)
         expectContinuousPulse(flow)
     }
 
@@ -105,7 +107,7 @@ struct FlowSequencerTests {
         let q = NameNotationSpec(item: item("D-MM-02", level: .verbal), tempo: Tempo(bpm: 80), options: options,
                                  correctIndex: 0, mode: .evaluation)
         let flow = FlowSequencer(steps: [.nameNotation(q), echo(["D-MM-01"], mode: .evaluation)], library: library)
-        #expect(flow.measures.map(\.role) == [.countIn, .prompt, .prompt, .leadIn])
+        #expect(flow.measures.map(\.role) == [.countIn, .countIn, .prompt, .prompt, .leadIn])
         #expect(flow.attempts[0].response == nil)
         #expect(flow.attempts[0].question == q)
         let after = flow.measures.last!
@@ -122,6 +124,22 @@ struct FlowSequencerTests {
         let flow = FlowSequencer(steps: [echo(["D-MM-01", "D-MM-02"], mode: .evaluation)], library: library,
                                  from: .init(step: 0, item: 1, attempt: 1))
         #expect(flow.attempts.first?.pattern.id == "D-MM-02")
-        #expect(flow.attempts.first?.start == 0)
+        #expect(flow.measures.first?.start == 0)
+        // restarted in the meter the learner was just in: a single count-in
+        let same = FlowSequencer(steps: [echo(["D-MM-01", "D-MM-02"], mode: .evaluation)], library: library,
+                                 from: .init(step: 0, item: 1, attempt: 1), previousMeter: Fixtures.pattern("D-MM-01").meter)
+        #expect(same.measures.prefix(2).map(\.role) == [.countIn, .prompt])
+    }
+
+    @Test func aNewMeterGetsTwoCountInMeasures() {
+        let flow = run([echo(["D-MM-01", "D-MM-02", "D-MM-03"], mode: .evaluation),
+                        echo(["T-MM-01", "T-MM-02", "T-MM-03"], mode: .evaluation)], outcomes: { _ in true })
+        let roles = flow.measures.map(\.role)
+        let change = roles.indices.first { flow.measures[$0].attemptIndex.map { flow.attempts[$0].pattern.meter.id == "usual_triple" } ?? false }!
+        // the verdict lead-in in 2/4, then two count-in measures in 6/8
+        #expect(roles[change - 1] == .leadIn)
+        #expect(Array(roles[change..<change + 3]) == [.countIn, .countIn, .prompt])
+        #expect(flow.measures[change].duration == flow.measures[change + 1].duration)
+        expectContinuousPulse(flow)
     }
 }

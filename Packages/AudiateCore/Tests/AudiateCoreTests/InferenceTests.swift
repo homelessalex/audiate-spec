@@ -93,10 +93,10 @@ struct InferencePlanTests {
             .compose(ComposeSpec(unitID: "U1", meterID: "usual_duple", palette: [], tempo: Tempo(bpm: 80))),
         ]
         let e4 = FlowSequencer(steps: steps, library: Fixtures.library)
-        #expect(e4.measures.map(\.role) == [.countIn, .prompt, .prompt, .leadIn])
+        #expect(e4.measures.map(\.role) == [.countIn, .countIn, .prompt, .prompt, .leadIn])
         #expect(e4.attempts[0].kind.awaitsInput && e4.attempts[0].pattern == gen)
         let e8 = FlowSequencer(steps: steps, library: Fixtures.library, from: .init(step: 1, item: 0, attempt: 1))
-        #expect(e8.measures.map(\.role) == [.countIn, .prompt, .hold, .response, .leadIn])
+        #expect(e8.measures.map(\.role) == [.countIn, .countIn, .prompt, .hold, .response, .leadIn])
         let e9 = FlowSequencer(steps: steps, library: Fixtures.library, from: .init(step: 2, item: 0, attempt: 1))
         #expect(e9.attempts[0].kind == .compose && e9.endTime == 0)
     }
