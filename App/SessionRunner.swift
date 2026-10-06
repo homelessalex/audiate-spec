@@ -31,6 +31,8 @@ final class SessionRunner {
     /// E2 answers by attempt index.
     private(set) var choices: [Int: Int] = [:]
     private(set) var newlyPassed: [LevelKey] = []
+    /// After the day's work: endless practice of taught patterns, not counted.
+    private(set) var isFreePractice: Bool
     private(set) var error: String?
     let recorder = TapRecorder()
 
@@ -38,10 +40,28 @@ final class SessionRunner {
     private unowned let model: AppModel
     private var ticker: Task<Void, Never>?
 
-    init(plan: SessionPlan, content: AppModel.Content, model: AppModel) {
+    init(plan: SessionPlan, content: AppModel.Content, model: AppModel, freePractice: Bool = false) {
         self.content = content
         self.model = model
+        isFreePractice = freePractice
         flow = FlowSequencer(steps: plan.steps, library: content.library)
+    }
+
+    /// The next batch when the plan runs out: more of today's work, then (in free practice) more practice.
+    private func moreSteps() -> [SessionStep] {
+        if let next = model.planSession(), !next.isEmpty { return next.steps }
+        return isFreePractice ? (model.planFreePractice()?.steps ?? []) : []
+    }
+
+    /// From the summary: carry on with free practice.
+    func keepPracticing() {
+        guard let plan = model.planFreePractice(), !plan.isEmpty else { return }
+        isFreePractice = true
+        flow = FlowSequencer(steps: plan.steps, library: content.library)
+        verdicts = [:]
+        choices = [:]
+        state = .paused
+        start()
     }
 
     var heardTime: Double? { recorder.heardTime() }
@@ -150,7 +170,7 @@ final class SessionRunner {
         } else {
             passed = false
         }
-        flow.report(passed: passed, forAttempt: index) { [weak self] in self?.model.planSession()?.steps ?? [] }
+        flow.report(passed: passed, forAttempt: index) { [weak self] in self?.moreSteps() ?? [] }
     }
 
     /// E2 choice: show it for a moment, then continue the flow from the next attempt.

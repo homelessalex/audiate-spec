@@ -78,9 +78,18 @@ final class AppModel {
         return planner.plan(progress, date: now(), using: &rng)
     }
 
-    func startSession() {
-        guard let content, let plan = planSession(), !plan.isEmpty else { return }
-        session = SessionRunner(plan: plan, content: content, model: self)
+    /// Unlimited practice of what has been taught; never counted toward mastery.
+    func planFreePractice() -> SessionPlan? {
+        guard let content else { return nil }
+        let planner = SessionPlanner(curriculum: content.curriculum, library: content.library, calendar: calendar)
+        var rng = SystemRandomNumberGenerator()
+        return planner.freePractice(progress, using: &rng)
+    }
+
+    /// Today's work, or free practice once it is done.
+    func startSession(freePractice: Bool = false) {
+        guard let content, let plan = freePractice ? planFreePractice() : planSession(), !plan.isEmpty else { return }
+        session = SessionRunner(plan: plan, content: content, model: self, freePractice: freePractice)
     }
 
     func endSession() {

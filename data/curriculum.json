@@ -1,17 +1,17 @@
 {
  "version": 1,
  "units": [
-  {"id": "U1",  "title": "Duple: macro/micro beats",    "patternIdPrefixes": ["D-MM-"],           "meters": ["usual_duple"]},
-  {"id": "U2",  "title": "Triple: macro/micro beats",   "patternIdPrefixes": ["T-MM-"],           "meters": ["usual_triple"]},
-  {"id": "U3",  "title": "Duple: divisions",            "patternIdPrefixes": ["D-DV-"],           "meters": ["usual_duple"]},
-  {"id": "U4",  "title": "Triple: divisions",           "patternIdPrefixes": ["T-DV-"],           "meters": ["usual_triple"]},
-  {"id": "U5",  "title": "Duple: elongations",          "patternIdPrefixes": ["D-EL-"],           "meters": ["usual_duple"]},
-  {"id": "U6",  "title": "Triple: elongations",         "patternIdPrefixes": ["T-EL-"],           "meters": ["usual_triple"]},
-  {"id": "U7",  "title": "Rests",                       "patternIdPrefixes": ["D-RS-", "T-RS-"],  "meters": ["usual_duple", "usual_triple"]},
-  {"id": "U8",  "title": "Ties",                        "patternIdPrefixes": ["D-TI-", "T-TI-"],  "meters": ["usual_duple", "usual_triple"]},
-  {"id": "U9",  "title": "Upbeats",                     "patternIdPrefixes": ["D-UB-", "T-UB-"],  "meters": ["usual_duple", "usual_triple"]},
-  {"id": "U10", "title": "Combined: triplets in duple", "patternIdPrefixes": ["C-"],              "meters": ["usual_combined"]},
-  {"id": "U11", "title": "Unusual paired: 5/8",         "patternIdPrefixes": ["UP-"],             "meters": ["unusual_paired_2_3", "unusual_paired_3_2"]},
-  {"id": "U12", "title": "Unusual unpaired: 7/8",       "patternIdPrefixes": ["UU-"],             "meters": ["unusual_unpaired_2_2_3", "unusual_unpaired_3_2_2", "unusual_unpaired_2_3_2"]}
+  {"id": "U1",  "group": 1, "title": "Duple: macro/micro beats",    "patternIdPrefixes": ["D-MM-"],           "meters": ["usual_duple"]},
+  {"id": "U2",  "group": 1, "title": "Triple: macro/micro beats",   "patternIdPrefixes": ["T-MM-"],           "meters": ["usual_triple"]},
+  {"id": "U3",  "group": 2, "title": "Duple: divisions",            "patternIdPrefixes": ["D-DV-"],           "meters": ["usual_duple"]},
+  {"id": "U4",  "group": 2, "title": "Triple: divisions",           "patternIdPrefixes": ["T-DV-"],           "meters": ["usual_triple"]},
+  {"id": "U5",  "group": 3, "title": "Duple: elongations",          "patternIdPrefixes": ["D-EL-"],           "meters": ["usual_duple"]},
+  {"id": "U6",  "group": 3, "title": "Triple: elongations",         "patternIdPrefixes": ["T-EL-"],           "meters": ["usual_triple"]},
+  {"id": "U7",  "group": 4, "title": "Rests",                       "patternIdPrefixes": ["D-RS-", "T-RS-"],  "meters": ["usual_duple", "usual_triple"]},
+  {"id": "U8",  "group": 5, "title": "Ties",                        "patternIdPrefixes": ["D-TI-", "T-TI-"],  "meters": ["usual_duple", "usual_triple"]},
+  {"id": "U9",  "group": 6, "title": "Upbeats",                     "patternIdPrefixes": ["D-UB-", "T-UB-"],  "meters": ["usual_duple", "usual_triple"]},
+  {"id": "U10", "group": 7, "title": "Combined: triplets in duple", "patternIdPrefixes": ["C-"],              "meters": ["usual_combined"]},
+  {"id": "U11", "group": 8, "title": "Unusual paired: 5/8",         "patternIdPrefixes": ["UP-"],             "meters": ["unusual_paired_2_3", "unusual_paired_3_2"]},
+  {"id": "U12", "group": 9, "title": "Unusual unpaired: 7/8",       "patternIdPrefixes": ["UU-"],             "meters": ["unusual_unpaired_2_2_3", "unusual_unpaired_3_2_2", "unusual_unpaired_2_3_2"]}
  ]
 }

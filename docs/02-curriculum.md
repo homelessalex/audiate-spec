@@ -22,8 +22,8 @@ Duple and triple are introduced together from the start (MLT does not finish dup
 | U11 | unusual paired | 5/8 (2+3, 3+2) | `UP-*` |
 | U12 | unusual unpaired | 7/8 (2+2+3, 3+2+2, 2+3+2) | `UU-*` |
 
-Units are data, not code: define them in `curriculum.json` (to be created in milestone M2) as
-`{ id, title, patternIdPrefixes[], meters[] }`, so units can be added without code changes.
+Units are data, not code: defined in `data/curriculum.json` as
+`{ id, group, title, patternIdPrefixes[], meters[] }`, so units can be added without code changes.
 
 ## 2. Skill levels per unit
 
@@ -37,7 +37,7 @@ Codes from `01-methodology.md` §4. Each unit runs through:
 
 | To unlock | Requires |
 |---|---|
-| U(n+1) `AO` | U(n) `VA` passed |
+| U(n) `AO` | every unit of the previous **group** has passed `VA`. Groups (`curriculum.json` → `group`): U1+U2, U3+U4, U5+U6 run in parallel (duple and triple together); U7…U12 one each |
 | U(n) `VA` | U(n) `AO` passed |
 | U(n) `PS` | U(n) `VA` passed **and** at least two different meters have `VA` passed (PS needs a contrast). For U1 this means PS waits until U2 `VA`. |
 | U(n) `SA` | U(n) `VA` passed (deviation: `VA` = notation association, see `01-methodology.md` §7) |
@@ -90,6 +90,8 @@ Rules:
 - Never more than 2 new patterns introduced per day per unit (teaching mode), and at most 4 evaluations
   of a pattern per exercise per day (`MasteryPolicy`). Sessions chain into one flow, so these limits are
   per calendar day; once the day's work is done the next plan is empty and the flow ends.
+- **Free practice** after the day's work (or from Home): every taught pattern at its unit's current
+  stage, endless, graded yes/no but never counted toward mastery or review (`PracticeMode.practice`).
 - Teaching mode for a pattern: echoed with support (click stage A, syllables at VA) until it is correct,
   at most `MasteryPolicy.maxTeachingAttempts` (4) tries → then it enters the evaluation pool.
 - Steps and sessions run as one continuous flow (`docs/04-exercises.md` §1): the verdict of each attempt

@@ -20,8 +20,12 @@ struct GateTests {
         ("U1:AO", "", true),
         ("U1:VA", "", false),
         ("U1:VA", "U1:AO", true),
-        ("U2:AO", "U1:AO", false),
-        ("U2:AO", "U1:AO U1:VA", true),
+        ("U2:AO", "", true),                                   // duple and triple together
+        ("U3:AO", "U1:AO U1:VA", false),                       // the whole previous group must pass VA
+        ("U3:AO", "U1:AO U1:VA U2:AO U2:VA", true),
+        ("U4:AO", "U1:AO U1:VA U2:AO U2:VA", true),
+        ("U7:AO", "U5:VA", false),
+        ("U7:AO", "U5:VA U6:VA", true),
         ("U1:PS", "U1:AO U1:VA", false),                       // needs a second meter
         ("U1:PS", "U1:AO U1:VA U2:AO U2:VA", true),
         ("U3:PS", "U1:AO U1:VA U3:AO U3:VA", false),           // U1 and U3 are both duple

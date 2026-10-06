@@ -43,12 +43,32 @@ struct SessionPlannerTests {
             }
         }
         #expect(sessions < 20)
-        // two new patterns a day, each evaluated at most four times
+        // up to four new patterns a day per unit (U1 and U2 in parallel), each evaluated at most four times
         let evaluated = Dictionary(grouping: progress.attempts.filter { $0.mode == .evaluation }, by: { $0.patternID! }).mapValues(\.count)
-        #expect(evaluated.count == MasteryPolicy.maxNewPatternsPerDayPerUnit)
+        #expect(evaluated.count == 2 * MasteryPolicy.maxNewPatternsPerDayPerUnit)
         #expect(evaluated.values.allSatisfy { $0 <= MasteryPolicy.maxEvaluationsPerPatternPerDay + MasteryPolicy.minBlockSize })
         // and the next day there is work again
         #expect(!planner.plan(progress, date: Fixtures.day(1), using: &rng).isEmpty)
+    }
+
+    @Test func freePracticeCoversTaughtPatternsAndNeverCounts() {
+        var progress = LearnerProgress()
+        var rng = SeededRandomNumberGenerator(seed: 2)
+        #expect(planner.freePractice(progress, using: &rng).isEmpty) // nothing taught yet
+        for id in ["D-MM-01", "T-MM-01"] {
+            progress.record(Attempt(date: Fixtures.day(0), unitID: Fixtures.curriculum.unit(containing: id)!.id, level: .aural,
+                                    patternID: id, exercise: .echo, mode: .teaching, passed: true, accuracy: 1),
+                            curriculum: Fixtures.curriculum, library: Fixtures.library, calendar: calendar)
+        }
+        let practice = planner.freePractice(progress, using: &rng)
+        let blocks = echoes(practice)
+        #expect(Set(blocks.flatMap(\.items).map(\.patternID)) == ["D-MM-01", "T-MM-01"])
+        #expect(blocks.allSatisfy { $0.mode == .practice && !$0.showNotation }) // AO not passed: by ear only
+        let before = progress
+        progress.record(Attempt(date: Fixtures.day(0), unitID: "U1", level: .aural, patternID: "D-MM-01", exercise: .echo,
+                                mode: .practice, passed: true, accuracy: 1),
+                        curriculum: Fixtures.curriculum, library: Fixtures.library, calendar: calendar)
+        #expect(progress.items == before.items && progress.passedAt == before.passedAt)
     }
 
     @Test func noReadingWhileOnlyEarLevelsAreOpen() {
@@ -72,16 +92,19 @@ struct SessionPlannerTests {
 
     @Test func newLearnerStartsWithU1AuralTeaching() {
         let p = plan(LearnerProgress(), day: 0)
-        #expect(p.frontier == LevelKey(unitID: "U1", level: .aural))
+        #expect(p.frontiers == [LevelKey(unitID: "U1", level: .aural), LevelKey(unitID: "U2", level: .aural)])
         let blocks = echoes(p)
         let teaching = blocks.filter { $0.mode == .teaching }
-        #expect(teaching.count == MasteryPolicy.maxNewPatternsPerDayPerUnit)
+        // U1 and U2 have four patterns each, all introduced on day one
+        #expect(Dictionary(grouping: teaching, by: { $0.items[0].unitID }).mapValues(\.count) == ["U1": 4, "U2": 4])
         #expect(teaching.allSatisfy { $0.items.count == 1 }) // repeated until correct by the session runner
         #expect(teaching.allSatisfy { $0.clickStage == .a && !$0.showNotation })
-        #expect(teaching.allSatisfy { $0.tempo.bpm == TempoPolicy.dupleBPM * TempoPolicy.teachingFactor })
+        for b in teaching { #expect(b.tempo == TempoPolicy.teaching(for: Fixtures.library.meters[b.meterID]!)) }
         let evaluation = blocks.filter { $0.mode == .evaluation }
         #expect(!evaluation.isEmpty)
-        #expect(evaluation.allSatisfy { $0.clickStage == .b && !$0.showNotation && $0.tempo.bpm == TempoPolicy.dupleBPM })
+        for b in evaluation {
+            #expect(b.clickStage == .b && !b.showNotation && b.tempo == .standard(for: Fixtures.library.meters[b.meterID]!))
+        }
         // only the two taught patterns are evaluated
         let taught = Set(teaching.map(\.items[0].patternID))
         #expect(Set(evaluation.flatMap(\.items).map(\.patternID)) == taught)
@@ -117,7 +140,7 @@ struct SessionPlannerTests {
         }
         #expect(progress.passed.contains(LevelKey(unitID: "U1", level: .aural)))
         let p = plan(progress, day: 3) // AO items from day 1 are in box 2 → due on day 3
-        #expect(p.frontier == LevelKey(unitID: "U1", level: .verbal))
+        #expect(p.frontiers == [LevelKey(unitID: "U1", level: .verbal), LevelKey(unitID: "U2", level: .aural)])
         #expect(echoes(p).filter { $0.items[0].level == .verbal }.allSatisfy { $0.showNotation })
         #expect(echoes(p).filter { $0.items[0].level == .aural }.allSatisfy { !$0.showNotation })
         let questions = p.steps.compactMap { if case .nameNotation(let q) = $0 { q } else { nil } }
@@ -134,8 +157,8 @@ struct SessionPlannerTests {
 
     @Test func reviewGroupsByMeter() {
         var progress = LearnerProgress()
-        // U2/U3 items (the frontier is U1 AO, whose own items are practiced as new material, not review)
-        for id in ["D-DV-01", "T-MM-01", "D-DV-02", "T-MM-02"] {
+        // U3/U4 items (the frontiers are U1 and U2 AO, whose own items are practiced as new material, not review)
+        for id in ["D-DV-01", "T-DV-01", "D-DV-02", "T-DV-02"] {
             let unit = Fixtures.curriculum.unit(containing: id)!.id
             progress.record(Attempt(date: Fixtures.day(0), unitID: unit, level: .aural, patternID: id, exercise: .echo,
                                     mode: .evaluation, passed: true, accuracy: 1),

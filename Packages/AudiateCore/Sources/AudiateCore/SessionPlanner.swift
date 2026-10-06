@@ -24,35 +24,52 @@ public struct SessionPlanner: Sendable {
         self.calendar = calendar
     }
 
-    /// Lowest unpassed, unlocked ear level of the earliest unit that has one.
-    public func frontier(_ progress: LearnerProgress) -> LevelKey? {
-        for unit in curriculum.units {
+    /// For every unit with one: its lowest unpassed, unlocked ear level (the units of a group run in parallel).
+    public func frontiers(_ progress: LearnerProgress) -> [LevelKey] {
+        curriculum.units.compactMap { unit in
             for level in Self.earLevels {
                 let key = LevelKey(unitID: unit.id, level: level)
                 if progress.passed.contains(key) { continue }
-                if Gate.isUnlocked(key, curriculum: curriculum, passed: progress.passed) { return key }
-                break
+                return Gate.isUnlocked(key, curriculum: curriculum, passed: progress.passed) ? key : nil
             }
+            return nil
         }
-        return nil
     }
 
     /// Today's next session. Daily limits make it empty once the day's work is done, which ends the flow.
     public func plan(_ progress: LearnerProgress, date: Date, using rng: inout some RandomNumberGenerator) -> SessionPlan {
-        let frontier = frontier(progress)
-        var steps = review(progress, date: date, excluding: frontier)
+        let frontiers = frontiers(progress)
+        var steps = review(progress, date: date, excluding: Set(frontiers))
         var taughtNow: Set<String> = []
-        if let frontier {
-            steps += newMaterial(frontier, progress: progress, date: date, budget: sessionSeconds - seconds(steps),
-                                 taughtNow: &taughtNow, using: &rng)
+        for (k, frontier) in frontiers.enumerated() {
+            let share = (sessionSeconds - seconds(steps)) / Double(frontiers.count - k)
+            steps += newMaterial(frontier, progress: progress, date: date, budget: share, taughtNow: &taughtNow, using: &rng)
         }
-        steps += otherReading(progress, frontier: frontier, date: date, budget: sessionSeconds - seconds(steps), using: &rng)
-        return SessionPlan(steps: steps, frontier: frontier, estimatedSeconds: seconds(steps))
+        steps += otherReading(progress, frontiers: Set(frontiers.map(\.unitID)), date: date,
+                              budget: sessionSeconds - seconds(steps), using: &rng)
+        return SessionPlan(steps: steps, frontiers: frontiers, estimatedSeconds: seconds(steps))
+    }
+
+    /// Practice after the day's work: every pattern already taught, at the unit's current stage
+    /// (by ear before AO is passed, with notation after; reading where SA is open). Never counted.
+    public func freePractice(_ progress: LearnerProgress, using rng: inout some RandomNumberGenerator) -> SessionPlan {
+        var echoes: [PlannedItem] = [], reads: [PlannedItem] = []
+        for unit in curriculum.units where Gate.isUnlocked(LevelKey(unitID: unit.id, level: .aural), curriculum: curriculum, passed: progress.passed) {
+            let level: SkillLevel = progress.passed.contains(LevelKey(unitID: unit.id, level: .aural)) ? .verbal : .aural
+            let reading = Gate.isUnlocked(LevelKey(unitID: unit.id, level: .symbolic), curriculum: curriculum, passed: progress.passed)
+            for p in curriculum.patterns(of: unit, in: library) where progress.hasHeard(patternID: p.id) {
+                echoes.append(PlannedItem(patternID: p.id, unitID: unit.id, level: level, purpose: .review))
+                if reading { reads.append(PlannedItem(patternID: p.id, unitID: unit.id, level: .symbolic, purpose: .review)) }
+            }
+        }
+        let steps = blocksByMeterAndLevel(echoes.shuffled(using: &rng)).map { echo($0, mode: .practice) }
+            + blocksByMeterAndLevel(reads.shuffled(using: &rng)).map { read($0, mode: .practice) }
+        return SessionPlan(steps: steps, frontiers: [], estimatedSeconds: seconds(steps))
     }
 
     // MARK: - Review
 
-    private func review(_ progress: LearnerProgress, date: Date, excluding frontier: LevelKey?) -> [SessionStep] {
+    private func review(_ progress: LearnerProgress, date: Date, excluding frontiers: Set<LevelKey>) -> [SessionStep] {
         let items: [PlannedItem] = progress.dueItems(on: date).compactMap { state in
             let level = state.key.level
             guard Self.implementedLevels.contains(level), library.pattern(id: state.key.subject) != nil,
@@ -60,7 +77,7 @@ public struct SessionPlanner: Sendable {
             let key = LevelKey(unitID: unit.id, level: level)
             let passed = progress.passed.contains(key)
             // unpassed reading is practiced by the reading track; the frontier by new material
-            guard key != frontier, passed || level != .symbolic else { return nil }
+            guard !frontiers.contains(key), passed || level != .symbolic else { return nil }
             return PlannedItem(patternID: state.key.subject, unitID: unit.id, level: level, purpose: passed ? .review : .bridge)
         }
         var steps: [SessionStep] = []
@@ -135,9 +152,9 @@ public struct SessionPlanner: Sendable {
     }
 
     /// Reading for earlier units whose ear levels are done but whose reading isn't passed yet.
-    private func otherReading(_ progress: LearnerProgress, frontier: LevelKey?, date: Date, budget: Double,
+    private func otherReading(_ progress: LearnerProgress, frontiers: Set<String>, date: Date, budget: Double,
                               using rng: inout some RandomNumberGenerator) -> [SessionStep] {
-        let items = curriculum.units.filter { $0.id != frontier?.unitID && isReading($0, progress) }.flatMap { unit in
+        let items = curriculum.units.filter { !frontiers.contains($0.id) && isReading($0, progress) }.flatMap { unit in
             curriculum.patterns(of: unit, in: library)
                 .filter { progress.hasHeard(patternID: $0.id) }
                 .filter {

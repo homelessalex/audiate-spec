@@ -94,6 +94,7 @@ private struct FlowView: View {
     static func detail(_ a: FlowSequencer.FlowAttempt) -> String {
         var s = "\(a.item.unitID) \(a.item.level.code)"
         if a.mode == .teaching { s += " · try \(a.position.attempt) of \(MasteryPolicy.maxTeachingAttempts)" }
+        if a.mode == .practice { s += " · free practice" }
         s += " · \(Int(a.tempo.bpm.rounded())) \(a.pattern.meter.isUnusual ? "eighths/min" : "BPM")"
         return s
     }
@@ -228,10 +229,17 @@ private struct SummaryView: View {
             }
             let tomorrow = Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: model.now()))!
             Text("Due tomorrow: \(model.progress.dueItems(on: tomorrow).count)").foregroundStyle(.secondary)
-            Button("Done") { model.endSession() }
-                .controlSize(.large)
-                .buttonStyle(.borderedProminent)
-                .keyboardShortcut(.defaultAction)
+            HStack(spacing: 14) {
+                Button("Done") { model.endSession() }
+                    .controlSize(.large)
+                if model.planFreePractice()?.isEmpty == false {
+                    Button("Keep practicing") { runner.keepPracticing() }
+                        .controlSize(.large)
+                        .buttonStyle(.borderedProminent)
+                        .keyboardShortcut(.defaultAction)
+                        .help("Practice what you've learned for as long as you like. It doesn't count toward passing a level.")
+                }
+            }
         }
     }
 }

@@ -9,6 +9,8 @@ struct HomeView: View {
     var body: some View {
         if let content = model.content {
             let plan = model.planSession()
+            let hasWork = plan?.isEmpty == false
+            let canPractice = model.planFreePractice()?.isEmpty == false
             let due = model.progress.dueItems(on: model.now()).count
             VStack(alignment: .leading, spacing: 20) {
                 HStack(alignment: .firstTextBaseline) {
@@ -20,19 +22,22 @@ struct HomeView: View {
 
                 HStack(spacing: 16) {
                     Button {
-                        model.startSession()
+                        model.startSession(freePractice: !hasWork)
                     } label: {
-                        Text(plan?.isEmpty == false ? "Start today's session" : "Nothing to practice now — come back tomorrow")
+                        Text(hasWork ? "Start today's session" : (canPractice ? "Free practice" : "Nothing to practice yet"))
                             .frame(minWidth: 260)
                     }
                     .controlSize(.large)
                     .buttonStyle(.borderedProminent)
                     .keyboardShortcut(.defaultAction)
-                    .disabled(plan?.isEmpty != false)
+                    .disabled(!hasWork && !canPractice)
                     VStack(alignment: .leading) {
-                        if let plan, let frontier = plan.frontier {
-                            Text("Learning: \(frontier.unitID) \(Self.levelName(frontier.level))")
+                        if let plan, hasWork {
+                            Text("Learning: " + plan.frontiers.map { "\($0.unitID) \(Self.levelName($0.level))" }.joined(separator: ", "))
                             Text("about \(Int((plan.estimatedSeconds / 60).rounded(.up))) min").foregroundStyle(.secondary)
+                        } else {
+                            Text("Today's work is done — free practice doesn't count toward passing a level.")
+                                .foregroundStyle(.secondary)
                         }
                         Text("Due reviews: \(due)").foregroundStyle(.secondary)
                     }

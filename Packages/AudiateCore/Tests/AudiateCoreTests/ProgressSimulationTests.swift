@@ -48,7 +48,8 @@ struct ProgressSimulationTests {
         #expect(aoDay >= 1, "mastery needs two calendar days")
         #expect(vaDay > aoDay)
         #expect(vaDay <= 7)
-        #expect(Gate.isUnlocked(LevelKey(unitID: "U2", level: .aural), curriculum: curriculum, passed: progress.passed))
+        #expect(passedOn[LevelKey(unitID: "U2", level: .verbal)] != nil, "U2 runs in parallel with U1")
+        #expect(Gate.isUnlocked(LevelKey(unitID: "U3", level: .aural), curriculum: curriculum, passed: progress.passed))
         #expect(Gate.isUnlocked(LevelKey(unitID: "U1", level: .symbolic), curriculum: curriculum, passed: progress.passed))
     }
 }

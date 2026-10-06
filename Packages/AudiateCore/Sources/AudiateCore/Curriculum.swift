@@ -19,6 +19,13 @@ public struct Curriculum: Sendable {
 
     public func unit(containing patternID: String) -> CurriculumUnit? { units.first { $0.contains(patternID: patternID) } }
 
+    /// The units of the group just before `unitID`'s (empty for the first group).
+    public func previousGroup(of unitID: String) -> [CurriculumUnit] {
+        guard let group = unit(id: unitID)?.group,
+              let previous = units.map(\.group).filter({ $0 < group }).max() else { return [] }
+        return units.filter { $0.group == previous }
+    }
+
     /// The unit's patterns, easy → difficult, then library order (docs/03-rhythm-model.md §6).
     public func patterns(of unit: CurriculumUnit, in library: PatternLibrary) -> [Pattern] {
         let patterns = library.patterns(idPrefixes: unit.patternIdPrefixes)

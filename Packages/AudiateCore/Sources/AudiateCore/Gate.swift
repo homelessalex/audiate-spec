@@ -2,13 +2,13 @@
 public enum Gate {
     public static func isUnlocked(_ key: LevelKey, curriculum: Curriculum, passed: Set<LevelKey>) -> Bool {
         if passed.contains(key) { return true }
-        guard let index = curriculum.index(of: key.unitID) else { return false }
+        guard curriculum.unit(id: key.unitID) != nil else { return false }
         func has(_ level: SkillLevel) -> Bool { passed.contains(LevelKey(unitID: key.unitID, level: level)) }
 
         switch key.level {
         case .aural:
-            guard index > 0 else { return true }
-            return passed.contains(LevelKey(unitID: curriculum.units[index - 1].id, level: .verbal))
+            // a group opens when every unit of the previous group has passed VA
+            return curriculum.previousGroup(of: key.unitID).allSatisfy { passed.contains(LevelKey(unitID: $0.id, level: .verbal)) }
         case .verbal:
             return has(.aural)
         case .partialSynthesis:

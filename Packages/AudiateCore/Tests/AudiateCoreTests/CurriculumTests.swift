@@ -21,6 +21,15 @@ struct CurriculumTests {
         }
     }
 
+    @Test func duplesAndTriplesArePaired() {
+        let groups = Dictionary(grouping: curriculum.units, by: \.group).mapValues { $0.map(\.id) }
+        #expect(groups[1] == ["U1", "U2"])
+        #expect(groups[2] == ["U3", "U4"])
+        #expect(groups[3] == ["U5", "U6"])
+        #expect(curriculum.previousGroup(of: "U3").map(\.id) == ["U1", "U2"])
+        #expect(curriculum.previousGroup(of: "U1").isEmpty)
+    }
+
     @Test func patternsAreOrderedEasyToDifficult() {
         for unit in curriculum.units {
             let levels = curriculum.patterns(of: unit, in: library).map(DifficultyScorer.level)
