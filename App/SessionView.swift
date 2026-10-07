@@ -79,7 +79,7 @@ private struct FlowView: View {
                         Text("Listen — which meter is it in?").font(.title3).foregroundStyle(.secondary)
                     }
                 }
-                .frame(minHeight: 360)
+                .frame(minHeight: 360, alignment: .top)
                 // the pad shows only for tap attempts
                 if let attempt, [.echo, .read, .readWithModel, .holdPulse, .answerDifferently].contains(attempt.kind) {
                     TapPad(recorder: runner.recorder)
@@ -162,19 +162,33 @@ private struct VerdictBadge: View {
     let pattern: AudiateCore.Pattern
 
     var body: some View {
+        // the comparison goes beside the verdict, not under it, so the whole thing stays above the tap pad
+        if let comparison = verdict.comparison {
+            HStack(alignment: .center, spacing: 28) {
+                summary
+                ViewThatFits {
+                    ForEach([2.2, 1.9, 1.6, 1.3, 1.0] as [CGFloat], id: \.self) { zoom in
+                        RhythmStaffView(pattern: pattern, zoom: zoom, beatGrid: true, comparison: comparison)
+                    }
+                }
+            }
+        } else {
+            summary
+        }
+    }
+
+    private var summary: some View {
         VStack(spacing: 8) {
             HStack(spacing: 14) {
                 Image(systemName: verdict.passed ? "checkmark.circle.fill" : "xmark.circle.fill")
-                    .font(.system(size: 64))
+                    .font(.system(size: 56))
                     .foregroundStyle(verdict.passed ? .green : .red)
                 Text(verdict.passed ? "Yes" : "No").font(.system(size: 36, weight: .bold))
             }
-            ForEach(verdict.reasons, id: \.self) { Text($0).font(.title3) }
+            ForEach(verdict.reasons, id: \.self) { Text($0).font(.title3).multilineTextAlignment(.center) }
             if let score = verdict.score { AccuracyBar(score: score) }
-            if let comparison = verdict.comparison {
-                RhythmStaffView(pattern: pattern, zoom: 1.6, beatGrid: true, comparison: comparison)
-            }
         }
+        .fixedSize(horizontal: false, vertical: true)
     }
 }
 

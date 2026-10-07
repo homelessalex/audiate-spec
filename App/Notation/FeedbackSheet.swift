@@ -7,7 +7,7 @@ struct FeedbackSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
-            ForEach(Self.cases, id: \.id) { c in
+            ForEach(Self.cases, id: \.title) { c in
                 if let p = library.pattern(id: c.id) {
                     VStack(alignment: .leading) {
                         Text(c.title).font(.system(size: 12, weight: .semibold, design: .monospaced))
@@ -37,6 +37,7 @@ struct FeedbackSheet: View {
         Case(id: "D-MM-04", title: "D-MM-04: all on time", shifts: [0.005, -0.01, 0.0, 0.012], extra: nil),
         Case(id: "D-DV-03", title: "D-DV-03: 2nd late +45 ms, 4th missed", shifts: [0.0, 0.045, -0.01, nil, 0.0], extra: nil),
         Case(id: "T-EL-01", title: "T-EL-01: early −60 ms on 2nd, an extra tap", shifts: [0.01, -0.06, 0.0], extra: 1.7),
+        Case(id: "D-DV-03", title: "D-DV-03: nothing tapped", shifts: [nil, nil, nil, nil, nil], extra: nil),
     ]
 
     private func comparison(_ p: AudiateCore.Pattern, shifts: [Double?], extra: Double?) -> StaffRenderer.Comparison? {

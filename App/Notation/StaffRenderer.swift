@@ -57,7 +57,7 @@ struct StaffRenderer {
     private var syllableY: CGFloat { staffY + (beatGrid ? 5.0 : 3.3) * sp }
     private var comparisonTop: CGFloat { (syllables != nil ? syllableY + 1.6 * sp : (beatGrid ? gridY + 1.6 * sp : staffY + 2.4 * sp)) }
     var height: CGFloat {
-        if comparison != nil { return comparisonTop + 6.2 * sp }
+        if comparison != nil { return comparisonTop + 8.4 * sp }
         if syllables != nil { return syllableY + 1.2 * sp }
         return (beatGrid ? gridY + 1.2 * sp : staffY + 2.5 * sp)
     }
@@ -236,24 +236,34 @@ struct StaffRenderer {
     /// Two rows: "notes" (where each note starts and how long it sounds) and "you" (your taps),
     /// each hit joined to its note, with the error in ms when it's noticeable.
     private func drawComparison(_ c: Comparison, cg: CGContext, colors: Colors) {
-        let notesY = comparisonTop + 0.6 * sp
-        let youY = notesY + 2.8 * sp
+        // ticks and words are larger than the staff's own detail: this is what the learner reads after a miss
+        let tickH = 1.9 * sp, tickW = 0.4 * sp
+        let notesY = comparisonTop + 0.9 * sp
+        let youY = notesY + 3.6 * sp
         let label = { (text: String, y: CGFloat) in
-            self.drawText(text, left: CGPoint(x: 1, y: y), size: 1.25 * self.sp, color: colors.muted, cg: cg)
+            self.drawText(text, left: CGPoint(x: 1, y: y), size: 1.45 * self.sp, color: colors.muted, cg: cg)
         }
-        label("notes", notesY + 0.35 * sp)
-        label("you", youY + 0.35 * sp)
+        label("notes", notesY + 0.45 * sp)
+        label("you", youY + 0.5 * sp)
+        // one row of words under the taps, left to right; a word that would run into the previous one is
+        // left out (its tick still shows), so close notes never print "missedmissed"
+        var labels = LabelRow(renderer: self, y: youY + 2.9 * sp, cg: cg)
+        defer { labels.flush() }
 
         for note in c.notes {
             let missed = c.misses.contains(note.start)
             let x0 = noteCenterX(note.start), x1 = max(x0 + 0.8 * sp, noteCenterX(note.end) - 0.5 * sp)
-            let bar = CGRect(x: x0, y: notesY, width: x1 - x0, height: 0.7 * sp)
+            let bar = CGRect(x: x0, y: notesY, width: x1 - x0, height: 0.9 * sp)
             cg.setFillColor(colors.muted.copy(alpha: 0.35)!)
             cg.fill(bar)
             cg.setFillColor(missed ? Colors.bad : colors.ink)
-            cg.fill(CGRect(x: x0 - 0.12 * sp, y: notesY - 0.3 * sp, width: 0.24 * sp, height: 1.3 * sp))
+            cg.fill(CGRect(x: x0 - tickW / 2, y: notesY - 0.5 * sp, width: tickW, height: tickH))
             if missed {
-                drawText("missed", center: CGPoint(x: x0, y: youY + 0.4 * sp), size: 1.15 * sp, color: Colors.bad, cg: cg)
+                // an empty tick where the tap should have been
+                cg.setStrokeColor(Colors.bad)
+                cg.setLineWidth(0.14 * sp)
+                cg.stroke(CGRect(x: x0 - tickW * 0.7, y: youY - 0.5 * sp, width: tickW * 1.4, height: tickH))
+                labels.draw("missed", at: x0, color: Colors.bad)
             }
         }
 
@@ -261,21 +271,51 @@ struct StaffRenderer {
             let color = hit.mark == .good ? Colors.good : Colors.off
             let xe = noteCenterX(hit.expected), xt = noteCenterX(hit.tap)
             cg.setStrokeColor(color)
-            cg.setLineWidth(0.15 * sp)
-            cg.move(to: CGPoint(x: xe, y: notesY + 1.0 * sp))
-            cg.addLine(to: CGPoint(x: xt, y: youY - 0.3 * sp))
+            cg.setLineWidth(0.22 * sp)
+            cg.move(to: CGPoint(x: xe, y: notesY + 1.4 * sp))
+            cg.addLine(to: CGPoint(x: xt, y: youY - 0.5 * sp))
             cg.strokePath()
             cg.setFillColor(color)
-            cg.fill(CGRect(x: xt - 0.15 * sp, y: youY - 0.3 * sp, width: 0.3 * sp, height: 1.3 * sp))
+            cg.fill(CGRect(x: xt - tickW / 2, y: youY - 0.5 * sp, width: tickW, height: tickH))
             if hit.mark != .good {
-                drawText(String(format: "%+d", hit.errorMs), center: CGPoint(x: xt, y: youY + 2.0 * sp), size: 1.15 * sp, color: color, cg: cg)
+                labels.draw(String(format: "%+d", hit.errorMs), at: xt, color: color)
             }
         }
         for tick in c.extras {
             let x = noteCenterX(tick)
             cg.setFillColor(Colors.bad)
-            cg.fill(CGRect(x: x - 0.15 * sp, y: youY - 0.3 * sp, width: 0.3 * sp, height: 1.3 * sp))
-            drawText("extra", center: CGPoint(x: x, y: youY + 2.0 * sp), size: 1.15 * sp, color: Colors.bad, cg: cg)
+            cg.fill(CGRect(x: x - tickW / 2, y: youY - 0.5 * sp, width: tickW, height: tickH))
+            labels.draw("extra", at: x, color: Colors.bad)
+        }
+    }
+
+    /// Words under the comparison taps, drawn in x order without overlapping.
+    private struct LabelRow {
+        let renderer: StaffRenderer
+        let y: CGFloat
+        let cg: CGContext
+        private var pending: [(text: String, x: CGFloat, color: CGColor)] = []
+
+        init(renderer: StaffRenderer, y: CGFloat, cg: CGContext) {
+            self.renderer = renderer
+            self.y = y
+            self.cg = cg
+        }
+
+        mutating func draw(_ text: String, at x: CGFloat, color: CGColor) {
+            pending.append((text, x, color))
+        }
+
+        func flush() {
+            let size = 1.5 * renderer.sp
+            var right = -CGFloat.infinity
+            for label in pending.sorted(by: { $0.x < $1.x }) {
+                let line = StaffRenderer.line(label.text, size: size, color: label.color)
+                let width = CTLineGetBoundsWithOptions(line, .useOpticalBounds).width
+                guard label.x - width / 2 >= right + 0.4 * renderer.sp else { continue }
+                renderer.drawText(label.text, center: CGPoint(x: label.x, y: y), size: size, color: label.color, cg: cg)
+                right = label.x + width / 2
+            }
         }
     }
 

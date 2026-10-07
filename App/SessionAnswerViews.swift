@@ -18,6 +18,9 @@ struct AnswerView: View {
             } else if let attempt = runner.pendingAnswer {
                 VStack(spacing: 12) {
                     Text(Self.prompt(attempt)).font(.title.bold())
+                    if let task = Self.task(attempt) {
+                        Text(task).multilineTextAlignment(.center).frame(maxWidth: 560)
+                    }
                     Text(Self.hint(attempt)).font(.callout).foregroundStyle(.secondary)
                 }
                 .frame(height: SessionLayout.headerHeight, alignment: .bottom)
@@ -74,9 +77,22 @@ struct AnswerView: View {
         }
     }
 
+    /// What to do, in words, for the screens that are more than "pick one".
+    static func task(_ a: FlowSequencer.FlowAttempt) -> String? {
+        switch a.kind {
+        case .dictation:
+            "Put the pattern together beat by beat. The blue box is the beat you are filling: click the "
+                + "piece below that sounds like that beat (or press its number), and the box moves on to the next beat."
+        case .compose:
+            "Make up a pattern of your own: pick a piece for each beat. Then you tap it in time with the click."
+        default: nil
+        }
+    }
+
     static func hint(_ a: FlowSequencer.FlowAttempt) -> String {
         switch a.kind {
-        case .dictation, .compose: "One cell per beat: 1–9 pick, ← → move, ⌫ clear, Return when done. Esc to pause."
+        case .dictation: "← → choose a beat · ⌫ empty it · Return checks · Esc pauses"
+        case .compose: "← → choose a beat · ⌫ empty it · Return to perform · Esc pauses"
         default: "Click or press a number. Esc to pause."
         }
     }
@@ -194,7 +210,11 @@ private struct CellComposer: View {
                             if let cell = slots[safe: i] ?? nil {
                                 CellTile(cell: cell, allowsThirds: meter.allowsThirds)
                             } else {
-                                Text("beat \(i + 1)").foregroundStyle(.secondary).frame(width: 110, height: 70)
+                                VStack(spacing: 4) {
+                                    Text("beat \(i + 1)").foregroundStyle(.secondary)
+                                    if i == current { Text("pick below ↓").font(.caption).foregroundStyle(Color.accentColor) }
+                                }
+                                .frame(width: 110, height: 70)
                             }
                         }
                         .padding(6)
@@ -204,7 +224,9 @@ private struct CellComposer: View {
                     .buttonStyle(.plain)
                 }
             }
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 150), spacing: 10)], spacing: 10) {
+            // as many columns as cells (up to 4), so a short palette sits centred under the beats
+            let columns = max(1, min(palette.count, 4))
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(minimum: 150), spacing: 10), count: columns), spacing: 10) {
                 ForEach(palette.indices, id: \.self) { k in
                     Button { pick(palette[k]) } label: {
                         HStack {
@@ -216,7 +238,7 @@ private struct CellComposer: View {
                     .keyboardShortcut(k < 9 ? KeyboardShortcut(KeyEquivalent(Character("\(k + 1)")), modifiers: []) : nil)
                 }
             }
-            .frame(maxWidth: 720)
+            .frame(maxWidth: CGFloat(columns) * 180)
             Button(action) { submit(slots) }
                 .controlSize(.large)
                 .buttonStyle(.borderedProminent)
@@ -224,6 +246,8 @@ private struct CellComposer: View {
                 .disabled(slots.contains { $0 == nil })
         }
         .focusable()
+        // keys only: macOS draws the focus ring as a stray box beside the beats
+        .focusEffectDisabled()
         .focused($focused)
         .onAppear {
             slots = Array(repeating: nil, count: meter.macrobeats.count)
