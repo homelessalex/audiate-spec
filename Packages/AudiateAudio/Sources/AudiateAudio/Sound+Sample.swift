@@ -6,6 +6,7 @@ extension Sound {
         switch self {
         case .hiHat: "hihat_open"
         case .click(let accented): accented ? "beat_strong" : "beat_weak"
+        case .downbeat: "beat_down"
         }
     }
 }

@@ -62,7 +62,7 @@ extension Timeline {
                         || (clickStage == .c && preparing && micro == 0)
                     let byCountIn = m == 0 && tick < countInEnd
                     guard byStage || byCountIn else { continue }
-                    sounds.append(ScheduledSound(time: time(measure: m, tick: tick), sound: .click(accented: micro == 0)))
+                    sounds.append(ScheduledSound(time: time(measure: m, tick: tick), sound: .click(tick: tick, micro: micro)))
                 }
             }
         }

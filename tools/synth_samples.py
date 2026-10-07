@@ -4,6 +4,7 @@ Synthesizes the percussion samples (stdlib only) as mono 16-bit WAV at 44.1 kHz.
 Called by tools/make_samples.sh, which converts them to CAF.
 
   hihat_open   prompt notes; long (3.5 s) so the player can choke it at the note's end
+  beat_down    metronome / count-in on the measure's first beat: 600 Hz, lower than beat_strong
   beat_strong  metronome / count-in on macrobeats: crisp 1 kHz tick, louder than beat_weak
   beat_weak    metronome / count-in on microbeats: short crisp tick, quieter than beat_strong
   tap          learner's key press feedback
@@ -69,6 +70,19 @@ def beat_strong(seconds=0.04):
     return out
 
 
+def beat_down(seconds=0.05):
+    # Downbeat: the beat_strong tick a sixth lower (600 Hz) with a slightly longer decay (9 ms),
+    # so the first beat of the measure stands out by pitch rather than by loudness alone.
+    rng = random.Random(4)
+    out = []
+    for i in range(int(seconds * RATE)):
+        t = i / RATE
+        tone = math.sin(2 * math.pi * 600 * t) * math.exp(-t / 0.009)
+        edge = rng.uniform(-1, 1) * 0.5 * math.exp(-t / 0.0007)
+        out.append(tone + edge)
+    return out
+
+
 def beat_weak(seconds=0.03):
     # Short crisp tick: 1.8 kHz with a 4 ms decay plus a 1 ms noise transient for a sharp edge.
     rng = random.Random(3)
@@ -89,6 +103,7 @@ def tap(seconds=0.015):
 if __name__ == "__main__":
     out = sys.argv[1]
     write(os.path.join(out, "hihat_open.wav"), hihat_open(), -4)
+    write(os.path.join(out, "beat_down.wav"), beat_down(), -3)
     write(os.path.join(out, "beat_strong.wav"), beat_strong(), -3)
     write(os.path.join(out, "beat_weak.wav"), beat_weak(), -14)
     write(os.path.join(out, "tap.wav"), tap(), -10)

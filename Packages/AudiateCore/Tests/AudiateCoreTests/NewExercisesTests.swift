@@ -98,7 +98,7 @@ struct MeterIdentificationTests {
         #expect(flow.measures.map(\.role) == [.countIn, .countIn, .prompt, .prompt, .prompt, .prompt, .leadIn])
         let countIn = flow.measures[0], seriesMeasure = flow.measures[2]
         let clicks = flow.sounds(from: countIn.start, to: seriesMeasure.start)
-        #expect(clicks.allSatisfy { $0.sound == .click(accented: true) })   // no microbeats: they would give 6/8 away
+        #expect(clicks.allSatisfy { $0.sound.isMacrobeatClick })   // no microbeats: they would give 6/8 away
         #expect(clicks.count == 4)
         // stage C: no clicks while the series plays
         #expect(!flow.sounds(from: seriesMeasure.start, to: flow.attempts[0].end).contains { $0.sound != .hiHat })

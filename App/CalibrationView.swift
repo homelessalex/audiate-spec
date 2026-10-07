@@ -68,7 +68,7 @@ struct CalibrationView: View {
         error = nil
         let clicks = CalibrationPolicy.clickTimes
         let timeline = Timeline(
-            sounds: clicks.enumerated().map { ScheduledSound(time: $0.element, sound: .click(accented: $0.offset % 4 == 0)) },
+            sounds: clicks.enumerated().map { ScheduledSound(time: $0.element, sound: $0.offset % 4 == 0 ? .downbeat : .click(accented: true)) },
             responses: [], measureDuration: 4 * CalibrationPolicy.beat, duration: Double(clicks.count) * CalibrationPolicy.beat
         )
         do {

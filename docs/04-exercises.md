@@ -45,7 +45,7 @@ The pulse never stops inside a block:
 - Hold: `EchoPolicy.gapMeasures` silent measures (default 1) between prompt and response; the click goes
   on per the click stage. The learner audiates the pattern, then echoes it.
 
-- Count-in: one measure in the pattern's meter: strong click on macrobeats, weak click on microbeats
+- Count-in: one measure in the pattern's meter: low click on the downbeat, strong click on the other macrobeats, weak click on microbeats
   (so duple/triple and the unusual grouping are heard before the first pattern). No voice.
 - Prompt: open hi-hat on every onset, sustained through elongations and ties, choked at the end of
   the note; rests are silent.

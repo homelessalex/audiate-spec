@@ -31,7 +31,7 @@ struct BlockTimingTests {
     }
 
     @Test func bankHasEverySound() {
-        let needed = [Sound.hiHat, .click(accented: true), .click(accented: false)].map(\.sampleName) + [SampleBank.tapSampleName]
+        let needed = [Sound.hiHat, .downbeat, .click(accented: true), .click(accented: false)].map(\.sampleName) + [SampleBank.tapSampleName]
         for name in needed {
             #expect(Self.bank.samples[name] != nil, "\(name)")
         }

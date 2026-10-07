@@ -36,7 +36,7 @@ struct FlowSequencerTests {
         }
         // every measure starts with a strong click: the metronome never stops
         for m in flow.measures {
-            #expect(flow.sounds(from: m.start - 1e-9, to: m.start + 1e-9).contains { $0.sound == .click(accented: true) }, "\(m.role) at \(m.start)")
+            #expect(flow.sounds(from: m.start - 1e-9, to: m.start + 1e-9).contains { $0.sound == .downbeat }, "\(m.role) at \(m.start)")
         }
     }
 

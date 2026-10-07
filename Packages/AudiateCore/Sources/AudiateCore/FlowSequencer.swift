@@ -400,12 +400,12 @@ public struct FlowSequencer: Sendable {
         }
     }
 
-    /// Strong click on macrobeats, weak on microbeats: establishes meter and tempo.
+    /// Low click on the downbeat, strong on the other macrobeats, weak on microbeats: establishes meter and tempo.
     static func countInClicks(_ meter: Meter, tempo: Tempo, at start: Double, microbeats: Bool = true) -> [ScheduledSound] {
         meter.macrobeatSpans.flatMap { span in
             (0..<span.microbeats).filter { $0 == 0 || microbeats }.map { micro in
                 ScheduledSound(time: start + tempo.seconds(forTicks: span.startTick + micro * Rhythm.ticksPerMicrobeat, in: meter),
-                               sound: .click(accented: micro == 0))
+                               sound: .click(tick: span.startTick + micro * Rhythm.ticksPerMicrobeat, micro: micro))
             }
         }
     }

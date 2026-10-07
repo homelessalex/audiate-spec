@@ -20,7 +20,7 @@ struct TimelineTests {
         #expect(t.role(at: -0.1) == nil)
         #expect(t.role(at: 10.6) == nil)
         // the pulse goes on through the hold measure (stage B: macrobeats)
-        #expect(t.sounds.filter { $0.sound == .click(accented: true) && $0.time >= 3.0 && $0.time < 4.5 }.count == 2)
+        #expect(t.sounds.filter { $0.sound.isMacrobeatClick && $0.time >= 3.0 && $0.time < 4.5 }.count == 2)
         #expect(EchoPolicy.gapMeasures == 1)
     }
 
@@ -90,9 +90,9 @@ struct TimelineTests {
 
     @Test func countInClicksMacroAndMicroBeats() throws {
         let duple = try block(["D-MM-01"], stage: .d)
-        #expect(clicks(duple).map(\.sound) == [true, false, true, false].map(Sound.click))
+        #expect(clicks(duple).map(\.sound) == [.downbeat] + [false, true, false].map(Sound.click))
         let unusual = try block(["UP-MM-01"], stage: .d) // 2+3
-        #expect(clicks(unusual).map(\.sound) == [true, false, true, false, false].map(Sound.click))
+        #expect(clicks(unusual).map(\.sound) == [.downbeat] + [false, true, false, false].map(Sound.click))
     }
 
     @Test func pickupShortensCountIn() throws {
@@ -106,15 +106,22 @@ struct TimelineTests {
         #expect(clicks(try block(["D-UB-01"], stage: .b, bpm: 80)).filter { $0.time < 1.5 }.map(\.time) == [0, 0.375, 0.75])
     }
 
+    @Test func countInMarksTheDownbeatLower() throws {
+        let triple = try #require(Fixtures.library.meters["usual_triple"])
+        let sounds = FlowSequencer.countInClicks(triple, tempo: .standard(for: triple), at: 0).map(\.sound)
+        #expect(sounds == [Sound.downbeat, .click(accented: false), .click(accented: false),
+                           .click(accented: true), .click(accented: false), .click(accented: false)])
+    }
+
     @Test func clickStages() throws {
         func after(_ stage: ClickStage) throws -> [Sound] {
             let t = try block(["D-MM-01"], stage: stage)
             return clicks(t).filter { $0.time >= t.measureDuration }.map(\.sound)
         }
         #expect(try after(.a).count == 8)
-        #expect(try after(.b) == Array(repeating: .click(accented: true), count: 4))
+        #expect(try after(.b) == [.downbeat, .click(accented: true), .downbeat, .click(accented: true)])
         // stage C: the click stays through the prompt (preparation) and stops for the response
-        #expect(try after(.c) == Array(repeating: .click(accented: true), count: 2))
+        #expect(try after(.c) == [.downbeat, .click(accented: true)])
         #expect(try after(.d).isEmpty)
     }
 
