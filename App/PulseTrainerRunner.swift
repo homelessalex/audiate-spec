@@ -42,7 +42,8 @@ final class PulseTrainerRunner {
                 provider: { [weak self] from, to in self?.provide(from: from, to: to) },
                 onFinish: {}
             )
-            recorder.start(clock: clock, player: content.player, tapSound: model.settings.tapSound, keyMap: model.settings.keyMap)
+            // either hand, any key keeps the beat here
+            recorder.start(clock: clock, player: content.player, setup: model.tapSetup(twoHands: false))
             state = .running
             ticker = Task { [weak self] in
                 while !Task.isCancelled {
@@ -75,8 +76,7 @@ final class PulseTrainerRunner {
     }
 
     private func report() {
-        let offset = model.inputOffset
-        let taps = (recorder.taps + recorder.pulseTaps).map { $0 - offset }
+        let taps = recorder.taps + recorder.pulseTaps
         guard let result = trainer?.report(taps: taps) else { return }
         // feeds the length of the daily warm-up; never counted toward a level
         model.record(Attempt(date: model.now(), unitID: "U1", level: .aural, patternID: nil, exercise: .holdThePulse,

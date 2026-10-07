@@ -83,8 +83,14 @@ final class AppModel {
         Date().addingTimeInterval(Double(dayOffset) * 86_400)
     }
 
-    /// Input offset in seconds for the current output, 0 if not calibrated.
-    var inputOffset: Double { container.mainContext.inputOffset(for: outputDevice) }
+    /// Input offsets in seconds for the current output, 0 if not calibrated.
+    var inputOffsets: InputOffsets { container.mainContext.inputOffsets(for: outputDevice) }
+
+    /// Tap input for exercises: the learner's keys, MIDI split, tap sound and calibrated offsets.
+    func tapSetup(twoHands: Bool) -> TapSetup {
+        TapSetup(keyMap: settings.keyMap, midiSplit: settings.midiSplit, twoHands: twoHands,
+                 tapSound: settings.tapSound, offsets: inputOffsets)
+    }
 
     /// Records and persists an attempt; returns levels that became passed.
     @discardableResult

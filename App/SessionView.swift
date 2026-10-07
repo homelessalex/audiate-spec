@@ -1,3 +1,4 @@
+import AudiateAudio
 import AudiateCore
 import SwiftUI
 
@@ -86,6 +87,10 @@ private struct FlowView: View {
                     if runner.twoHandMode, attempt.kind != .holdPulse {
                         Text("Left hand \(runner.keyMap.pulseLabels): every beat, all the time · Right hand \(runner.keyMap.rhythmLabels) / pad: the rhythm")
                             .font(.callout).foregroundStyle(.secondary)
+                        if MIDIInput.shared.isConnected {
+                            Text("MIDI: below \(MIDINote.name(runner.midiSplit.lowestRhythmNote)) the beat, from \(MIDINote.name(runner.midiSplit.lowestRhythmNote)) up the rhythm")
+                                .font(.callout).foregroundStyle(.secondary)
+                        }
                     }
                 }
             }

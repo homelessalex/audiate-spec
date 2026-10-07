@@ -63,15 +63,21 @@ Audiate/
   **[verify on device]** that NSEvent timestamps and AVAudio host time share a timebase on the
   target macOS version; the calibration test (below) reveals any constant offset anyway.
 - Trackpad/mouse click on the exercise area = Space.
+- **MIDI keyboard / pads** (`MIDIInput`, CoreMIDI): one app-wide client connects every source and
+  reconnects on setup changes. Only note-on with velocity > 0 counts (UMP, MIDI 1.0 protocol). The
+  packet's host timestamp is the tap time (0 → `mach_absolute_time()`), which is more exact than
+  `NSEvent.timestamp`. One hand: every note is the rhythm. Two hands: notes below `MIDISplit`
+  (default C4, "Learn…" in Settings) keep the pulse, the rest play the rhythm.
 
 **Latency compensation:**
 `tapBlockTime = eventTime − outputLatency − inputOffset`, where
 - `outputLatency = engine.outputNode.presentationLatency + ioBufferDuration` (audio reaches the ear
   later than scheduled);
-- `inputOffset` = learner's calibrated median offset.
+- `inputOffset` = learner's calibrated median offset, per input source (computer keys/pad vs. MIDI);
+  an uncalibrated MIDI keyboard borrows the computer offset. `TapRecorder` removes both before grading.
 
 **Calibration screen** (first launch, and in Settings): 16 clicks at 90 BPM, learner taps along;
-discard first 4; `inputOffset = median(tap − click)`. Reject calibration if IQR > 40 ms; ask to
+discard first 4; `inputOffset = median(tap − click)`, stored for the source most taps came from. Reject calibration if IQR > 40 ms; ask to
 repeat. Store per audio output device (headphones vs. speakers differ; Bluetooth adds 100–250 ms —
 show a warning when the output is Bluetooth).
 

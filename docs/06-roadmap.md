@@ -127,7 +127,6 @@ end-to-end, theory track (E12), app icon, sandboxing, notarized build.
 
 ## Later (optional)
 
-- MIDI input (`CoreMIDI`, note-on timestamps → host time) as an alternative tap source.
 - Microphone onset detection for clapping.
 - Intact unusual meters, multimetric patterns.
 - iPad/iPhone target (core package is already platform-neutral).

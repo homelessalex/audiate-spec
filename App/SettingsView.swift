@@ -9,6 +9,8 @@ struct SettingsView: View {
     @State private var capture = KeyCapture()
     @State private var capturing: KeyRole?
     @State private var keyMessage: String?
+    @State private var midi = MIDIInput.shared
+    @State private var learnToken: UInt64?
 
     enum KeyRole { case addRhythm, replacePulse }
 
@@ -46,6 +48,21 @@ struct SettingsView: View {
                 if let keyMessage { Text(keyMessage).font(.caption).foregroundStyle(.orange) }
                 Button("Restore defaults (Space, J · F)") { settings.keyMap = .standard }
             }
+            Section("MIDI keyboard") {
+                LabeledContent("Connected") {
+                    Text(midi.sourceNames.isEmpty ? "None" : midi.sourceNames.joined(separator: ", "))
+                        .foregroundStyle(.secondary)
+                }
+                if let error = midi.error { Text(error).font(.caption).foregroundStyle(.orange) }
+                LabeledContent("Two-hand split") {
+                    HStack {
+                        KeyChip(label: "pulse < \(MIDINote.name(settings.midiSplit.lowestRhythmNote)) ≤ rhythm", removable: false) {}
+                        Button(learnToken == nil ? "Learn…" : "Press the lowest rhythm key…") { learnSplit() }
+                    }
+                }
+                Text("With one hand any key or pad taps the rhythm. With two hands the keys below the split keep the beat and the rest play the rhythm. Calibrate once on the MIDI keyboard too — it has its own offset.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
             Section("Timing") {
                 Button("Calibrate…") { openWindow(id: WindowID.calibration) }
             }
@@ -55,13 +72,29 @@ struct SettingsView: View {
             }
         }
         .formStyle(.grouped)
-        .onDisappear { capture.cancel() }
+        .onDisappear {
+            capture.cancel()
+            stopLearning()
+        }
         .frame(width: 460)
         .confirmationDialog("Reset all progress?", isPresented: $confirmReset) {
             Button("Reset", role: .destructive) { model.resetProgress() }
         } message: {
             Text("Every attempt, review and passed level is deleted. Calibration is kept. This can't be undone.")
         }
+    }
+
+    private func learnSplit() {
+        guard learnToken == nil else { return stopLearning() }
+        learnToken = midi.addListener { note in
+            model.settings.midiSplit = MIDISplit(lowestRhythmNote: note.note)
+            stopLearning()
+        }
+    }
+
+    private func stopLearning() {
+        if let learnToken { midi.removeListener(learnToken) }
+        learnToken = nil
     }
 
     private func startCapture(_ role: KeyRole) {

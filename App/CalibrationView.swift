@@ -4,12 +4,17 @@ import SwiftData
 import SwiftUI
 
 /// 16 clicks at 90 BPM; tap Space along; offset = median(tap − click) after the first 4.
+/// Taps on a MIDI keyboard calibrate the MIDI offset, kept apart from the computer keys'.
 struct CalibrationView: View {
     @Environment(AppModel.self) private var model
     @Environment(\.modelContext) private var context
     @State private var recorder = TapRecorder()
     @State private var result: CalibrationResult?
     @State private var error: String?
+    /// The source the last run measured.
+    @State private var source = InputSource.computer
+
+    @State private var midi = MIDIInput.shared
 
     private var device: OutputDevice? { model.outputDevice }
 
@@ -21,9 +26,16 @@ struct CalibrationView: View {
                       systemImage: "exclamationmark.triangle")
                     .foregroundStyle(.orange)
             }
-            Text("Press Start, then tap together with every click — Space or the pad below, whichever you will use in exercises. The first four clicks are for settling in.")
-            if let current = device.flatMap({ context.calibration(for: $0.uid) }) {
-                Text("Current offset: \(current.inputOffsetMs, specifier: "%.0f") ms").foregroundStyle(.secondary)
+            Text("Press Start, then tap together with every click — Space, the pad below or a MIDI key, whichever you will use in exercises. The first four clicks are for settling in.")
+            if midi.isConnected {
+                Text("A MIDI keyboard has its own offset: if you play exercises on it, calibrate once with it too.")
+                    .foregroundStyle(.secondary)
+            }
+            ForEach(InputSource.allCases, id: \.self) { source in
+                if let current = device.flatMap({ context.calibration(for: $0.uid, source: source) }) {
+                    Text("Current offset\(source == .midi ? " (MIDI)" : ""): \(current.inputOffsetMs, specifier: "%.0f") ms")
+                        .foregroundStyle(.secondary)
+                }
             }
 
             HStack {
@@ -36,7 +48,7 @@ struct CalibrationView: View {
 
             if let result {
                 if result.isAccepted, let median = result.medianOffset {
-                    Text("Saved: offset \(median * 1000, specifier: "%.0f") ms (spread \((result.iqr ?? 0) * 1000, specifier: "%.0f") ms)")
+                    Text("Saved\(source == .midi ? " for MIDI" : ""): offset \(median * 1000, specifier: "%.0f") ms (spread \((result.iqr ?? 0) * 1000, specifier: "%.0f") ms)")
                         .foregroundStyle(.green)
                 } else {
                     Text("Taps were too uneven (\(result.offsets.count) matched, spread \((result.iqr ?? 0) * 1000, specifier: "%.0f") ms). Please repeat.")
@@ -60,11 +72,15 @@ struct CalibrationView: View {
             responses: [], measureDuration: 4 * CalibrationPolicy.beat, duration: Double(clicks.count) * CalibrationPolicy.beat
         )
         do {
-            try recorder.run(timeline, player: player, tapSound: false, keyMap: model.settings.keyMap) { taps in
+            try recorder.run(timeline, player: player, setup: TapSetup(keyMap: model.settings.keyMap, tapSound: false)) { _ in
+                // measure whichever source most taps came from, and only its taps
+                let sources = recorder.tapSources
+                source = sources.filter { $0 == .midi }.count * 2 > sources.count ? .midi : .computer
+                let taps = zip(recorder.taps, sources).filter { $0.1 == source }.map(\.0)
                 let r = CalibrationAnalyzer.analyze(clickTimes: clicks, taps: taps)
                 result = r
                 if r.isAccepted, let median = r.medianOffset, let uid = device?.uid {
-                    context.saveCalibration(deviceUID: uid, inputOffset: median)
+                    context.saveCalibration(deviceUID: uid, source: source, inputOffset: median)
                 }
             }
         } catch {

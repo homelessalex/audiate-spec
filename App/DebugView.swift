@@ -80,9 +80,9 @@ struct DebugView: View {
 
     private func latencySummary(_ player: BlockPlayer) -> String {
         let device = model.outputDevice
-        let offset = context.inputOffset(for: device)
-        return String(format: "Output: %@ · output latency %.1f ms · input offset %.1f ms%@",
-                      device?.name ?? "unknown", player.outputLatency * 1000, offset * 1000,
+        let offsets = context.inputOffsets(for: device)
+        return String(format: "Output: %@ · output latency %.1f ms · input offset %.1f ms (MIDI %.1f ms)%@",
+                      device?.name ?? "unknown", player.outputLatency * 1000, offsets.computer * 1000, offsets.midi * 1000,
                       device.flatMap { context.calibration(for: $0.uid) } == nil ? " (not calibrated)" : "")
     }
 
@@ -92,10 +92,10 @@ struct DebugView: View {
         do {
             let timeline = try Timeline.echoBlock(patterns: Array(repeating: pattern, count: repeats),
                                                   tempo: Tempo(bpm: bpm), clickStage: stage)
-            let compensation = LatencyCompensation(outputLatency: 0, inputOffset: context.inputOffset(for: model.outputDevice))
             let mode = stage.timingMode
-            try recorder.run(timeline, player: player, tapSound: tapSound, keyMap: model.settings.keyMap) { rawTaps in
-                let taps = rawTaps.map(compensation.blockTime(forRawBlockTime:))
+            var setup = model.tapSetup(twoHands: false)
+            setup.tapSound = tapSound
+            try recorder.run(timeline, player: player, setup: setup) { taps in
                 report = timeline.responses.enumerated().map { i, slot in
                     let grade = OnsetGrader.grade(expected: slot.expectedOnsets, taps: taps,
                                                   responseStart: slot.start, responseEnd: slot.end, mode: mode)

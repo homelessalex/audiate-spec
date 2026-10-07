@@ -28,6 +28,11 @@ final class AppSettings {
         didSet { defaults.set(try? JSONEncoder().encode(keyMap), forKey: "keyMap") }
     }
 
+    /// Where a MIDI keyboard splits into left-hand pulse and right-hand rhythm (two-hand mode).
+    var midiSplit: MIDISplit {
+        didSet { defaults.set(try? JSONEncoder().encode(midiSplit), forKey: "midiSplit") }
+    }
+
     var didShowIntroduction: Bool {
         didSet { defaults.set(didShowIntroduction, forKey: "didShowIntroduction") }
     }
@@ -39,5 +44,6 @@ final class AppSettings {
         tapSound = defaults.object(forKey: "tapSound") as? Bool ?? true
         didShowIntroduction = defaults.bool(forKey: "didShowIntroduction")
         keyMap = defaults.data(forKey: "keyMap").flatMap { try? JSONDecoder().decode(KeyMap.self, from: $0) } ?? .standard
+        midiSplit = defaults.data(forKey: "midiSplit").flatMap { try? JSONDecoder().decode(MIDISplit.self, from: $0) } ?? .standard
     }
 }

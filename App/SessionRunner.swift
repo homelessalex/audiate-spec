@@ -60,6 +60,7 @@ final class SessionRunner {
     var heardTime: Double? { recorder.heardTime() }
     var twoHandMode: Bool { model.settings.twoHandMode }
     var keyMap: KeyMap { model.settings.keyMap }
+    var midiSplit: MIDISplit { model.settings.midiSplit }
     var library: PatternLibrary { content.library }
 
     /// The next batch when the plan runs out: more of today's work, then (in free practice) more practice.
@@ -89,7 +90,7 @@ final class SessionRunner {
                 provider: { [weak self] from, to in self?.provide(from: from, to: to) },
                 onFinish: { [weak self] in self?.streamEnded() }
             )
-            recorder.start(clock: clock, player: content.player, tapSound: model.settings.tapSound, keyMap: model.settings.keyMap)
+            recorder.start(clock: clock, player: content.player, setup: model.tapSetup(twoHands: model.settings.twoHandMode))
             state = .running
             ticker = Task { [weak self] in
                 while !Task.isCancelled {
@@ -196,7 +197,7 @@ final class SessionRunner {
     private func gradeAwaiting() {
         guard let index = flow.awaiting, let slot = flow.attempts[index].response else { return }
         let attempt = flow.attempts[index]
-        let taps = recorder.taps.map { $0 - model.inputOffset }
+        let taps = recorder.taps
         let passed: Bool
         if case .answerDifferently(let spec) = attempt.step {
             let grade = ImprovGrader.grade(taps: taps, prompt: spec.prompt, downbeat: slot.end - attempt.measureDuration,
@@ -206,14 +207,14 @@ final class SessionRunner {
             record(attempt, exercise: .answerDifferently, patternID: nil, passed: passed, accuracy: passed ? 1 : 0)
         } else if attempt.kind == .holdPulse {
             // either hand may keep the beat here
-            let grade = PulseGrader.grade(beats: slot.expectedOnsets, taps: taps + recorder.pulseTaps.map { $0 - model.inputOffset })
+            let grade = PulseGrader.grade(beats: slot.expectedOnsets, taps: taps + recorder.pulseTaps)
             passed = grade.passed
             verdicts[index] = Verdict(passed: passed, reasons: Self.describe(grade), comparison: nil, score: AccuracyScore(grade))
             record(attempt, exercise: .holdThePulse, patternID: nil, passed: passed, accuracy: passed ? 1 : 0)
         } else {
             let mode = attempt.clickStage.timingMode
             let twoHands = model.settings.twoHandMode
-                ? TwoHandGrade.grade(slot: slot, rhythmTaps: taps, pulseTaps: recorder.pulseTaps.map { $0 - model.inputOffset }, mode: mode)
+                ? TwoHandGrade.grade(slot: slot, rhythmTaps: taps, pulseTaps: recorder.pulseTaps, mode: mode)
                 : nil
             let grade = twoHands?.rhythm ?? OnsetGrader.grade(expected: slot.expectedOnsets, taps: taps, responseStart: slot.start,
                                                               responseEnd: slot.end, mode: mode)
