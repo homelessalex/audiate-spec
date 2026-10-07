@@ -16,7 +16,7 @@ Tap exercises share the onset grader (§2).
 | E7 | Meter from notation | CS | Series of 4 notated patterns, time signature and beat grid hidden (silent) | Choose meter | Exact choice |
 | E8 | Answer differently | IA | Unfamiliar pattern on hi-hat, hold measure, no click | Tap a *different* pattern in the same meter | Improvisation grader |
 | E9 | Compose and perform | IS | Empty measure | Build with the cell palette (pulse stopped), then read it in the flow (stage C) | Onset grader on own pattern |
-| E10 | Hold the pulse | warm-up, free practice | Count-in + 2 measures with click, then silence (2 → 4 → 8 → 16 measures); the click returns at the end | Tap macrobeats through the silence | Pulse grader (never counted toward mastery) |
+| E10 | Hold the pulse | pulse trainer on Home (extra, not in sessions) | Count-in + 2 measures with click, then silence (2 → 4 → 8 → 16 measures); the click returns at the end | Tap macrobeats through the silence | Pulse grader (never counted toward mastery) |
 | E11 | Audiate the gap | drills (after VA) | Pattern, then one **silent** measure | Tap the pattern in the third measure | Onset grader |
 | E12 | Theory | TU | Rhythm heard / notation shown | Pick equivalent notation in another time signature; name values | Exact choice |
 
@@ -148,8 +148,8 @@ screen shows where the last silence ended (needle early ↔ late, % of a beat an
 implied (sped up / slowed down / steady) and evenness. Steady (|drift| < 5 % of a beat, even, right
 count) → longer silences (2, 4, 6, 8, 12, 16 measures); |drift| > 15 % or a lost count → shorter.
 The learner taps beats, beats + halves/thirds, or the fine grid. After stopping: a chart of the drift
-per silence and the tendency (rushing / slowing). Practice only; the results also set the length of the
-daily warm-up.
+per silence and the tendency (rushing / slowing). Practice only, never recorded toward progress;
+it is not part of sessions.
 
 Expected = macrobeat times continuing the count-in tempo. Silent stretch length grows with
 successive passes: 2 → 4 → 8 → 16 measures.

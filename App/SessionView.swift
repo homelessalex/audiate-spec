@@ -81,10 +81,10 @@ private struct FlowView: View {
                 }
                 .frame(minHeight: 360, alignment: .top)
                 // the pad shows only for tap attempts
-                if let attempt, [.echo, .read, .readWithModel, .holdPulse, .answerDifferently].contains(attempt.kind) {
+                if let attempt, [.echo, .read, .readWithModel, .answerDifferently].contains(attempt.kind) {
                     TapPad(recorder: runner.recorder)
                         .frame(maxWidth: 520)
-                    if runner.twoHandMode, attempt.kind != .holdPulse {
+                    if runner.twoHandMode {
                         Text("Left hand \(runner.keyMap.pulseLabels): every beat, all the time · Right hand \(runner.keyMap.rhythmLabels) / pad: the rhythm")
                             .font(.callout).foregroundStyle(.secondary)
                         if MIDIInput.shared.isConnected {
@@ -107,7 +107,6 @@ private struct FlowView: View {
         case .readWithModel: "See how it looks"
         case .read: "Read"
         case .nameNotation: "Which notation?"
-        case .holdPulse: "Hold the pulse"
         case .dictation: "Dictation"
         case .whichMeter: "Which meter?"
         case .meterFromNotation: "Meter from notation"
@@ -124,14 +123,12 @@ private struct FlowView: View {
         case .prompt: attempt?.kind == .read ? "Look at it" : (attempt?.kind == .readWithModel ? "Listen & look" : "Listen")
         case .hold: attempt?.kind == .read ? "Hear it inside" : "Hold it"
         case .response: attempt?.kind == .answerDifferently ? "Something different" : (attempt?.kind == .echo ? "Your turn" : "Read")
-        case .withClick: "Tap the beat"
-        case .silent: "Keep the beat"
         case nil: " "
         }
     }
 
     static func detail(_ a: FlowSequencer.FlowAttempt) -> String {
-        var s = a.kind == .holdPulse ? "\(a.item.unitID) warm-up" : "\(a.item.unitID) \(a.item.level.code)"
+        var s = "\(a.item.unitID) \(a.item.level.code)"
         if a.mode == .teaching { s += " · try \(a.position.attempt) of \(MasteryPolicy.maxTeachingAttempts)" }
         if a.isCorrection { s += " · try \(a.position.attempt) of \(MasteryPolicy.maxCorrectionAttempts), not graded" }
         if a.mode == .practice { s += " · free practice" }
@@ -142,8 +139,8 @@ private struct FlowView: View {
     /// The light follows the click: off where the learner keeps the pulse alone.
     static func showsPulse(_ role: FlowSequencer.Role?, attempt: FlowSequencer.FlowAttempt?) -> Bool {
         guard let role, let attempt else { return true }
-        if [.countIn, .leadIn, .withClick].contains(role) { return true }
-        if role == .silent || attempt.clickStage == .d { return false }
+        if [.countIn, .leadIn].contains(role) { return true }
+        if attempt.clickStage == .d { return false }
         if attempt.kind == .whichMeter { return false }
         return !(attempt.clickStage == .c && role == .response)
     }

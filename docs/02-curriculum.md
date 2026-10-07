@@ -79,7 +79,6 @@ Default length 12 min (setting: 5–30). The session planner fills slots in this
 
 | Slot | Share | Content |
 |---|---|---|
-| Warm-up | ~1 min | Movement prompt (text) + pulse-hold drill in a known meter (`04-exercises.md` → E10) |
 | Review | ≤ 40 % | Due Leitner items, oldest first, mixed meters |
 | New | ≥ 45 % | Frontier: lowest unpassed level of the earliest unit that has one; teaching mode first, then evaluation mode |
 | Audiation drill | ~1 min | Pulse-hold or "continue the pattern silently" (E10/E11) |
@@ -109,7 +108,7 @@ The click is scaffolding. Its availability depends on the level:
 | D | Count-in, then silence, longer stretches | E10 hold-the-pulse (2 → 4 → 8 → 16 silent measures) |
 
 `ClickStage.forStep(level:mode:)` holds this table. Without the click the pulse light is hidden too.
-E10 runs once a day as the warm-up and opens every free-practice batch.
+Holding the pulse (E10) is not part of sessions: it is the pulse trainer on Home, an extra exercise.
 
 Setting: "Always allow click" (on = learner may force stage B; such attempts do not count toward
 mastery of stage-C levels).

@@ -205,12 +205,6 @@ final class SessionRunner {
             passed = grade.passed
             verdicts[index] = Verdict(passed: passed, reasons: grade.problems.map(Self.describe), comparison: nil)
             record(attempt, exercise: .answerDifferently, patternID: nil, passed: passed, accuracy: passed ? 1 : 0)
-        } else if attempt.kind == .holdPulse {
-            // either hand may keep the beat here
-            let grade = PulseGrader.grade(beats: slot.expectedOnsets, taps: taps + recorder.pulseTaps)
-            passed = grade.passed
-            verdicts[index] = Verdict(passed: passed, reasons: Self.describe(grade), comparison: nil, score: AccuracyScore(grade))
-            record(attempt, exercise: .holdThePulse, patternID: nil, passed: passed, accuracy: passed ? 1 : 0)
         } else {
             let mode = attempt.clickStage.timingMode
             let twoHands = model.settings.twoHandMode
@@ -334,17 +328,6 @@ final class SessionRunner {
         case .tooFew: "Too few notes"
         case .tempoDrift: "Tempo drifted"
         }
-    }
-
-    static func describe(_ grade: PulseGrade) -> [String] {
-        var lines: [String] = []
-        if grade.problems.contains(.lostCount) { lines.append("Lost count: \(grade.taps) taps for \(grade.beats) beats") }
-        if grade.problems.contains(.drifted) {
-            lines.append(String(format: "Ended %.0f %% of a beat %@", abs(grade.drift) * 100, grade.drift > 0 ? "late (slowed down)" : "early (rushed)"))
-        }
-        if grade.problems.contains(.uneven) { lines.append("Uneven beats") }
-        if grade.passed { lines.append(String(format: "Ended %+.0f %% of a beat", grade.drift * 100)) }
-        return lines
     }
 
     static func meterName(_ meter: Meter) -> String {

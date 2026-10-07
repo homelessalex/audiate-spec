@@ -77,9 +77,6 @@ final class PulseTrainerRunner {
 
     private func report() {
         let taps = recorder.taps + recorder.pulseTaps
-        guard let result = trainer?.report(taps: taps) else { return }
-        // feeds the length of the daily warm-up; never counted toward a level
-        model.record(Attempt(date: model.now(), unitID: "U1", level: .aural, patternID: nil, exercise: .holdThePulse,
-                             mode: .practice, passed: result.grade.passed, accuracy: result.grade.passed ? 1 : 0))
+        trainer?.report(taps: taps)
     }
 }

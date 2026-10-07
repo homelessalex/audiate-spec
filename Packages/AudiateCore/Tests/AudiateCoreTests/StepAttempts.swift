@@ -17,7 +17,6 @@ enum StepAttempts {
         case .sameOrDifferent(let s): return [attempt(s.unitID, .generalizationAural, nil, .sameOrDifferent, .evaluation)]
         case .answerDifferently(let a): return [attempt(a.unitID, .improvisationAural, nil, .answerDifferently, .evaluation)]
         case .compose(let c): return [attempt(c.unitID, .improvisationSymbolic, nil, .composeAndPerform, .evaluation)]
-        case .holdPulse(let h): return [attempt(h.unitID, .aural, nil, .holdThePulse, .practice)]
         case .whichMeter(let w): return [attempt(w.unitID, w.level, nil, .whichMeter, .evaluation)]
         case .meterFromNotation(let m): return [attempt(m.unitID, .compositeSynthesis, nil, .meterFromNotation, .evaluation)]
         }
@@ -32,7 +31,7 @@ enum StepAttempts {
         case .dictation(let d): [d.item.unitID]
         case .meterFromNotation(let m): [m.unitID]
         case .compose(let c): [c.unitID]
-        case .holdPulse, .whichMeter, .sameOrDifferent, .answerDifferently: []
+        case .whichMeter, .sameOrDifferent, .answerDifferently: []
         }
     }
 }

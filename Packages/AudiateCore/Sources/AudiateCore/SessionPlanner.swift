@@ -3,7 +3,8 @@ import Foundation
 /// Builds today's session (docs/02-curriculum.md §5): review of due items, then new material at the
 /// ear frontier. Notation appears from VA on (after the unit passed AO by ear); reading from SA.
 /// Every tap step is played pattern by pattern, each attempt with its own count-in; teaching repeats a
-/// pattern until it is correct. Warm-up and audiation drills arrive in M4.
+/// pattern until it is correct. Holding the pulse is not part of a session: it is the pulse trainer
+/// on Home, an extra exercise.
 public struct SessionPlanner: Sendable {
     public let curriculum: Curriculum
     public let library: PatternLibrary
@@ -45,8 +46,7 @@ public struct SessionPlanner: Sendable {
     /// Today's next session. Daily limits make it empty once the day's work is done, which ends the flow.
     public func plan(_ progress: LearnerProgress, date: Date, using rng: inout some RandomNumberGenerator) -> SessionPlan {
         let frontiers = frontiers(progress)
-        var steps = warmUp(progress, date: date)
-        steps += review(progress, date: date, excluding: Set(frontiers))
+        var steps = review(progress, date: date, excluding: Set(frontiers))
         var taughtNow: Set<String> = []
         for (k, frontier) in frontiers.enumerated() {
             let share = (sessionSeconds - seconds(steps)) / Double(frontiers.count - k)
@@ -56,7 +56,7 @@ public struct SessionPlanner: Sendable {
                               budget: sessionSeconds - seconds(steps), using: &rng)
         steps += unitLevels(progress, date: date, using: &rng)
         steps += inferenceLevels(progress, date: date, using: &rng)
-        if steps.contains(where: { if case .holdPulse = $0 { false } else { true } }) {
+        if !steps.isEmpty {
             steps += audiationDrill(progress, date: date, using: &rng)
         }
         return SessionPlan(steps: steps, frontiers: frontiers, estimatedSeconds: seconds(steps))
@@ -75,23 +75,6 @@ public struct SessionPlanner: Sendable {
         let items = sameMeter.map { PlannedItem(patternID: $0.1.id, unitID: $0.0.id, level: .aural, purpose: .review) }
         return [.echo(EchoBlockSpec(items: Array(items), meterID: pick.1.meter.id, tempo: .standard(for: pick.1.meter),
                                     clickStage: .c, mode: .practice, showNotation: false, gapMeasures: MasteryPolicy.drillGapMeasures))]
-    }
-
-    // MARK: - Pulse
-
-    /// E10 once a day before anything else.
-    private func warmUp(_ progress: LearnerProgress, date: Date) -> [SessionStep] {
-        let doneToday = progress.attempts.contains { $0.exercise == .holdThePulse && calendar.isDate($0.date, inSameDayAs: date) }
-        guard !doneToday, let step = holdPulse(progress) else { return [] }
-        return [step]
-    }
-
-    /// E10 in the meter of the earliest open unit, at the length its history has earned.
-    private func holdPulse(_ progress: LearnerProgress) -> SessionStep? {
-        let unit = frontiers(progress).first.flatMap { curriculum.unit(id: $0.unitID) } ?? curriculum.units.first
-        guard let unit, let meterID = unit.meters.first, let meter = library.meters[meterID] else { return nil }
-        return .holdPulse(HoldPulseSpec(unitID: unit.id, meterID: meterID, tempo: .standard(for: meter),
-                                        silentMeasures: PulsePolicy.silentMeasures(after: progress.pulseHistory)))
     }
 
     // MARK: - PS, SA writing, CS
@@ -248,8 +231,7 @@ public struct SessionPlanner: Sendable {
             }
         }
         guard !echoes.isEmpty else { return SessionPlan(steps: [], frontiers: [], estimatedSeconds: 0) }
-        let steps = [holdPulse(progress)].compactMap { $0 }
-            + blocksByMeterAndLevel(echoes.shuffled(using: &rng)).map { echo($0, mode: .practice) }
+        let steps = blocksByMeterAndLevel(echoes.shuffled(using: &rng)).map { echo($0, mode: .practice) }
             + blocksByMeterAndLevel(reads.shuffled(using: &rng)).map { read($0, mode: .practice) }
         return SessionPlan(steps: steps, frontiers: [], estimatedSeconds: seconds(steps))
     }
@@ -431,10 +413,6 @@ public struct SessionPlanner: Sendable {
         case .read(let s): return attempts(s.meterID, s.tempo, items: s.items.count, measuresPerAttempt: 1 + EchoPolicy.readLookMeasures, mode: s.mode)
         case .nameNotation, .dictation, .whichMeter, .meterFromNotation, .sameOrDifferent, .answerDifferently, .compose:
             return MasteryPolicy.nameNotationSeconds
-        case .holdPulse(let h):
-            guard let meter = library.meters[h.meterID] else { return 0 }
-            return Double(1 + PulsePolicy.clickedMeasures + h.silentMeasures) * h.tempo.seconds(forTicks: meter.measureTicks, in: meter)
-                + MasteryPolicy.stepOverheadSeconds
         }
     }
 }

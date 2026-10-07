@@ -10,6 +10,7 @@ public enum ExerciseKind: String, Codable, CaseIterable, Hashable, Sendable {
     case meterFromNotation = "E7"
     case answerDifferently = "E8"
     case composeAndPerform = "E9"
+    /// No longer in sessions (the pulse trainer is an extra exercise); kept so older stored attempts load.
     case holdThePulse = "E10"
     case audiateTheGap = "E11"
     case theory = "E12"

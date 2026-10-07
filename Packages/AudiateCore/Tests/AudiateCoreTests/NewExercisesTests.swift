@@ -2,8 +2,9 @@ import Foundation
 import Testing
 @testable import AudiateCore
 
-@Suite("Hold the pulse (E10)")
-struct HoldPulseTests {
+/// The pulse grader behind the pulse trainer (E10 is no longer a session step).
+@Suite("Pulse grader")
+struct PulseGraderTests {
     let beats = (0..<8).map { Double($0) * 0.75 } // 4 measures of 2/4 at 80 BPM
 
     @Test func steadyTapsPass() {
@@ -24,23 +25,6 @@ struct HoldPulseTests {
         #expect(PulseGrader.grade(beats: beats, taps: uneven).problems.contains(.uneven))
         #expect(PulseGrader.grade(beats: beats, taps: Array(beats.dropLast(2))).problems.contains(.lostCount))
         #expect(PulseGrader.grade(beats: beats, taps: []).problems == [.lostCount])
-    }
-
-    @Test func silenceGrowsWithPassesAndShrinksAfterAMiss() {
-        #expect(PulsePolicy.silentMeasures(after: []) == 2)
-        #expect(PulsePolicy.silentMeasures(after: [true]) == 4)
-        #expect(PulsePolicy.silentMeasures(after: [true, true, true, true]) == 16)
-        #expect(PulsePolicy.silentMeasures(after: [true, true, false]) == 4)
-    }
-
-    @Test func flowLayoutClickThenSilence() {
-        let spec = HoldPulseSpec(unitID: "U1", meterID: "usual_duple", tempo: Tempo(bpm: 80), silentMeasures: 2)
-        let flow = FlowSequencer(steps: [.holdPulse(spec)], library: Fixtures.library)
-        #expect(flow.measures.map(\.role) == [.countIn, .countIn, .withClick, .withClick, .silent, .silent, .leadIn])
-        let a = flow.attempts[0]
-        #expect(a.response?.expectedOnsets == [6.0, 6.75, 7.5, 8.25])
-        #expect(flow.sounds(from: 6.0, to: 9.0).isEmpty)            // silence
-        #expect(!flow.sounds(from: 9.0, to: 9.01).isEmpty)          // the click returns: you hear your drift
     }
 }
 
@@ -129,23 +113,6 @@ struct MeterIdentificationTests {
         #expect(MasteryEvaluator.isPassed(ps, patternIDs: [], attempts: attempts(4, day: 0) + attempts(4, day: 1), calendar: Fixtures.calendar))
     }
 
-    @Test func plannerWarmsUpOnceADay() {
-        let planner = SessionPlanner(curriculum: Fixtures.curriculum, library: library, calendar: Fixtures.calendar)
-        var rng = SeededRandomNumberGenerator(seed: 1)
-        let first = planner.plan(LearnerProgress(), date: Fixtures.day(0), using: &rng)
-        guard case .holdPulse(let h) = first.steps.first else { Issue.record("no warm-up"); return }
-        #expect(h.silentMeasures == 2)
-        var progress = LearnerProgress()
-        progress.record(Attempt(date: Fixtures.day(0), unitID: "U1", level: .aural, patternID: nil, exercise: .holdThePulse,
-                                mode: .practice, passed: true, accuracy: 1),
-                        curriculum: Fixtures.curriculum, library: library, calendar: Fixtures.calendar)
-        let again = planner.plan(progress, date: Fixtures.day(0), using: &rng)
-        #expect(!again.steps.contains { if case .holdPulse = $0 { true } else { false } })
-        guard case .holdPulse(let next) = planner.plan(progress, date: Fixtures.day(1), using: &rng).steps.first else {
-            Issue.record("no warm-up next day"); return
-        }
-        #expect(next.silentMeasures == 4)
-    }
 }
 
 @Suite("Two hands and the audiation drill")

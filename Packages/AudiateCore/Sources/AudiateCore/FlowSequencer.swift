@@ -3,7 +3,7 @@
 /// lead-in, during which the verdict is shown — the click never stops. A change of meter or tempo adds
 /// one count-in measure in the new tempo.
 ///
-/// Other kinds: E10 `| lead-in | with click | silent × n |`; E2/E6 `| lead-in | prompt | prompt |` then the
+/// Other kinds: E2/E6 `| lead-in | prompt | prompt |` then the
 /// pulse stops for the answer; E3 starts a fresh stream (its count-in gives only the macrobeat) and stops
 /// for the answer; E7 is silent. After a stop the runner starts a new stream at the next attempt.
 ///
@@ -18,7 +18,6 @@ public struct FlowSequencer: Sendable {
         /// Notation only, one look-ahead measure (reading, evaluation).
         case read
         case nameNotation
-        case holdPulse
         case dictation
         case whichMeter
         case meterFromNotation
@@ -57,10 +56,6 @@ public struct FlowSequencer: Sendable {
         case prompt
         case hold
         case response
-        /// E10: tap along with the click.
-        case withClick
-        /// E10: keep tapping the beat in silence.
-        case silent
     }
 
     public struct Measure: Hashable, Sendable {
@@ -78,7 +73,7 @@ public struct FlowSequencer: Sendable {
         public let step: SessionStep
         public let kind: Kind
         public let item: PlannedItem
-        /// The pattern played (E3/E7: the first of the series; E10: one note per macrobeat).
+        /// The pattern played (E3/E7: the first of the series).
         public let pattern: Pattern
         public let mode: PracticeMode
         public let tempo: Tempo
@@ -90,7 +85,7 @@ public struct FlowSequencer: Sendable {
         /// End of the attempt's last measure (= start of the next lead-in).
         public let end: Double
         public let prompt: PromptSlot?
-        /// Tap attempts (E10: the beats of the silent stretch).
+        /// Tap attempts.
         public let response: ResponseSlot?
 
         /// A repeat after a miss outside teaching (not graded).
@@ -260,9 +255,6 @@ public struct FlowSequencer: Sendable {
             (item, kind, mode, tempo, stage) = (q.item, .nameNotation, q.mode, q.tempo, .b)
         case .dictation(let d):
             (item, kind, mode, tempo, stage) = (d.item, .dictation, d.mode, d.tempo, .b)
-        case .holdPulse(let h):
-            guard let meter = library.meters[h.meterID] else { return nil }
-            return buildPulse(h, meter: meter, step: step, position: position, start: start, index: index)
         case .whichMeter(let w):
             guard let first = w.series.first else { return nil }
             series = w.series
@@ -332,7 +324,7 @@ public struct FlowSequencer: Sendable {
         return Built(attempt: attempt, roles: [], sounds: [])
     }
 
-    /// One note per macrobeat: stands in for a pattern where there is none (E10, E9).
+    /// One note per macrobeat: stands in for a pattern where there is none (E9).
     static func pulsePattern(_ meter: Meter) -> Pattern {
         var tick = 0
         let events = meter.macrobeatSpans.map { span -> RhythmEvent in
@@ -340,33 +332,6 @@ public struct FlowSequencer: Sendable {
             return RhythmEvent(startTick: tick, ticks: span.ticks, kind: .note, tieToNext: false)
         }
         return Pattern(id: "pulse:\(meter.id)", meter: meter, content: .macroMicro, pickupTicks: 0, events: events)
-    }
-
-    /// E10: `| lead-in | with click | silent × n |`; the beats of the silence are the expected taps.
-    private func buildPulse(_ h: HoldPulseSpec, meter: Meter, step: SessionStep, position: Position, start: Double, index: Int) -> Built? {
-        let measure = h.tempo.seconds(forTicks: meter.measureTicks, in: meter)
-        let clicked = PulsePolicy.clickedMeasures
-        var sounds: [ScheduledSound] = []
-        for k in 0..<clicked {
-            sounds += Self.countInClicks(meter, tempo: h.tempo, at: start + Double(1 + k) * measure)
-        }
-        let silentStart = start + Double(1 + clicked) * measure
-        let beats = (0..<h.silentMeasures).flatMap { m in
-            meter.macrobeatSpans.map { silentStart + Double(m) * measure + h.tempo.seconds(forTicks: $0.startTick, in: meter) }
-        }
-        let end = silentStart + Double(h.silentMeasures) * measure
-        let firstBeat = h.tempo.seconds(forTicks: meter.macrobeatSpans[0].ticks, in: meter)
-        let pulse = Self.pulsePattern(meter)
-        let attempt = FlowAttempt(
-            index: index, position: position, step: step, kind: .holdPulse,
-            item: PlannedItem(patternID: pulse.id, unitID: h.unitID, level: .aural, purpose: .review),
-            pattern: pulse, mode: .practice, tempo: h.tempo, clickStage: .c, showNotation: false, measureDuration: measure,
-            start: start, end: end, prompt: nil,
-            response: ResponseSlot(patternID: pulse.id, start: silentStart - firstBeat / 2, end: end, expectedOnsets: beats,
-                                   macrobeatTimes: beats)
-        )
-        let roles = Array(repeating: Role.withClick, count: clicked) + Array(repeating: Role.silent, count: h.silentMeasures)
-        return Built(attempt: attempt, roles: roles, sounds: sounds)
     }
 
     private mutating func commit(_ b: Built, leadInIsCommitted: Bool, extraCountIns: Int = 0) {

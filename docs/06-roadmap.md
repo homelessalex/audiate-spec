@@ -53,8 +53,8 @@ cursor on the staff.
 Built and covered by tests, not yet tried by the learner. Check each when the level becomes available
 and note anything odd:
 
-- [ ] **E10 Hold the pulse** (daily warm-up, first step of the day): silence grows 2 → 4 → 8 → 16 measures;
-      the verdict says how far you drifted.
+- [ ] **E10 Hold the pulse** (Home → Pulse trainer, an extra exercise, not in sessions): click / silence
+      cycles; the returning click shows how far you drifted.
 - [ ] **Stage C** (VA evaluation on): click while listening / looking / holding, silent only while you
       play; grading tolerates a steady tempo change up to 8 %.
 - [ ] **E2 Which notation?** (VA): heard twice, four notations, no time limit; the answer stays on screen.
@@ -102,7 +102,7 @@ pickup slot yet); unit-level review items (PS, CS) are not scheduled for review.
 
 ## M4 — Inference: GA, GV, GS, IA, IS + drills
 
-Done: E10 hold the pulse (`PulseGrader`, 2 → 4 → 8 → 16 silent measures, daily warm-up); audiation drill
+Done: E10 hold the pulse (`PulseGrader`, 2 → 4 → 8 → 16 silent measures, daily warm-up — later moved out of sessions into the pulse trainer); audiation drill
 closing the first session of the day (E11: familiar patterns, two silent measures without click, practice).
 
 Done as well: generated (unfamiliar) patterns for GA/GV/GS from the content of every unit past VA, tempo
@@ -114,7 +114,7 @@ once symbolic levels are in use. Generalization in U1 alone has no unfamiliar pa
 cells give only the four library patterns) — it starts once U3's divisions are known.
 
 Acceptance:
-- Session planner tests green; a session contains warm-up, review, new, drill.
+- Session planner tests green; a session contains review, new, drill.
 - Improvisation grader accepts a valid different answer and rejects an exact echo.
 
 ## M5 — Polish

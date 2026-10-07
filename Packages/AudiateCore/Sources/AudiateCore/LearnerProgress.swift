@@ -49,11 +49,6 @@ public struct LearnerProgress: Codable, Hashable, Sendable {
         }.count
     }
 
-    /// E10 results, oldest first (drives the length of the silent stretch).
-    public var pulseHistory: [Bool] {
-        attempts.filter { $0.exercise == .holdThePulse }.map(\.passed)
-    }
-
     /// Whether the pattern's teaching at `level` started on the calendar day of `date`.
     public func teachingStarted(onDayOf date: Date, patternID: String, level: SkillLevel, calendar: Calendar) -> Bool {
         let first = attempts.first { $0.patternID == patternID && $0.level == level && $0.mode == .teaching }
