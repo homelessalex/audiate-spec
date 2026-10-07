@@ -9,14 +9,23 @@ struct AnswerView: View {
     var body: some View {
         VStack(spacing: 18) {
             if let answered = runner.lastAnswer {
-                ResultHeader(passed: answered.passed)
+                VStack(spacing: 12) {
+                    Text(Self.prompt(answered.attempt)).font(.title3).foregroundStyle(.secondary)
+                    ResultHeader(passed: answered.passed)
+                }
+                .frame(height: SessionLayout.headerHeight, alignment: .bottom)
                 content(answered.attempt, choice: answered.choice, written: answered.written, enabled: false)
             } else if let attempt = runner.pendingAnswer {
-                Text(Self.prompt(attempt)).font(.title.bold())
+                VStack(spacing: 12) {
+                    Text(Self.prompt(attempt)).font(.title.bold())
+                    Text(Self.hint(attempt)).font(.callout).foregroundStyle(.secondary)
+                }
+                .frame(height: SessionLayout.headerHeight, alignment: .bottom)
                 content(attempt, choice: nil, written: nil, enabled: true)
-                Text(Self.hint(attempt)).font(.caption).foregroundStyle(.secondary)
             }
         }
+        // same top-anchored layout as the flow screen: the options stay where they were while listening
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
     @ViewBuilder

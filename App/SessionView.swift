@@ -35,6 +35,11 @@ struct SessionView: View {
     }
 }
 
+/// Shared by the flow and the answer screens so content stays put when the pulse stops.
+enum SessionLayout {
+    static let headerHeight: CGFloat = 210
+}
+
 private struct FlowView: View {
     let runner: SessionRunner
 
@@ -45,15 +50,19 @@ private struct FlowView: View {
                 let measure = runner.flow.measure(at: t)
                 let attempt = measure?.attemptIndex.map { runner.flow.attempts[$0] }
                 VStack(spacing: 18) {
-                    Text(attempt.map(Self.title) ?? " ").font(.title3).foregroundStyle(.secondary)
-                    Text(Self.label(measure?.role, attempt: attempt)).font(.system(size: 44, weight: .bold))
-                    Text(attempt.map(Self.detail) ?? " ").foregroundStyle(.secondary)
-                    // with the click gone (stage C, E10 silence) the pulse light goes too: the learner keeps it
-                    if Self.showsPulse(measure?.role, attempt: attempt) {
-                        PulseView(on: Self.isOnMacrobeat(t, measure: measure, attempt: attempt))
-                    } else {
-                        PulseView(on: false).hidden()
+                    // fixed-height header, shared with AnswerView, so the content below never jumps
+                    VStack(spacing: 18) {
+                        Text(attempt.map(Self.title) ?? " ").font(.title3).foregroundStyle(.secondary)
+                        Text(Self.label(measure?.role, attempt: attempt)).font(.system(size: 44, weight: .bold))
+                        Text(attempt.map(Self.detail) ?? " ").foregroundStyle(.secondary)
+                        // with the click gone (stage C, E10 silence) the pulse light goes too: the learner keeps it
+                        if Self.showsPulse(measure?.role, attempt: attempt) {
+                            PulseView(on: Self.isOnMacrobeat(t, measure: measure, attempt: attempt))
+                        } else {
+                            PulseView(on: false).hidden()
+                        }
                     }
+                    .frame(height: SessionLayout.headerHeight, alignment: .top)
                     // verdict of the attempt that just ended, shown while the next count-in ticks
                     if let m = measure, m.role == .leadIn || m.role == .countIn,
                        let done = runner.flow.attempt(endingAt: m.start), let verdict = runner.verdicts[done.index] {
@@ -82,6 +91,7 @@ private struct FlowView: View {
             }
             Text("Esc to pause").font(.caption).foregroundStyle(.secondary)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
     static func title(_ a: FlowSequencer.FlowAttempt) -> String {
