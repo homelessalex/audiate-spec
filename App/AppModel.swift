@@ -1,3 +1,4 @@
+import AppKit
 import AudiateAudio
 import AudiateCore
 import Foundation
@@ -21,6 +22,9 @@ final class AppModel {
     let settings = AppSettings()
     private(set) var progress = LearnerProgress()
     var session: SessionRunner?
+    /// The current calendar day. Views that depend on "today" read it, so they refresh when the day changes.
+    private(set) var today = Date.distantPast
+    private var dayObservers: [NSObjectProtocol] = []
     var pulseTrainer: PulseTrainerRunner?
 
     /// Date injection: launch with `-AudiateDayOffset N` to pretend it's N days later.
@@ -40,6 +44,16 @@ final class AppModel {
             loadError = "\(error)"
         }
         progress = store.load()
+        refreshDay()
+        // a new day can arrive at midnight, after the Mac wakes, or while the app was in the background
+        let center = NotificationCenter.default, workspace = NSWorkspace.shared.notificationCenter
+        for (nc, name) in [(center, Notification.Name.NSCalendarDayChanged),
+                           (center, NSApplication.didBecomeActiveNotification),
+                           (workspace, NSWorkspace.didWakeNotification)] {
+            dayObservers.append(nc.addObserver(forName: name, object: nil, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { self?.refreshDay() }
+            })
+        }
 
         if let path = UserDefaults.standard.string(forKey: "AudiateContactSheet"), let library = content?.library {
             ContactSheet.export(library: library, to: path)
@@ -59,6 +73,11 @@ final class AppModel {
     var player: BlockPlayer? { content?.player }
     var outputDevice: OutputDevice? { OutputDevice.current() }
     private var store: ProgressStore { ProgressStore(context: container.mainContext) }
+
+    func refreshDay() {
+        let day = calendar.startOfDay(for: now())
+        if day != today { today = day }
+    }
 
     func now() -> Date {
         Date().addingTimeInterval(Double(dayOffset) * 86_400)

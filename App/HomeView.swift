@@ -8,6 +8,8 @@ struct HomeView: View {
 
     var body: some View {
         if let content = model.content {
+            // reading `today` makes this view refresh when a new day starts
+            let _ = model.today
             let plan = model.planSession()
             let hasWork = plan?.isEmpty == false
             let canPractice = model.planFreePractice()?.isEmpty == false
