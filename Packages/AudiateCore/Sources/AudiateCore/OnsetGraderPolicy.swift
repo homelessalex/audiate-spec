@@ -17,5 +17,8 @@ public enum OnsetGraderPolicy {
     /// Typical phase offset of the whole response, seconds.
     static let relativeOffset = 0.020
     static let maxTempoDrift = 0.08
-    public static let debounce = 0.030
+    /// A tap this close after the previous one of the same hand is a double trigger (key bounce, a MIDI
+    /// pad firing twice) and is dropped, at input and again in grading. The fastest real notes are ~130 ms
+    /// apart (sixteenths of an unusual meter at 232 eighths/min), so 50 ms never eats one.
+    public static let debounce = 0.050
 }

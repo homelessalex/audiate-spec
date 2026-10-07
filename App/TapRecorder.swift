@@ -22,6 +22,8 @@ final class TapRecorder {
     private var clock: BlockClock?
     private var latency = 0.0
     private var setup = TapSetup()
+    /// Last accepted tap per hand, for the debounce.
+    private var lastTap: [Bool: Double] = [:]
     private weak var player: BlockPlayer?
 
     /// Starts listening against `clock` (the audio is already scheduled by the caller).
@@ -30,6 +32,7 @@ final class TapRecorder {
         taps = []
         tapSources = []
         pulseTaps = []
+        lastTap = [:]
         tapCount = 0
         latency = player.outputLatency
         self.setup = setup
@@ -60,8 +63,12 @@ final class TapRecorder {
     /// Key, pad or MIDI press; ignored when not running.
     func tap(_ event: TapEvent) {
         guard isRunning, let clock, event.isDown else { return }
-        if setup.tapSound { player?.playTap() }
         let time = clock.blockTime(forUptime: event.timestamp) - latency - setup.offsets[event.source]
+        // a double trigger: no sound, not counted
+        let isPulse = event.key == .pulse
+        if let last = lastTap[isPulse], time - last < OnsetGraderPolicy.debounce { return }
+        lastTap[isPulse] = time
+        if setup.tapSound { player?.playTap() }
         if event.key == .pulse {
             pulseTaps.append(time)
         } else {

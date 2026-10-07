@@ -95,7 +95,9 @@ Inputs: expected onsets `E` (seconds from response start; only `note` events), t
    and, in relative mode, `|1 − a| ≤ 0.08`.
 7. **Accuracy (for rolling stats):** `hits / (|E| + extras)`.
 
-Key repeat events are ignored. Taps closer than 30 ms to the previous tap are debounced.
+Key repeat events are ignored. A tap closer than 50 ms after the previous one of the same hand is a double trigger (key bounce, a MIDI
+pad firing twice): `TapRecorder` drops it — no tap sound, not counted — and the grader debounces again.
+The fastest real notes are ~130 ms apart, so this never eats one.
 
 **Optional (setting "Grade sustain", off by default — not implemented yet):** the learner's goal is
 drum parts, where a note's length is set by the next stroke, not by holding; revisit for keyboards.
