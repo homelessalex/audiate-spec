@@ -15,14 +15,20 @@ public enum OnsetGrader {
 
         var mapped = t
         var tempoRatio: Double?
+        var fit: RelativeFit?
         if mode == .relative {
-            let fit = relativeFit(expected: e, taps: t, origin: responseStart, tolerance: tol)
-            mapped = t.map { responseStart + ($0 - responseStart - fit.b) / fit.a }
-            tempoRatio = fit.a
+            let f = relativeFit(expected: e, taps: t, origin: responseStart, measure: responseEnd - responseStart, tolerance: tol)
+            mapped = t.map { responseStart + ($0 - responseStart - f.b) / f.a }
+            tempoRatio = f.ratio
+            fit = f
         }
 
         let pairs = match(expected: e, taps: mapped, tolerance: tol)
-        let hits = pairs.map { OnsetGrade.Hit(expected: e[$0.e], tap: t[$0.t], error: mapped[$0.t] - e[$0.e]) }
+        // relative mode: each note against the pulse the *other* notes imply (leave-one-out), so the fit
+        // cannot hide a note's own error
+        let hits = pairs.map { p in
+            OnsetGrade.Hit(expected: e[p.e], tap: t[p.t], error: (mapped[p.t] - e[p.e]) * (fit?.looFactor(e[p.e] - responseStart) ?? 1))
+        }
         let matchedE = Set(pairs.map(\.e)), matchedT = Set(pairs.map(\.t))
         let misses = e.indices.filter { !matchedE.contains($0) }.map { e[$0] }
         let extras = t.indices.filter { !matchedT.contains($0) }.map { t[$0] }
@@ -52,23 +58,63 @@ public enum OnsetGrader {
         return kept
     }
 
-    /// Fits `t = a·e + b` (times relative to `origin`) on a preliminary matching made after
-    /// aligning the first tap with the first expected onset.
-    static func relativeFit(expected e: [Double], taps t: [Double], origin: Double, tolerance: Double) -> (a: Double, b: Double) {
-        guard let t0 = t.first, let e0 = e.first else { return (1, 0) }
+    /// The learner's own tempo (`a`) and phase (`b`) in relative mode: `t = a·e + b`, times from the origin.
+    struct RelativeFit {
+        let a: Double
+        let b: Double
+        /// Plain least-squares tempo, for the drift rule and the report: the regularized `a` is pulled
+        /// toward 1 on purpose and would let a real 10 % change through.
+        var ratio: Double = 1
+        /// Normal-equation matrix [[p, q], [q, s]] of the ridge fit, for leverages; nil when nothing was fitted.
+        var matrix: (p: Double, q: Double, s: Double)?
+        /// Expected times (from the origin) that took part in the fit.
+        var fitted: [Double] = []
+
+        /// Turns a residual into a leave-one-out error: r / (1 − h), h = the note's leverage on the fit.
+        func looFactor(_ x: Double) -> Double {
+            guard let m = matrix, fitted.contains(where: { abs($0 - x) < 1e-9 }) else { return 1 }
+            let det = m.p * m.s - m.q * m.q
+            let h = (m.s * x * x - 2 * m.q * x + m.p) / det
+            return 1 / max(1 - h, 0.05)
+        }
+    }
+
+    /// Fits `t = a·e + b` (times relative to `origin`) on a preliminary matching made after aligning the
+    /// first tap with the first expected onset. Regularized toward `a = 1, b = 0` (no drift, no offset):
+    /// a plain least-squares fit has two free parameters, so it matches two taps exactly and most of three,
+    /// and the error left over would read near zero however uneven the taps were.
+    static func relativeFit(expected e: [Double], taps t: [Double], origin: Double, measure: Double,
+                            tolerance: Double) -> RelativeFit {
+        guard let t0 = t.first, let e0 = e.first else { return RelativeFit(a: 1, b: 0) }
         let shift = t0 - e0
         let prelim = match(expected: e, taps: t.map { $0 - shift }, tolerance: 2 * tolerance)
+        guard !prelim.isEmpty else { return RelativeFit(a: 1, b: 0) }
         let x = prelim.map { e[$0.e] - origin }
-        let y = prelim.map { t[$0.t] - origin }
-        let n = Double(x.count)
-        guard x.count >= 2 else { return (1, shift) }
-        let mx = x.reduce(0, +) / n, my = y.reduce(0, +) / n
-        let sxx = x.map { ($0 - mx) * ($0 - mx) }.reduce(0, +)
-        let sxy = zip(x, y).map { ($0 - mx) * ($1 - my) }.reduce(0, +)
-        guard sxx > 0 else { return (1, my - mx) }
+        let r = prelim.map { t[$0.t] - e[$0.e] }   // error before the fit
+        // minimise Σ(r − u·x − b)² + λu·u² + λb·b² with u = a − 1 (ridge; priors in OnsetGraderPolicy)
+        let spread = OnsetGraderPolicy.relativeTapSpread
+        let du = spread / OnsetGraderPolicy.relativeTempoSpread, db = spread / OnsetGraderPolicy.relativeOffset
+        let lu = du * du, lb = db * db
+        let sx = x.reduce(0, +), sxx = x.map { $0 * $0 }.reduce(0, +)
+        let sr = r.reduce(0, +), sxr = zip(x, r).map { $0 * $1 }.reduce(0, +)
+        let p = sxx + lu, q = sx, s = Double(x.count) + lb
+        let det = p * s - q * q
+        guard det > 0 else { return RelativeFit(a: 1, b: 0) }
+        let u = (sxr * s - q * sr) / det
+        let b = (p * sr - q * sxr) / det
         let range = OnsetGraderPolicy.relativeSlopeRange
-        let a = min(max(sxy / sxx, range.lowerBound), range.upperBound)
-        return (a, my - a * mx)
+        let clamp = { (a: Double) in min(max(a, range.lowerBound), range.upperBound) }
+        return RelativeFit(a: clamp(1 + u), b: b, ratio: clamp(plainSlope(x: x, r: r)), matrix: (p, q, s), fitted: x)
+    }
+
+    /// 1 + least-squares slope of the errors `r` over the times `x`; 1 when there is no spread to fit.
+    static func plainSlope(x: [Double], r: [Double]) -> Double {
+        let n = Double(x.count)
+        guard x.count >= 2 else { return 1 }
+        let mx = x.reduce(0, +) / n, mr = r.reduce(0, +) / n
+        let sxx = x.map { ($0 - mx) * ($0 - mx) }.reduce(0, +)
+        guard sxx > 0 else { return 1 }
+        return 1 + zip(x, r).map { ($0 - mx) * ($1 - mr) }.reduce(0, +) / sxx
     }
 
     struct Pair: Hashable {

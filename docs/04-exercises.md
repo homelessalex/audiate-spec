@@ -77,9 +77,16 @@ Inputs: expected onsets `E` (seconds from response start; only `note` events), t
 1. **Window:** taps in `[responseStart − pre, responseEnd − pre)`,
    `pre = min(0.12 s, 0.5 × minIOI)` (minIOI = smallest expected inter-onset interval).
 2. **Tolerance:** `tol = clamp(0.25 × minIOI, 0.035 s, 0.080 s)`.
-3. **Relative mode only:** align first tap to first expected onset, then fit `t = a·e + b` by least
-   squares on a preliminary matching with `2 × tol`; constrain `a ∈ [0.85, 1.15]`; map taps through the
-   inverse before step 4. Report `a` as tempo drift.
+3. **Relative mode only:** align first tap to first expected onset to make a preliminary matching with
+   `2 × tol`; on it fit the learner's tempo and phase, `t = a·e + b`, constrained to `a ∈ [0.85, 1.15]`.
+   - *For the errors* the fit is regularized toward `a = 1, b = 0` (ridge; tap spread 25 ms, tempo
+     spread 5 %, offset spread 20 ms — `OnsetGraderPolicy`, **[uncertain]**), taps are mapped through its
+     inverse before step 4, and each hit's error is its **leave-one-out** residual `r / (1 − h)` — the note
+     measured against the pulse the *other* notes imply. A plain fit has two free parameters: it matches
+     two taps exactly and most of three, so the error read ~0 ms whatever the taps were.
+   - *For the drift rule* (step 6) and the report, `a` is the plain least-squares slope.
+   - A constant offset stays forgiven, in stage C too: it may be latency the calibration missed rather
+     than the learner's timing.
 4. **Matching:** monotonic assignment minimizing Σ|t − e| (DP, O(|E|·|T|)), a pair only if
    `|t − e| ≤ tol`. Unmatched expected = **miss**, unmatched tap = **extra**.
 5. **Result:** `hits[(expected, tap, signedError)]`, `misses`, `extras`, `meanAbsError`, `maxAbsError`,
