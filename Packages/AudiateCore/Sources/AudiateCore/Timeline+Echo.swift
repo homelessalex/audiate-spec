@@ -15,11 +15,12 @@ extension Timeline {
                   responses: false, deriver: deriver)
     }
 
-    /// `| count-in | look 1 | read 1 | look 2 | read 2 | … |`: reading from notation (E5). Nothing but the click
-    /// sounds; each pattern is shown during its silent look-ahead measure and read in the next one.
+    /// `| count-in | look | hear it inside | read | look | … |`: reading from notation (E5). Nothing but the click
+    /// sounds; each pattern is shown `lookMeasures` measures before it is read.
     public static func readBlock(patterns: [Pattern], tempo: Tempo, clickStage: ClickStage,
+                                 lookMeasures: Int = EchoPolicy.readLookMeasures,
                                  deriver: SyllableDeriver = SyllableDeriver()) throws -> Timeline {
-        try block(patterns: patterns, tempo: tempo, clickStage: clickStage, promptSounds: false, gapMeasures: 0,
+        try block(patterns: patterns, tempo: tempo, clickStage: clickStage, promptSounds: false, gapMeasures: max(0, lookMeasures - 1),
                   responses: true, deriver: deriver)
     }
 

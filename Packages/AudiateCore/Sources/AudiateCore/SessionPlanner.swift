@@ -428,7 +428,7 @@ public struct SessionPlanner: Sendable {
         }
         switch step {
         case .echo(let s): return attempts(s.meterID, s.tempo, items: s.items.count, measuresPerAttempt: 2 + s.gapMeasures, mode: s.mode)
-        case .read(let s): return attempts(s.meterID, s.tempo, items: s.items.count, measuresPerAttempt: 2, mode: s.mode)
+        case .read(let s): return attempts(s.meterID, s.tempo, items: s.items.count, measuresPerAttempt: 1 + EchoPolicy.readLookMeasures, mode: s.mode)
         case .nameNotation, .dictation, .whichMeter, .meterFromNotation, .sameOrDifferent, .answerDifferently, .compose:
             return MasteryPolicy.nameNotationSeconds
         case .holdPulse(let h):

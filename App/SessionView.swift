@@ -116,8 +116,8 @@ private struct FlowView: View {
         switch role {
         case .countIn: "Count-in"
         case .leadIn: attempt == nil ? "…" : "Get ready"
-        case .prompt: attempt?.kind == .read ? "Look ahead" : "Listen"
-        case .hold: "Hold it"
+        case .prompt: attempt?.kind == .read ? "Look at it" : (attempt?.kind == .readWithModel ? "Listen & look" : "Listen")
+        case .hold: attempt?.kind == .read ? "Hear it inside" : "Hold it"
         case .response: attempt?.kind == .answerDifferently ? "Something different" : (attempt?.kind == .echo ? "Your turn" : "Read")
         case .withClick: "Tap the beat"
         case .silent: "Keep the beat"

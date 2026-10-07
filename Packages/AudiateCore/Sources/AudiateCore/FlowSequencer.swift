@@ -290,7 +290,7 @@ public struct FlowSequencer: Sendable {
         do {
             timeline = switch kind {
             case .echo: try Timeline.echoBlock(patterns: [pattern], tempo: tempo, clickStage: stage, gapMeasures: gap)
-            case .readWithModel: try Timeline.echoBlock(patterns: [pattern], tempo: tempo, clickStage: stage, gapMeasures: 0)
+            case .readWithModel: try Timeline.echoBlock(patterns: [pattern], tempo: tempo, clickStage: stage)
             case .read: try Timeline.readBlock(patterns: [pattern], tempo: tempo, clickStage: stage)
             case .whichMeter, .sameOrDifferent: try Timeline.listenBlock(patterns: series, tempo: tempo, clickStage: stage)
             case .answerDifferently: try Timeline.echoBlock(patterns: [pattern], tempo: tempo, clickStage: stage)

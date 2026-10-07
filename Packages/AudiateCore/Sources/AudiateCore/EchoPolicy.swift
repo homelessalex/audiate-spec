@@ -6,4 +6,7 @@ public enum EchoPolicy {
     /// Count-in measures when the meter is new — at the start of a stream in another meter, or on a
     /// change of meter — so the learner can settle into the new metronome. A tempo change alone gets one.
     public static let newMeterCountInMeasures = 2
+    /// Reading: measures the notation is shown before it is played — one to take it in, one to hear it
+    /// inside and settle — then the response.
+    public static let readLookMeasures = 2
 }

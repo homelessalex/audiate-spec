@@ -28,8 +28,9 @@ struct TimelineTests {
         let p = Fixtures.pattern("D-MM-02")
         let t = try Timeline.readBlock(patterns: [p, p], tempo: Tempo(bpm: 80), clickStage: .b)
         #expect(!t.sounds.contains { $0.sound == .hiHat })
-        #expect(t.measureRoles == [.countIn, .prompt(0), .response(0), .prompt(1), .response(1)])
-        #expect(t.responses.map(\.start) == [3.0, 6.0])
+        // look at it, hear it inside, then read
+        #expect(t.measureRoles == [.countIn, .prompt(0), .hold(0), .response(0), .prompt(1), .hold(1), .response(1)])
+        #expect(t.responses.map(\.start) == [4.5, 9.0])
         #expect(t.prompts[0].cues.map(\.text) == ["Du", "de", "Du"])
     }
 
