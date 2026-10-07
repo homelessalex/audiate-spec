@@ -105,7 +105,7 @@ The click is scaffolding. Its availability depends on the level:
 |---|---|---|
 | A | Macro + micro beats | teaching mode (all levels) |
 | B | Macrobeats only | `AO` evaluation; free practice |
-| C | Count-in only (one measure), then silence | evaluation from `VA` on (`VA`, `SA`, `CS`, …); E3 |
+| C | Macrobeat click while listening, looking and holding; silent only in the response measure | evaluation from `VA` on (`VA`, `SA`, `CS`, …); E3 (no click during its series) |
 | D | Count-in, then silence, longer stretches | E10 hold-the-pulse (2 → 4 → 8 → 16 silent measures) |
 
 `ClickStage.forStep(level:mode:)` holds this table. Without the click the pulse light is hidden too.

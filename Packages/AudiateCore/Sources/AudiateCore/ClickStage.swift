@@ -4,7 +4,7 @@ public enum ClickStage: String, Codable, CaseIterable, Hashable, Sendable {
     case a
     /// Macrobeats only throughout.
     case b
-    /// Count-in only, then silence.
+    /// Macrobeat click while listening / looking / holding; silent only while the learner responds.
     case c
     /// Count-in only, then longer silent stretches (pulse drills).
     case d

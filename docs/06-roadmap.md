@@ -55,8 +55,8 @@ and note anything odd:
 
 - [ ] **E10 Hold the pulse** (daily warm-up, first step of the day): silence grows 2 → 4 → 8 → 16 measures;
       the verdict says how far you drifted.
-- [ ] **Stage C** (VA evaluation on): click only in the count-in; pulse light hidden; grading tolerates a
-      steady tempo change up to 8 %.
+- [ ] **Stage C** (VA evaluation on): click while listening / looking / holding, silent only while you
+      play; grading tolerates a steady tempo change up to 8 %.
 - [ ] **E2 Which notation?** (VA): heard twice, four notations, no time limit; the answer stays on screen.
 - [ ] **E6 Dictation** (SA): cells per beat with keys 1–9, arrows, ⌫, Return; result shows the first wrong beat.
 - [ ] **E5 Reading** (SA): look-ahead measure then read; notes-vs-taps comparison after the attempt.

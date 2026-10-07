@@ -89,14 +89,14 @@ struct TimelineTests {
     }
 
     @Test func countInClicksMacroAndMicroBeats() throws {
-        let duple = try block(["D-MM-01"], stage: .c)
+        let duple = try block(["D-MM-01"], stage: .d)
         #expect(clicks(duple).map(\.sound) == [true, false, true, false].map(Sound.click))
-        let unusual = try block(["UP-MM-01"], stage: .c) // 2+3
+        let unusual = try block(["UP-MM-01"], stage: .d) // 2+3
         #expect(clicks(unusual).map(\.sound) == [true, false, true, false, false].map(Sound.click))
     }
 
     @Test func pickupShortensCountIn() throws {
-        let t = try block(["D-UB-01"], stage: .c, bpm: 80) // pickup 12 | 24 24, pickup at 1.125 s
+        let t = try block(["D-UB-01"], stage: .d, bpm: 80) // pickup 12 | 24 24, pickup at 1.125 s
         #expect(clicks(t).map(\.time) == [0, 0.375, 0.75])
         #expect(hiHats(t).first?.time == 1.125)
         let slot = try #require(t.responses.first)
@@ -113,7 +113,8 @@ struct TimelineTests {
         }
         #expect(try after(.a).count == 8)
         #expect(try after(.b) == Array(repeating: .click(accented: true), count: 4))
-        #expect(try after(.c).isEmpty)
+        // stage C: the click stays through the prompt (preparation) and stops for the response
+        #expect(try after(.c) == Array(repeating: .click(accented: true), count: 2))
         #expect(try after(.d).isEmpty)
     }
 

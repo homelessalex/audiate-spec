@@ -134,10 +134,13 @@ private struct FlowView: View {
         return s
     }
 
+    /// The light follows the click: off where the learner keeps the pulse alone.
     static func showsPulse(_ role: FlowSequencer.Role?, attempt: FlowSequencer.FlowAttempt?) -> Bool {
         guard let role, let attempt else { return true }
         if [.countIn, .leadIn, .withClick].contains(role) { return true }
-        return attempt.clickStage != .c && attempt.clickStage != .d && role != .silent
+        if role == .silent || attempt.clickStage == .d { return false }
+        if attempt.kind == .whichMeter { return false }
+        return !(attempt.clickStage == .c && role == .response)
     }
 
     static func isOnMacrobeat(_ t: Double, measure: FlowSequencer.Measure?, attempt: FlowSequencer.FlowAttempt?) -> Bool {

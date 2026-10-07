@@ -47,12 +47,19 @@ extension Timeline {
         }
         let countInEnd = meter.measureTicks - first.pickupTicks
 
-        // Count-in: macro + micro beats (establishes meter type); afterwards per click stage.
+        // Count-in: macro + micro beats (establishes meter type); afterwards per click stage. Stage C keeps
+        // the macrobeat click while the learner listens / looks / holds, and drops it only for the response.
         for m in 0..<measureCount {
+            let preparing: Bool
+            switch roles[m] {
+            case .prompt, .hold: preparing = withResponses
+            default: preparing = false
+            }
             for span in meter.macrobeatSpans {
                 for micro in 0..<span.microbeats {
                     let tick = span.startTick + micro * Rhythm.ticksPerMicrobeat
-                    let byStage = clickStage.clicksAfterCountIn && (micro == 0 || clickStage.clicksMicrobeats)
+                    let byStage = (clickStage.clicksAfterCountIn && (micro == 0 || clickStage.clicksMicrobeats))
+                        || (clickStage == .c && preparing && micro == 0)
                     let byCountIn = m == 0 && tick < countInEnd
                     guard byStage || byCountIn else { continue }
                     sounds.append(ScheduledSound(time: time(measure: m, tick: tick), sound: .click(accented: micro == 0)))
