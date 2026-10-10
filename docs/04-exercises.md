@@ -19,6 +19,7 @@ Tap exercises share the onset grader (§2).
 | E10 | Hold the pulse | pulse trainer on Home (extra, not in sessions) | Count-in + 2 measures with click, then silence (2 → 4 → 8 → 16 measures); the click returns at the end | Tap macrobeats through the silence | Pulse grader (never counted toward mastery) |
 | E11 | Audiate the gap | drills (after VA) | Pattern, then one **silent** measure | Tap the pattern in the third measure | Onset grader |
 | E12 | Theory | TU | Rhythm heard / notation shown | Pick equivalent notation in another time signature; name values | Exact choice |
+| E13 | Read a phrase | phrase track (after a unit passes CS) | A phrase of 2–4 familiar patterns, one per measure, one meter, in view as a whole for `EchoPolicy.readLookMeasures` measures | Read it measure after measure without a break; the review follows in the next measures, the pulse goes on | Onset grader per measure; pass = every measure |
 
 ### Flow of an echo block (E1, E8, E11)
 
@@ -68,7 +69,41 @@ The pulse never stops inside a block:
   in ms, missed/extra in red). While reading: static beat grid only (no cursor, no lit notes).
 - No syllables in the UI (VA = notation association).
 
-## 2. Onset grader (E1, E5, E9, E11)
+### Reading a phrase (E13)
+
+Sight reading of familiar forms: several patterns joined into one line, read without stopping.
+
+```
+| count-in | look | hear it inside | measure 1 | measure 2 | (measure 3 | measure 4) | review … | lead-in (review) | look | …
+```
+
+- **Content:** patterns of every unit that passed `CS`, in one meter, mixed across units, in random
+  order; the same pattern never twice in a row (when the meter has two or more). Patterns with a pickup
+  are left out (the pickup would overlap the measure before it).
+- **Ladder** (`PhrasePolicy.rungs`, **[uncertain]**): the phrase grows and the tempo rises step by step,
+  `2 measures × 85 / 92 / 100 %` of the standard tempo → `3 × 92 / 100 %` → `4 × 92 / 100 %`, never below
+  the meter's tempo range (triple 48 → 52 → 56, duple 68 → 74 → 80).
+  `PhrasePolicy.passesToAdvance` (3) graded phrases in a row passed → next rung;
+  `PhrasePolicy.failsToStepBack` (2) failed in a row → one rung back. The rung is derived from the
+  graded attempts (each records its rung), never stored on its own.
+- **Click:** macrobeats throughout (stage B, absolute timing): the task is reading, not holding the pulse.
+  One even click in every measure — look, phrase, review, lead-in; the microbeats of a count-in only where
+  the stream starts or the tempo changes, so the click never thickens and thins out between phrases.
+- **During the phrase:** the whole line stays in view with the beat grid; no cursor, no per-measure marks —
+  the eyes have to stay ahead, on the next measure.
+- **After the phrase:** the pulse goes on, as everywhere. For `PhrasePolicy.passedReviewMeasures` (1)
+  measure after a pass, `missedReviewMeasures` (3) after a miss, every measure of the phrase shows notes
+  vs. taps (the reading comparison), failed ones framed in red; the macrobeat click goes on, and the last
+  of these measures is the next attempt's lead-in (still "How it went", no "Get ready" of its own). After a miss the same phrase
+  comes again as a correction (max `MasteryPolicy.maxCorrectionAttempts`
+  tries, only the first graded).
+- **Pass:** every measure passes the onset grader (each measure is graded on its own slot; full strictness).
+- **Amount:** `PhrasePolicy.phrasesPerStep` (4) phrases per step, at most `PhrasePolicy.maxPhrasesPerDay`
+  (12) graded phrases a day. Not counted toward level mastery or Leitner review: the ladder is its progress.
+  "Read phrases" on Home is endless: after the day's graded phrases it goes on as practice at the current
+  rung (not counted, the ladder stays) until the learner ends it.
+
+## 2. Onset grader (E1, E5, E9, E11, E13)
 
 Inputs: expected onsets `E` (seconds from response start; only `note` events), taps `T`
 (seconds, latency-compensated, see `05-architecture.md` §4), mode `absolute` (click present) or
@@ -92,7 +127,9 @@ Inputs: expected onsets `E` (seconds from response start; only `note` events), t
 5. **Result:** `hits[(expected, tap, signedError)]`, `misses`, `extras`, `meanAbsError`, `maxAbsError`,
    `tempoRatio` (relative mode).
 6. **Pass:** `misses == 0 && extras == 0 && maxAbsError ≤ tol && meanAbsError ≤ 0.5 × tol`
-   and, in relative mode, `|1 − a| ≤ 0.08`.
+   and, in relative mode, `|1 − a| ≤ 0.08`. A drift is told as such ("Tempo drifted: you slowed down
+   9 %"), not as "Timing off": the note errors are measured against the learner's own tempo, so they can
+   all be small while the tempo itself changed.
 7. **Accuracy (for rolling stats):** `hits / (|E| + extras)`.
 
 Key repeat events are ignored. A tap closer than 50 ms after the previous one of the same hand is a double trigger (key bounce, a MIDI

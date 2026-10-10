@@ -45,6 +45,22 @@ Audiate/
   (`AVAudioTime(sampleTime:atRate:)` on the player's timeline, or host time via
   `AVAudioTime(hostTime:)`). Schedule a whole block (count-in + all prompts + clicks) ahead of time;
   never schedule from UI timers.
+- **The metronome is the source of truth.** Sessions and the pulse trainer are open-ended streams played
+  by `StreamFeeder` on its own queue: it renders 1024-frame chunks from the current `StreamPlan` and
+  schedules each at its own sample time on the player's timeline, ~0.17 s ahead of what is heard. The main
+  thread takes no part, so a busy or hung UI can't delay, drop or shift the pulse.
+  - `StreamPlan` (AudiateCore) is a snapshot: the sounds decided so far, `decidedUntil`, an optional end,
+    and a `ClickContinuation` — the last measure's clicks repeated on the measure grid. Past
+    `decidedUntil` the audio plays the continuation, so the pulse goes on while an outcome is pending.
+  - When the UI decides something (an attempt graded, the next silence of the pulse trainer) it lays it
+    out no earlier than `StreamFeeder.notBefore` (rendered position + 50 ms) and hands over the new plan.
+    If the decision came late, `FlowSequencer` / `PulseTrainer` insert more lead-in (clicked) measures:
+    the next attempt starts a measure later, on the grid; nothing shifts.
+  - If the feeder itself ever falls behind real time, the late stretch is skipped, not played late, so the
+    audio stays on the clock that the UI and the grading read. Underruns and notes decided too late are
+    counted (`StreamFeeder.stats`) and logged (subsystem `app.audiate`, category `stream`).
+  - The UI follows the clock: every frame it asks which measure is being heard (`BlockClock`, minus the
+    output latency) and draws that; after a hang it simply shows where the pulse is now.
 - Keep a `BlockClock` that maps block-relative seconds ↔ host time
   (`AVAudioTime.hostTime(forSeconds:)` / `seconds(forHostTime:)`), anchored at the scheduled
   start host time.
@@ -140,3 +156,9 @@ mapped to/from those structs at the boundary.
   - `SessionPlanner`: respects shares, block grouping by meter, max new patterns.
 - Audio timing smoke test (manual, documented): loopback recording of scheduled clicks; verify
   inter-onset jitter < 1 ms.
+- UI against the audio (manual, dev): launch with `-AudiateSoak /path/frames.csv` — progress in memory (the
+  real store untouched), audio muted, "Read phrases" with no taps for 40 s. Every frame is logged (uptime,
+  heard time, pulse light, measure role), then the macrobeat clicks played. From it: frame time per measure
+  role, and how long after each click the pulse light came on (one frame, ≤ 17 ms, is the goal). Only the
+  session header redraws every frame; the content below it changes once per measure, 150 ms after the
+  downbeat (`FlowView.contentLag`), so laying out a review never delays the light of a click.

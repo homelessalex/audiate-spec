@@ -5,6 +5,8 @@ import Observation
 
 /// Conducts a session as one uninterrupted pulse (FlowSequencer): attempts follow each other, each
 /// verdict shows during the next lead-in measure, and when the plan runs out the next one is planned.
+/// The audio plays on its own (StreamFeeder): the runner hands it the flow's plan whenever something is
+/// decided, and follows its clock — if the UI hangs, the pulse doesn't.
 /// Answer exercises (E2 which notation, E3 which meter, E6 dictation, E7 meter from notation) stop the
 /// pulse and wait without a clock; the flow then continues with a count-in. Esc pauses; resuming restarts
 /// the interrupted attempt.
@@ -26,6 +28,8 @@ final class SessionRunner {
         let comparison: StaffRenderer.Comparison?
         /// Σ|error| on a scale (no picture of the rhythm, so shown at every level).
         var score: AccuracyScore? = nil
+        /// E13: the phrase as read, measure by measure.
+        var phrase: PhraseReview? = nil
     }
 
     /// An answered question, kept on screen with its result until the flow resumes.
@@ -36,6 +40,14 @@ final class SessionRunner {
         let passed: Bool
     }
 
+    /// E13 after the phrase: notes vs. taps per measure, and which measures failed.
+    struct PhraseReview: Identifiable {
+        let id = UUID()
+        let comparisons: [StaffRenderer.Comparison]
+        let measurePassed: [Bool]
+        let reasons: [String]
+    }
+
     private(set) var state: State = .paused
     private(set) var flow: FlowSequencer
     private(set) var verdicts: [Int: Verdict] = [:]
@@ -43,17 +55,21 @@ final class SessionRunner {
     private(set) var newlyPassed: [LevelKey] = []
     /// After the day's work: endless practice of taught patterns, not counted.
     private(set) var isFreePractice: Bool
+    /// Started as "Phrase reading" from Home: more phrases, nothing else.
+    let isPhrasesOnly: Bool
     private(set) var error: String?
     let recorder = TapRecorder()
 
     private let content: AppModel.Content
     private unowned let model: AppModel
     private var ticker: Task<Void, Never>?
+    private var feeder: StreamFeeder?
 
-    init(plan: SessionPlan, content: AppModel.Content, model: AppModel, freePractice: Bool = false) {
+    init(plan: SessionPlan, content: AppModel.Content, model: AppModel, freePractice: Bool = false, phrasesOnly: Bool = false) {
         self.content = content
         self.model = model
         isFreePractice = freePractice
+        isPhrasesOnly = phrasesOnly
         flow = FlowSequencer(steps: plan.steps, library: content.library)
     }
 
@@ -65,6 +81,7 @@ final class SessionRunner {
 
     /// The next batch when the plan runs out: more of today's work, then (in free practice) more practice.
     private func moreSteps() -> [SessionStep] {
+        if isPhrasesOnly { return model.planPhrases()?.steps ?? [] }
         if let next = model.planSession(), !next.isEmpty { return next.steps }
         return isFreePractice ? (model.planFreePractice()?.steps ?? []) : []
     }
@@ -86,10 +103,8 @@ final class SessionRunner {
             return
         }
         do {
-            let clock = try content.player.stream(
-                provider: { [weak self] from, to in self?.provide(from: from, to: to) },
-                onFinish: { [weak self] in self?.streamEnded() }
-            )
+            let (clock, feeder) = try content.player.stream(plan: flow.plan, onFinish: { [weak self] in self?.streamEnded() })
+            self.feeder = feeder
             recorder.start(clock: clock, player: content.player, setup: model.tapSetup(twoHands: model.settings.twoHandMode))
             state = .running
             ticker = Task { [weak self] in
@@ -165,14 +180,8 @@ final class SessionRunner {
     private func stopAudio() {
         ticker?.cancel()
         content.player.stop()
+        feeder = nil
         recorder.stop()
-    }
-
-    /// Audio pulls sounds ~0.3 s ahead; anything past `decidedUntil` needs the pending outcome first.
-    private func provide(from: Double, to: Double) -> [ScheduledSound]? {
-        if let index = flow.awaiting, !flow.attempts[index].kind.awaitsInput, to > flow.decidedUntil { gradeAwaiting() }
-        if let end = flow.endTime, from >= end { return nil }
-        return flow.sounds(from: from, to: to)
     }
 
     private func gradeIfDue() {
@@ -199,7 +208,9 @@ final class SessionRunner {
         let attempt = flow.attempts[index]
         let taps = recorder.taps
         let passed: Bool
-        if case .answerDifferently(let spec) = attempt.step {
+        if attempt.kind == .readPhrase {
+            passed = gradePhrase(attempt, taps: taps)
+        } else if case .answerDifferently(let spec) = attempt.step {
             let grade = ImprovGrader.grade(taps: taps, prompt: spec.prompt, downbeat: slot.end - attempt.measureDuration,
                                            tempo: attempt.tempo, unlocked: spec.unlocked)
             passed = grade.passed
@@ -213,9 +224,10 @@ final class SessionRunner {
             let grade = twoHands?.rhythm ?? OnsetGrader.grade(expected: slot.expectedOnsets, taps: taps, responseStart: slot.start,
                                                               responseEnd: slot.end, mode: mode)
             passed = twoHands?.passed ?? grade.passed
-            var reasons = grade.errors.map(Self.describe)
+            var reasons = grade.errors.map { Self.describe($0, in: grade) }
             if let twoHands {
-                reasons = reasons.map { "Right hand: " + $0.lowercased() } + twoHands.pulse.errors.map { "Left hand: " + Self.describe($0).lowercased() }
+                reasons = reasons.map { "Right hand: " + $0.lowercased() }
+                    + twoHands.pulse.errors.map { "Left hand: " + Self.describe($0, in: twoHands.pulse).lowercased() }
             }
             let reading = attempt.kind == .read || attempt.kind == .readWithModel
             verdicts[index] = Verdict(
@@ -230,7 +242,28 @@ final class SessionRunner {
             record(attempt, exercise: exercise, patternID: Self.patternID(attempt), passed: passed,
                    accuracy: twoHands?.accuracy ?? grade.accuracy)
         }
-        flow.report(passed: passed, forAttempt: index) { [weak self] in self?.moreSteps() ?? [] }
+        // the audio went on clicking meanwhile: what follows goes after the point it has reached
+        flow.report(passed: passed, forAttempt: index, notBefore: feeder?.notBefore ?? -.infinity) { [weak self] in self?.moreSteps() ?? [] }
+        feeder?.update(flow.plan)
+    }
+
+    /// E13: each measure on its own slot; the phrase passes only when every measure does.
+    private func gradePhrase(_ attempt: FlowSequencer.FlowAttempt, taps: [Double]) -> Bool {
+        let grade = PhraseGrade.grade(slots: attempt.measureSlots, taps: taps,
+                                      pulseTaps: model.settings.twoHandMode ? recorder.pulseTaps : nil,
+                                      mode: attempt.clickStage.timingMode)
+        let comparisons = attempt.phrase.indices.map {
+            Self.comparison(grade.rhythm[$0], pattern: attempt.phrase[$0], downbeat: attempt.measureSlots[$0].start, tempo: attempt.tempo)
+        }
+        let reasons = grade.rhythm.indices.filter { !grade.measurePassed($0) }.map { i in
+            var errors = grade.rhythm[i].errors.map { Self.describe($0, in: grade.rhythm[i]).lowercased() }
+            if let pulse = grade.pulse?[i] { errors += pulse.errors.map { "left hand: " + Self.describe($0, in: pulse).lowercased() } }
+            return "Measure \(i + 1): " + errors.joined(separator: ", ")
+        }
+        let review = PhraseReview(comparisons: comparisons, measurePassed: grade.rhythm.indices.map(grade.measurePassed), reasons: reasons)
+        verdicts[attempt.index] = Verdict(passed: grade.passed, reasons: [], comparison: nil, phrase: review)
+        record(attempt, exercise: .readPhrase, patternID: attempt.item.patternID, passed: grade.passed, accuracy: grade.accuracy)
+        return grade.passed
     }
 
     // MARK: - Answers
@@ -313,11 +346,18 @@ final class SessionRunner {
 
     static let wrongAnswerSeconds = 2.5
 
-    static func describe(_ error: AttemptError) -> String {
+    static func describe(_ error: AttemptError, in grade: OnsetGrade) -> String {
         switch error {
         case .missedBeat: "Missed a beat"
         case .extraTap: "Extra tap"
         case .timingOff: "Timing off"
+        case .tempoDrift:
+            // > 1 = the taps spread out: slowed down
+            if let a = grade.tempoRatio {
+                "Tempo drifted: you \(a > 1 ? "slowed down" : "sped up") \(Int((abs(1 - a) * 100).rounded())) %"
+            } else {
+                "Tempo drifted"
+            }
         }
     }
 

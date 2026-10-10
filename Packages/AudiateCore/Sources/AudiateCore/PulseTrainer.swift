@@ -7,7 +7,8 @@
 /// unpredictable places (n grows the same way), like losing your reference in real playing.
 ///
 /// Like FlowSequencer, sounds are laid out ahead of playback; a silent stretch's outcome decides the
-/// next one, which starts after at least one clicked measure.
+/// next one, which starts after at least one clicked measure. Past what is laid out the audio keeps
+/// clicking (`plan`); a late outcome adds clicked measures so the next silence starts after `notBefore`.
 public struct PulseTrainer: Sendable {
     public enum Mode: String, CaseIterable, Hashable, Sendable {
         case blocks
@@ -116,15 +117,23 @@ public struct PulseTrainer: Sendable {
     /// Everything before this time is laid out (the next silence waits for the last one's result).
     public var decidedUntil: Double { measures.last?.end ?? 0 }
 
+    /// Everything the audio needs: past `decidedUntil` the click goes on.
+    public var plan: StreamPlan {
+        StreamPlan(sounds: sounds, decidedUntil: decidedUntil, endTime: nil,
+                   continuation: ClickContinuation(gridStart: decidedUntil, measure: measureDuration,
+                                                   clicks: FlowSequencer.countInClicks(settings.meter, tempo: settings.tempo, at: 0)))
+    }
+
     public func measure(at time: Double) -> Measure? {
         measures.last { $0.start <= time && time < $0.end }
     }
 
     // MARK: - Results
 
-    /// Grades the awaited silent stretch, adapts, and lays out the next one.
+    /// Grades the awaited silent stretch, adapts, and lays out the next one, starting no earlier than
+    /// `notBefore` (what the audio has already rendered, clicking).
     @discardableResult
-    public mutating func report(taps: [Double]) -> Result? {
+    public mutating func report(taps: [Double], notBefore: Double = -.infinity) -> Result? {
         guard let index = awaiting, cycles.indices.contains(index) else { return nil }
         let cycle = cycles[index]
         let grade = PulseGrader.grade(beats: cycle.beats, taps: taps)
@@ -145,6 +154,7 @@ public struct PulseTrainer: Sendable {
             level = max(level - 1, 0)
         }
         awaiting = nil
+        while nextStart < notBefore { appendClicked(1, cycle: index) }
         appendSilent(cycle: index + 1)
         appendClicked(nextClickedRun(), cycle: index + 1)
         return result

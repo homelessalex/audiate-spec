@@ -69,7 +69,8 @@ public struct LearnerProgress: Codable, Hashable, Sendable {
     @discardableResult
     public mutating func record(_ attempt: Attempt, curriculum: Curriculum, library: PatternLibrary, calendar: Calendar) -> [LevelKey] {
         attempts.append(attempt)
-        guard attempt.mode == .evaluation else { return [] }
+        // phrases (E13) move their own ladder, derived from the attempts: no review item, no level
+        guard attempt.mode == .evaluation, attempt.exercise != .readPhrase else { return [] }
 
         let key = attempt.itemKey
         let state = LeitnerScheduler.update(items[key], key: key, passed: attempt.passed, date: attempt.date, calendar: calendar)

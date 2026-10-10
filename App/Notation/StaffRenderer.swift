@@ -44,6 +44,8 @@ struct StaffRenderer {
     /// Taps so far, in measure ticks (live feedback while reading).
     var liveTaps: [Double] = []
     var comparison: Comparison?
+    /// Off inside a phrase (E13): the measure ends with a plain barline, the next measure follows.
+    var finalBarline = true
 
     private var sp: CGFloat { space }
     /// Staff line y; room above for stems, beams and tuplet numbers.
@@ -195,7 +197,7 @@ struct StaffRenderer {
         for bar in layout.barlines {
             let x = CGFloat(bar.x)
             let rect = { (x: CGFloat, w: CGFloat) in CGRect(x: x, y: self.staffY - 2 * self.sp, width: w, height: 4 * self.sp) }
-            if bar.isFinal {
+            if bar.isFinal && finalBarline {
                 cg.fill(rect(x - 0.9 * sp, 0.16 * sp))
                 cg.fill(rect(x - 0.5 * sp, 0.5 * sp))
             } else {
@@ -338,6 +340,9 @@ struct StaffRenderer {
         cg.saveGState()
         cg.translateBy(x: point.x, y: point.y)
         cg.scaleBy(x: 1, y: -1)
+        // the text position is not part of the saved state: CTLineDraw (comparison labels) leaves it
+        // advanced, and glyphs drawn after it on the same context would land that far to the right
+        cg.textPosition = .zero
         CTFontDrawGlyphs(font, glyphs, [CGPoint.zero], 1, cg)
         cg.restoreGState()
     }

@@ -12,13 +12,15 @@ struct RhythmStaffView: View {
     var currentTick: Double?
     var liveTaps: [Double] = []
     var comparison: StaffRenderer.Comparison?
+    var finalBarline = true
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         if let layout = try? NotationLayout(pattern: pattern) {
             let renderer = StaffRenderer(layout: layout, pattern: pattern, showTimeSignature: showTimeSignature,
                                          beatGrid: beatGrid, syllables: syllables,
-                                         currentTick: currentTick, liveTaps: liveTaps, comparison: comparison)
+                                         currentTick: currentTick, liveTaps: liveTaps, comparison: comparison,
+                                         finalBarline: finalBarline)
             let colors = StaffRenderer.Colors(
                 ink: colorScheme == .dark ? CGColor(gray: 0.95, alpha: 1) : CGColor(gray: 0.05, alpha: 1),
                 accent: NSColor.controlAccentColor.cgColor,

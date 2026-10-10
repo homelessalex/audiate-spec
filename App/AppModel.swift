@@ -32,7 +32,9 @@ final class AppModel {
 
     init() {
         do {
-            container = try ModelContainer(for: CalibrationProfile.self, AttemptRecord.self, ItemStateRecord.self, LevelPassRecord.self)
+            // the soak check (SoakProbe) keeps its progress in memory: the real store stays untouched
+            container = try ModelContainer(for: CalibrationProfile.self, AttemptRecord.self, ItemStateRecord.self, LevelPassRecord.self,
+                                           configurations: ModelConfiguration(isStoredInMemoryOnly: SoakProbe.path != nil))
         } catch {
             fatalError("SwiftData container: \(error)")
         }
@@ -45,6 +47,11 @@ final class AppModel {
         }
         progress = store.load()
         refreshDay()
+        if SoakProbe.path != nil, let content {
+            content.player.isMuted = true
+            progress = SoakProbe.progress(content)
+            startSession(phrasesOnly: true)
+        }
         // a new day can arrive at midnight, after the Mac wakes, or while the app was in the background
         let center = NotificationCenter.default, workspace = NSWorkspace.shared.notificationCenter
         for (nc, name) in [(center, Notification.Name.NSCalendarDayChanged),
@@ -118,10 +125,21 @@ final class AppModel {
         return planner.freePractice(progress, using: &rng)
     }
 
-    /// Today's work, or free practice once it is done.
-    func startSession(freePractice: Bool = false) {
-        guard let content, let plan = freePractice ? planFreePractice() : planSession(), !plan.isEmpty else { return }
-        session = SessionRunner(plan: plan, content: content, model: self, freePractice: freePractice)
+    var planner: SessionPlanner? {
+        content.map { SessionPlanner(curriculum: $0.curriculum, library: $0.library, calendar: calendar) }
+    }
+
+    /// Today's phrases (E13) only, step after step until the day's are done.
+    func planPhrases() -> SessionPlan? {
+        var rng = SystemRandomNumberGenerator()
+        return planner?.phrasePlan(progress, date: now(), using: &rng)
+    }
+
+    /// Today's work, or free practice once it is done; or only the phrases.
+    func startSession(freePractice: Bool = false, phrasesOnly: Bool = false) {
+        guard let content, let plan = phrasesOnly ? planPhrases() : (freePractice ? planFreePractice() : planSession()),
+              !plan.isEmpty else { return }
+        session = SessionRunner(plan: plan, content: content, model: self, freePractice: freePractice, phrasesOnly: phrasesOnly)
     }
 
     /// Deletes every attempt, review item and passed level (calibration is kept).

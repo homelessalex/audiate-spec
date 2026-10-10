@@ -40,14 +40,18 @@ struct AnswerView: View {
             MeterOptions(meters: w.options.compactMap { runner.library.meters[$0] }, correct: w.correctIndex, chosen: choice,
                          enabled: enabled) { runner.choose($0) }
         case .meterFromNotation(let m):
-            // the time signature and the beat grid are hidden: the beaming and values tell the meter
-            VStack(alignment: .leading, spacing: 6) {
-                ForEach(m.series.indices, id: \.self) { i in
-                    RhythmStaffView(pattern: m.series[i], zoom: 1.5, showTimeSignature: choice != nil)
-                }
-            }
+            // options first, so four staves never push them out of the window; the staves scroll if needed.
+            // The time signature and the beat grid are hidden: the beaming and values tell the meter.
             MeterOptions(meters: m.options.compactMap { runner.library.meters[$0] }, correct: m.correctIndex, chosen: choice,
                          enabled: enabled) { runner.choose($0) }
+            ScrollView {
+                VStack(alignment: .leading, spacing: 6) {
+                    ForEach(m.series.indices, id: \.self) { i in
+                        RhythmStaffView(pattern: m.series[i], zoom: 1.5, showTimeSignature: choice != nil)
+                    }
+                }
+                .frame(maxWidth: .infinity)
+            }
         case .sameOrDifferent(let d):
             SameDifferentOptions(isSame: d.isSame, chosen: choice, enabled: enabled) { runner.choose($0) }
         case .compose(let c):
@@ -83,6 +87,8 @@ struct AnswerView: View {
         case .dictation:
             "Put the pattern together beat by beat. The blue box is the beat you are filling: click the "
                 + "piece below that sounds like that beat (or press its number), and the box moves on to the next beat."
+        case .meterFromNotation:
+            "No sound this time: read the four patterns and tell their meter from the beaming and the note values."
         case .compose:
             "Make up a pattern of your own: pick a piece for each beat. Then you tap it in time with the click."
         default: nil
@@ -312,6 +318,25 @@ struct AnswerPreviewSheet: View {
         return t.report(taps: beats.enumerated().map { beats[0] + Double($0.offset) * 0.75 * 1.03 })!
     }
 
+    /// A four-measure phrase read with the third measure's second note missed and the last one late.
+    static func samplePhrase(_ library: PatternLibrary) -> ([AudiateCore.Pattern], SessionRunner.PhraseReview) {
+        let phrase = ["D-MM-02", "D-DV-01", "D-MM-04", "D-DV-03"].compactMap { library.pattern(id: $0) }
+        let tempo = Tempo(bpm: 56)
+        let timeline = try! Timeline.phraseBlock(patterns: phrase, tempo: tempo, clickStage: .b)
+        var taps = timeline.responses.flatMap(\.expectedOnsets).map { $0 + 0.012 }
+        let third = timeline.responses[0].expectedOnsets.count + timeline.responses[1].expectedOnsets.count
+        taps.remove(at: third + 1)
+        taps[taps.count - 1] += 0.06
+        let grade = PhraseGrade.grade(slots: timeline.responses, taps: taps, pulseTaps: nil, mode: .absolute)
+        let review = SessionRunner.PhraseReview(
+            comparisons: phrase.indices.map {
+                SessionRunner.comparison(grade.rhythm[$0], pattern: phrase[$0], downbeat: timeline.responses[$0].start, tempo: tempo)
+            },
+            measurePassed: phrase.indices.map(grade.measurePassed),
+            reasons: ["Measure 3: missed a beat", "Measure 4: missed a beat, extra tap"])
+        return (phrase, review)
+    }
+
     var body: some View {
         let target = library.pattern(id: "D-MM-03")!
         let answer = Dictation.cells(for: target, in: library)!
@@ -329,6 +354,10 @@ struct AnswerPreviewSheet: View {
                 ForEach(series.indices, id: \.self) { RhythmStaffView(pattern: series[$0], zoom: 1.5, showTimeSignature: false) }
             }
             MeterOptions(meters: ["usual_duple", "usual_triple"].compactMap { library.meters[$0] }, correct: 1, chosen: 0, enabled: false) { _ in }
+            Text("Phrase while reading").font(.headline)
+            PhraseStaffView(phrase: Self.samplePhrase(library).0)
+            Text("Phrase review (in the measures after the phrase)").font(.headline)
+            PhraseVerdict(passed: false, phrase: Self.samplePhrase(library).0, review: Self.samplePhrase(library).1)
             Text("Pulse trainer: after a silence (late, slowed down)").font(.headline)
             DriftCard(result: Self.sampleDrift(library), clickBPM: 80)
         }

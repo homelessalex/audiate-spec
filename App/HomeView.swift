@@ -47,6 +47,7 @@ struct HomeView: View {
                 }
 
                 ProgressGrid(curriculum: content.curriculum, progress: model.progress)
+                PhraseTrackRow()
             }
             .padding(28)
         }
@@ -105,6 +106,34 @@ private struct ProgressGrid: View {
         case .available: Color.accentColor.opacity(0.35)
         case .inProgress: Color.orange.opacity(0.7)
         case .passed: Color.green.opacity(0.75)
+        }
+    }
+}
+
+/// The phrase track (E13): where the learner is on the ladder, and a way straight in.
+private struct PhraseTrackRow: View {
+    @Environment(AppModel.self) private var model
+
+    var body: some View {
+        if let planner = model.planner {
+            let open = planner.isPhraseTrackOpen(model.progress)
+            let rung = PhraseLadder.rung(after: model.progress.attempts)
+            let step = PhrasePolicy.rungs[rung]
+            let left = planner.phrasesLeftToday(model.progress, date: model.now())
+            HStack(spacing: 16) {
+                Button("Read phrases") { model.startSession(phrasesOnly: true) }
+                    .disabled(!open)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Phrase reading (E13)").font(.headline)
+                    if open {
+                        Text("Step \(rung + 1) of \(PhrasePolicy.rungs.count): \(step.measures) measures at \(Int(step.tempoFactor * 100)) % tempo"
+                             + (left > 0 ? " · \(left) of \(PhrasePolicy.maxPhrasesPerDay) graded left today" : " · today's are done: practice, as long as you like"))
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("Opens once a unit has passed CS.").foregroundStyle(.secondary)
+                    }
+                }
+            }
         }
     }
 }

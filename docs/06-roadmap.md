@@ -125,6 +125,16 @@ calibration, reset), introduction on first launch (Help → Show Introduction).
 Open: grade-sustain option (off: drum parts first; revisit for keyboards), U5–U12 content verified
 end-to-end, theory track (E12), app icon, sandboxing, notarized build.
 
+## M6 — Phrase reading (E13)
+
+Scope: `PhraseSpec`, `PhrasePolicy` (ladder), `Timeline.phraseBlock`, per-measure `PhraseGrade`, the flow kind
+`readPhrase` (review held for measures, the pulse goes on), planner step once a unit has passed CS, phrase staff and review screen.
+
+Acceptance:
+- The ladder climbs after 3 passes in a row and steps back after 2 misses (tests).
+- A phrase passes only when every measure passes; a tap early for the next measure counts for that measure.
+- No phrase before a unit passed CS; no pickup patterns in phrases (planner tests).
+
 ## Later (optional)
 
 - Microphone onset detection for clapping.

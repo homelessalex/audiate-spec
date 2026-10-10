@@ -36,13 +36,11 @@ public enum OnsetGrader {
         let mean = errors.isEmpty ? 0 : errors.reduce(0, +) / Double(errors.count)
         let maxError = errors.max() ?? 0
 
-        var passed = !hits.isEmpty && misses.isEmpty && extras.isEmpty
-            && maxError <= tol && mean <= OnsetGraderPolicy.maxMeanErrorFraction * tol
-        if let a = tempoRatio, abs(1 - a) > OnsetGraderPolicy.maxTempoDrift {
-            passed = false
-        }
+        let drifted = tempoRatio.map { abs(1 - $0) > OnsetGraderPolicy.maxTempoDrift } ?? false
+        let passed = !hits.isEmpty && misses.isEmpty && extras.isEmpty
+            && maxError <= tol && mean <= OnsetGraderPolicy.maxMeanErrorFraction * tol && !drifted
         return OnsetGrade(hits: hits, misses: misses, extras: extras, meanAbsError: mean, maxAbsError: maxError,
-                          tempoRatio: tempoRatio, tolerance: tol, passed: passed,
+                          tempoRatio: tempoRatio, drifted: drifted, tolerance: tol, passed: passed,
                           accuracy: Double(hits.count) / Double(max(1, e.count + extras.count)))
     }
 

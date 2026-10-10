@@ -6,10 +6,13 @@
 /// Other kinds: E2/E6 `| lead-in | prompt | prompt |` then the
 /// pulse stops for the answer; E3 starts a fresh stream (its count-in gives only the macrobeat) and stops
 /// for the answer; E7 is silent. After a stop the runner starts a new stream at the next attempt.
+/// E13 reads a whole phrase; its review stays for a few measures while the pulse goes on (`.review`).
 ///
 /// What follows an attempt (retry or next pattern) is decided when its outcome is reported. Until then
-/// only the clicks of the following measure are fixed (`decidedUntil`); a pickup of the next prompt is
-/// added later, so the outcome must be reported before playback is rendered that far.
+/// only the clicks of the following measure are fixed (`decidedUntil`); past it the audio keeps clicking
+/// that measure (`continuation`) on its own. The outcome may come late — the UI may have hung: `report`
+/// takes the point the audio has reached (`notBefore`) and adds lead-in measures until the next attempt
+/// fits after it, so the pulse never stops or shifts.
 public struct FlowSequencer: Sendable {
     public enum Kind: Hashable, Sendable {
         case echo
@@ -24,6 +27,8 @@ public struct FlowSequencer: Sendable {
         case sameOrDifferent
         case answerDifferently
         case compose
+        /// A phrase of several patterns read without a break (E13).
+        case readPhrase
 
         /// The pulse stops after the attempt until the learner answers.
         public var awaitsInput: Bool {
@@ -56,6 +61,8 @@ public struct FlowSequencer: Sendable {
         case prompt
         case hold
         case response
+        /// E13: the review of the phrase just read stays on screen; the pulse goes on. The next lead-in follows.
+        case review
     }
 
     public struct Measure: Hashable, Sendable {
@@ -85,8 +92,11 @@ public struct FlowSequencer: Sendable {
         /// End of the attempt's last measure (= start of the next lead-in).
         public let end: Double
         public let prompt: PromptSlot?
-        /// Tap attempts.
-        public let response: ResponseSlot?
+        /// Tap attempts (E13: the whole phrase).
+        public internal(set) var response: ResponseSlot?
+        /// E13: the phrase, one pattern per measure, and one slot per measure; empty otherwise.
+        public var phrase: [Pattern] = []
+        public var measureSlots: [ResponseSlot] = []
 
         /// A repeat after a miss outside teaching (not graded).
         public var isCorrection: Bool {
@@ -94,6 +104,7 @@ public struct FlowSequencer: Sendable {
             switch step {
             case .echo(let s): return s.mode != .teaching
             case .read(let s): return s.mode != .teaching
+            case .readPhrase(let s): return s.mode != .teaching
             default: return true
             }
         }
@@ -116,6 +127,10 @@ public struct FlowSequencer: Sendable {
 
     private let library: PatternLibrary
     private var sounds: [ScheduledSound] = []
+    /// Review measures added after an attempt (E13), beyond the one lead-in every attempt has.
+    private var extraReview: [Int: Int] = [:]
+    /// What the audio clicks past `decidedUntil`: the last laid-out measure's clicks, on its grid.
+    public private(set) var continuation: ClickContinuation?
 
     /// Pickups are at most a third of a measure, so the first half of a lead-in never depends on the outcome.
     static let undecidedFraction = 0.5
@@ -142,6 +157,22 @@ public struct FlowSequencer: Sendable {
         sounds.filter { $0.time >= from && $0.time < to }
     }
 
+    /// What the audio plays in `[from, to)`: the sounds decided, then the continuation (as `plan` does,
+    /// without building a snapshot — the UI asks every frame).
+    public func audible(from: Double, to: Double) -> [ScheduledSound] {
+        let decidedEnd = min(to, decidedUntil)
+        var out = sounds.filter { $0.time >= from && $0.time < decidedEnd }
+        if endTime == nil, let continuation, to > max(from, decidedUntil) {
+            out += continuation.sounds(from: max(from, decidedUntil), to: to)
+        }
+        return out
+    }
+
+    /// Everything the audio needs, as one snapshot.
+    public var plan: StreamPlan {
+        StreamPlan(sounds: sounds, decidedUntil: decidedUntil, endTime: endTime, continuation: endTime == nil ? continuation : nil)
+    }
+
     /// Everything before this time is final.
     public var decidedUntil: Double {
         if let endTime { return endTime }
@@ -155,16 +186,36 @@ public struct FlowSequencer: Sendable {
 
     /// The attempt whose verdict belongs in the lead-in measure starting at `time`.
     public func attempt(endingAt time: Double) -> FlowAttempt? {
-        attempts.last { abs($0.end - time) < 1e-9 && !$0.kind.isSilent }
+        attempts.last { abs($0.end + Double(extraReview[$0.index] ?? 0) * $0.measureDuration - time) < 1e-9 && !$0.kind.isSilent }
+    }
+
+    /// The attempt whose verdict is shown during `measure`: the review measures of E13, and the lead-in
+    /// (or count-in) right after an attempt.
+    public func reviewed(in measure: Measure) -> FlowAttempt? {
+        switch measure.role {
+        case .review: measure.attemptIndex.map { attempts[$0] }
+        case .leadIn, .countIn:
+            // a lead-in held longer (the outcome came late) keeps showing the last verdict
+            attempt(endingAt: measure.start)
+                ?? (measure.attemptIndex == nil ? attempts.last { $0.end <= measure.start + 1e-9 && !$0.kind.isSilent } : nil)
+        default: nil
+        }
     }
 
     // MARK: - Deciding
 
     /// Reports the outcome of the awaited attempt and lays out what follows. `more` supplies new steps
     /// when the plan runs out (e.g. the next session); returning none ends the stream after the lead-in.
-    public mutating func report(passed: Bool, forAttempt index: Int, more: () -> [SessionStep] = { [] }) {
+    /// `notBefore`: what the audio has already rendered (it played the continuation there); nothing new
+    /// is placed before it — extra lead-in measures fill the gap.
+    public mutating func report(passed: Bool, forAttempt index: Int, notBefore: Double = -.infinity,
+                                more: () -> [SessionStep] = { [] }) {
         guard awaiting == index, let done = attempts.last, done.index == index else { return }
         awaiting = nil
+        if done.kind == .readPhrase {
+            extendReview(done, measures: passed ? PhrasePolicy.passedReviewMeasures : PhrasePolicy.missedReviewMeasures)
+        }
+        holdLeadIn(until: notBefore)
         var next = nextPosition(after: done.position, passed: passed)
         if next == nil {
             let added = more()
@@ -214,7 +265,7 @@ public struct FlowSequencer: Sendable {
         switch step {
         case .echo(let s): s.mode == .teaching ? MasteryPolicy.maxTeachingAttempts : MasteryPolicy.maxCorrectionAttempts
         case .read(let s): s.mode == .teaching ? MasteryPolicy.maxTeachingAttempts : MasteryPolicy.maxCorrectionAttempts
-        case .answerDifferently: MasteryPolicy.maxCorrectionAttempts
+        case .answerDifferently, .readPhrase: MasteryPolicy.maxCorrectionAttempts
         default: 1
         }
     }
@@ -223,6 +274,7 @@ public struct FlowSequencer: Sendable {
         switch step {
         case .echo(let s): s.items.count
         case .read(let s): s.items.count
+        case .readPhrase(let s): s.phrases.count
         default: 1
         }
     }
@@ -275,6 +327,13 @@ public struct FlowSequencer: Sendable {
         case .answerDifferently(let a):
             (item, kind, mode, tempo, stage) = (PlannedItem(generated: a.prompt, unitID: a.unitID, level: .improvisationAural),
                                                 .answerDifferently, .evaluation, a.tempo, .c)
+        case .readPhrase(let s):
+            guard s.phrases.indices.contains(position.item), !s.phrases[position.item].isEmpty else { return nil }
+            series = s.phrases[position.item]
+            (item, kind, mode, tempo, stage, showNotation) = (
+                PlannedItem(patternID: PhraseLadder.patternID(rung: s.rung), unitID: PhrasePolicy.unitID, level: .compositeSynthesis,
+                            purpose: .review),
+                .readPhrase, s.mode, s.tempo, s.clickStage, true)
         }
         guard let pattern = series.first ?? item.pattern(in: library) else { return nil }
 
@@ -286,6 +345,7 @@ public struct FlowSequencer: Sendable {
             case .read: try Timeline.readBlock(patterns: [pattern], tempo: tempo, clickStage: stage)
             case .whichMeter, .sameOrDifferent: try Timeline.listenBlock(patterns: series, tempo: tempo, clickStage: stage)
             case .answerDifferently: try Timeline.echoBlock(patterns: [pattern], tempo: tempo, clickStage: stage)
+            case .readPhrase: try Timeline.phraseBlock(patterns: series, tempo: tempo, clickStage: stage)
             default: try Timeline.listenBlock(patterns: [pattern, pattern], tempo: tempo, clickStage: stage)
             }
         } catch {
@@ -304,12 +364,19 @@ public struct FlowSequencer: Sendable {
         }
         // corrections after a graded try are practice: only the first try counts toward mastery
         let effectiveMode: PracticeMode = mode == .evaluation && position.attempt > 1 ? .practice : mode
-        let attempt = FlowAttempt(
+        let slots = timeline.responses.map { $0.shifted(by: start) }
+        var attempt = FlowAttempt(
             index: index, position: position, step: step, kind: kind, item: item, pattern: pattern, mode: effectiveMode, tempo: tempo,
             clickStage: stage, showNotation: showNotation, measureDuration: measure,
             start: start, end: start + Double(1 + roles.count) * measure,
-            prompt: timeline.prompts[0].shifted(by: start), response: timeline.responses.first?.shifted(by: start)
+            prompt: timeline.prompts[0].shifted(by: start), response: slots.first
         )
+        if kind == .readPhrase, let first = slots.first, let last = slots.last {
+            attempt.phrase = series
+            attempt.measureSlots = slots
+            attempt.response = ResponseSlot(patternID: item.patternID, start: first.start, end: last.end,
+                                            expectedOnsets: slots.flatMap(\.expectedOnsets), macrobeatTimes: slots.flatMap(\.macrobeatTimes))
+        }
         return Built(attempt: attempt, roles: roles, sounds: sounds)
     }
 
@@ -360,9 +427,39 @@ public struct FlowSequencer: Sendable {
         // The following measure keeps the pulse while the outcome is decided; when the attempt waits for
         // an answer the pulse stops, so it stays silent.
         measures.append(Measure(start: attempt.end, duration: measure, role: .leadIn, attemptIndex: nil))
-        if !attempt.kind.awaitsInput {
-            sounds += Self.countInClicks(attempt.pattern.meter, tempo: attempt.tempo, at: attempt.end)
+        // E13 keeps one even click (macrobeats) through phrase, review and lead-in; the microbeats of a
+        // count-in come only where the stream starts or the tempo changes
+        let clicks = attempt.kind.awaitsInput ? []
+            : Self.countInClicks(attempt.pattern.meter, tempo: attempt.tempo, at: 0, microbeats: attempt.kind != .readPhrase)
+        continuation = ClickContinuation(gridStart: attempt.end, measure: measure, clicks: clicks)
+        sounds += continuation!.measureClicks(at: attempt.end)
+    }
+
+    /// The outcome came after the audio passed `time` (it went on clicking the lead-in): more lead-in
+    /// measures, clicked the same, until the last one's undecided half lies ahead of it.
+    private mutating func holdLeadIn(until time: Double) {
+        guard let continuation else { return }
+        while let last = measures.last, last.start + last.duration * Self.undecidedFraction < time {
+            measures.append(Measure(start: last.end, duration: last.duration, role: .leadIn, attemptIndex: nil))
+            sounds += continuation.measureClicks(at: last.end)
         }
+    }
+
+    /// E13: the review of a phrase stays for `measures` measures, the macrobeat click going on; the lead-in
+    /// already there becomes the first, and the last measure is the new lead-in.
+    private mutating func extendReview(_ done: FlowAttempt, measures count: Int) {
+        guard count > 1, let leadIn = measures.last, abs(leadIn.start - done.end) < 1e-9 else { return }
+        let d = leadIn.duration
+        measures[measures.count - 1] = Measure(start: leadIn.start, duration: d, role: .review, attemptIndex: done.index)
+        for k in 1..<count {
+            let start = leadIn.start + Double(k) * d
+            let isLeadIn = k == count - 1
+            measures.append(Measure(start: start, duration: d, role: isLeadIn ? .leadIn : .review, attemptIndex: isLeadIn ? nil : done.index))
+        }
+        continuation = ClickContinuation(gridStart: leadIn.start, measure: d,
+                                         clicks: Self.countInClicks(done.pattern.meter, tempo: done.tempo, at: 0, microbeats: false))
+        for k in 1..<count { sounds += continuation!.measureClicks(at: leadIn.start + Double(k) * d) }
+        extraReview[done.index] = count - 1
     }
 
     /// Low click on the downbeat, strong on the other macrobeats, weak on microbeats: establishes meter and tempo.

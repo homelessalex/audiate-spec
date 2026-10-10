@@ -44,7 +44,7 @@ struct AttemptErrorTests {
         #expect(errors(expected.map { $0 + 0.06 }) == [.timingOff])       // all late beyond the mean limit
         #expect(errors([]) == [.missedBeat])
         let drift = expected.map { $0 * 1.12 }                              // tempo drift without a click
-        #expect(errors(drift, .relative) == [.timingOff])
+        #expect(errors(drift, .relative) == [.tempoDrift])
     }
 }
 

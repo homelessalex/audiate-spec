@@ -55,6 +55,7 @@ public struct SessionPlanner: Sendable {
         steps += otherReading(progress, frontiers: Set(frontiers.map(\.unitID)), date: date,
                               budget: sessionSeconds - seconds(steps), using: &rng)
         steps += unitLevels(progress, date: date, using: &rng)
+        steps += phraseReading(progress, date: date, using: &rng)
         steps += inferenceLevels(progress, date: date, using: &rng)
         if !steps.isEmpty {
             steps += audiationDrill(progress, date: date, using: &rng)
@@ -132,6 +133,49 @@ public struct SessionPlanner: Sendable {
             }
         }
         return steps
+    }
+
+    // MARK: - Phrase track (E13)
+
+    /// The phrase track is open once a unit has passed CS.
+    public func isPhraseTrackOpen(_ progress: LearnerProgress) -> Bool {
+        curriculum.units.contains { progress.passed.contains(LevelKey(unitID: $0.id, level: .compositeSynthesis)) }
+    }
+
+    /// Graded phrases still left today.
+    public func phrasesLeftToday(_ progress: LearnerProgress, date: Date) -> Int {
+        max(0, PhrasePolicy.maxPhrasesPerDay - progress.attempts.filter {
+            $0.exercise == .readPhrase && $0.mode == .evaluation && calendar.isDate($0.date, inSameDayAs: date)
+        }.count)
+    }
+
+    /// Phrases only (started from Home), endless: today's graded phrases first, then practice at the
+    /// learner's rung — not counted, the ladder doesn't move. Empty only while the track is closed.
+    public func phrasePlan(_ progress: LearnerProgress, date: Date, using rng: inout some RandomNumberGenerator) -> SessionPlan {
+        var steps = phraseReading(progress, date: date, using: &rng)
+        if steps.isEmpty { steps = phraseReading(progress, date: date, mode: .practice, using: &rng) }
+        return SessionPlan(steps: steps, frontiers: [], estimatedSeconds: seconds(steps))
+    }
+
+    /// Once a unit has passed CS: phrases mixed from the familiar patterns of every unit past CS, one meter
+    /// per step, at the learner's rung of the ladder (length × tempo).
+    private func phraseReading(_ progress: LearnerProgress, date: Date, mode: PracticeMode = .evaluation,
+                               using rng: inout some RandomNumberGenerator) -> [SessionStep] {
+        let count = mode == .practice ? PhrasePolicy.phrasesPerStep : min(PhrasePolicy.phrasesPerStep, phrasesLeftToday(progress, date: date))
+        guard count > 0 else { return [] }
+        var seen: Set<String> = []
+        let pool = curriculum.units
+            .filter { progress.passed.contains(LevelKey(unitID: $0.id, level: .compositeSynthesis)) }
+            .flatMap { curriculum.patterns(of: $0, in: library) }
+            .filter { $0.pickupTicks == 0 && progress.hasHeard(patternID: $0.id) && seen.insert($0.id).inserted }
+        let byMeter = Dictionary(grouping: pool, by: \.meter.id)
+        guard let meterID = byMeter.keys.sorted().randomElement(using: &rng), let meter = library.meters[meterID] else { return [] }
+        let rung = PhraseLadder.rung(after: progress.attempts)
+        let phrases = (0..<count).compactMap { _ in
+            PhraseSpec.phrase(from: byMeter[meterID]!, measures: PhrasePolicy.rungs[rung].measures, using: &rng)
+        }
+        let tempo = PhrasePolicy.tempo(for: PhrasePolicy.rungs[rung], meter: meter)
+        return [.readPhrase(PhraseSpec(phrases: phrases, rung: rung, meterID: meterID, tempo: tempo, mode: mode))]
     }
 
     // MARK: - Inference: GA, GV, GS, IA, IS
@@ -413,6 +457,12 @@ public struct SessionPlanner: Sendable {
         case .read(let s): return attempts(s.meterID, s.tempo, items: s.items.count, measuresPerAttempt: 1 + EchoPolicy.readLookMeasures, mode: s.mode)
         case .nameNotation, .dictation, .whichMeter, .meterFromNotation, .sameOrDifferent, .answerDifferently, .compose:
             return MasteryPolicy.nameNotationSeconds
+        case .readPhrase(let s):
+            // look, the phrase, then the review (its last measure is the next lead-in)
+            guard let meter = library.meters[s.meterID] else { return 0 }
+            let measure = s.tempo.seconds(forTicks: meter.measureTicks, in: meter)
+            return s.phrases.map { Double(EchoPolicy.readLookMeasures + $0.count + PhrasePolicy.passedReviewMeasures) * measure }
+                .reduce(MasteryPolicy.stepOverheadSeconds, +)
         }
     }
 }

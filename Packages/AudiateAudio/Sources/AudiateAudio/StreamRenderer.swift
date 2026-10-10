@@ -19,6 +19,14 @@ public struct StreamRenderer: Sendable {
         (Double(position) / bank.sampleRate, Double(position + chunkFrames) / bank.sampleRate)
     }
 
+    /// Jumps ahead to `frame` without rendering what lies between (the audio fell behind real time:
+    /// rendering it would only play it late). Sounds still ringing go on from there.
+    public mutating func skip(to frame: Int) {
+        guard frame > position else { return }
+        position = frame
+        voices.removeAll { $0.start + $0.samples.count <= frame }
+    }
+
     /// True while sounds already started are still ringing.
     public var isRinging: Bool { !voices.isEmpty }
 

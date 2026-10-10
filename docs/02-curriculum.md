@@ -33,6 +33,10 @@ Codes from `01-methodology.md` §4. Each unit runs through:
 
 `TU` (theory) is a separate global track unlocked after U4 reaches `CS`.
 
+The **phrase track** (E13, reading phrases of 2–4 familiar patterns) is a separate global track as well,
+open once any unit has passed `CS`; it draws on every unit past `CS` and adds to the levels, it replaces
+none of them. Its progress is its own ladder of phrase length × tempo (`docs/04-exercises.md` E13).
+
 ## 3. Gates (what unlocks what)
 
 | To unlock | Requires |
@@ -127,6 +131,10 @@ Teaching mode plays at `TempoPolicy.teachingFactor` (85 %) of the default, never
 bound (the slowest tempo at which the macrobeat is still felt as the pulse). The tempo stays constant
 within a step: the session is one uninterrupted pulse. Evaluation always uses the default tempo, so mastery
 results stay comparable.
+
+The phrase track (E13) is the exception: it starts at 85 % of the standard tempo — reading is the hard
+part — and climbs to 100 % on its ladder; never below the meter's range (70 % gave a triple of 39, too
+slow to feel the macrobeat as the pulse).
 
 In inference levels, tempo is randomized within range per block so the learner does not bind
 patterns to one tempo. **[uncertain]** These defaults are pragmatic, not from Gordon.

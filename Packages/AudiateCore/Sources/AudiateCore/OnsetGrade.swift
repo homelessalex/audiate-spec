@@ -14,6 +14,8 @@ public struct OnsetGrade: Hashable, Sendable {
     public let maxAbsError: Double
     /// Fitted tap-time scale in relative mode (> 1 = learner slowed down).
     public let tempoRatio: Double?
+    /// Relative mode: the tempo drifted enough to fail the attempt (docs/04-exercises.md §2 step 6).
+    public let drifted: Bool
     public let tolerance: Double
     public let passed: Bool
     /// hits / (expected + extras), for rolling statistics.

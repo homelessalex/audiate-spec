@@ -6,8 +6,10 @@ public enum AttemptError: String, CaseIterable, Hashable, Sendable {
     case missedBeat
     /// A tap where no note starts (e.g. on a rest).
     case extraTap
-    /// Every note was hit, but too far off on average, or the tempo drifted.
+    /// Every note was hit, but too far off on average or one note beyond the tolerance.
     case timingOff
+    /// Without the click the learner's tempo changed (`OnsetGrade.drifted`).
+    case tempoDrift
 }
 
 extension OnsetGrade {
@@ -17,6 +19,7 @@ extension OnsetGrade {
         var errors: [AttemptError] = []
         if !misses.isEmpty || hits.isEmpty { errors.append(.missedBeat) }
         if !extras.isEmpty { errors.append(.extraTap) }
+        if errors.isEmpty, drifted { errors.append(.tempoDrift) }
         if errors.isEmpty { errors.append(.timingOff) }
         return errors
     }

@@ -14,4 +14,6 @@ public enum ExerciseKind: String, Codable, CaseIterable, Hashable, Sendable {
     case holdThePulse = "E10"
     case audiateTheGap = "E11"
     case theory = "E12"
+    /// Reading a phrase of 2–4 familiar patterns (phrase track).
+    case readPhrase = "E13"
 }

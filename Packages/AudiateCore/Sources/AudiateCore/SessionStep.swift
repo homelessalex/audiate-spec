@@ -8,4 +8,5 @@ public enum SessionStep: Hashable, Sendable {
     case sameOrDifferent(SameOrDifferentSpec)
     case answerDifferently(AnswerDifferentlySpec)
     case compose(ComposeSpec)
+    case readPhrase(PhraseSpec)
 }

@@ -19,6 +19,8 @@ enum StepAttempts {
         case .compose(let c): return [attempt(c.unitID, .improvisationSymbolic, nil, .composeAndPerform, .evaluation)]
         case .whichMeter(let w): return [attempt(w.unitID, w.level, nil, .whichMeter, .evaluation)]
         case .meterFromNotation(let m): return [attempt(m.unitID, .compositeSynthesis, nil, .meterFromNotation, .evaluation)]
+        case .readPhrase(let p):
+            return p.phrases.map { _ in attempt(PhrasePolicy.unitID, .compositeSynthesis, PhraseLadder.patternID(rung: p.rung), .readPhrase, p.mode) }
         }
     }
 
@@ -31,6 +33,7 @@ enum StepAttempts {
         case .dictation(let d): [d.item.unitID]
         case .meterFromNotation(let m): [m.unitID]
         case .compose(let c): [c.unitID]
+        case .readPhrase(let p): p.phrases.flatMap { $0.compactMap { Fixtures.curriculum.unit(containing: $0.id)?.id } }
         case .whichMeter, .sameOrDifferent, .answerDifferently: []
         }
     }
