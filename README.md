@@ -49,6 +49,22 @@ Plus:
 Input is the computer keyboard, the trackpad or a MIDI keyboard. No voice: patterns play on an open hi-hat,
 choked at the end of each note so you hear durations.
 
+## Download
+
+A ready-to-run build is on the [Releases](https://github.com/homelessalex/audiate-spec/releases) page:
+open the `.dmg` and drag Audiate to Applications. macOS 14 or later, Apple Silicon or Intel.
+
+The build is not notarized by Apple (no paid developer account), so the first launch is blocked with
+"Apple could not verify Audiate…". Allow it once:
+
+- **macOS 15 and later:** try to open Audiate, then System Settings → Privacy & Security → scroll down →
+  *Open Anyway* next to the Audiate message, and confirm.
+- **macOS 14:** right-click Audiate in Applications → *Open* → *Open*.
+
+Or, in Terminal: `xattr -dr com.apple.quarantine /Applications/Audiate.app`.
+
+After that it opens normally. Calibrate once per output device (main window → Calibrate…).
+
 ## Building
 
 Requirements: macOS 14+, Xcode 16 (Swift 6, strict concurrency). No third-party dependencies.
